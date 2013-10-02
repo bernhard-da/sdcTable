@@ -873,7 +873,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 					}
 				}
 				
-				timeSpent <- as.numeric(floor(difftime(Sys.time(), startTime, unit="mins")))
+				timeSpent <- as.numeric(floor(difftime(Sys.time(), startTime, units="mins")))
 				#cat("timeSpent:"); print(timeSpent)
 				
 				if ( length(problemPool)==0 ) {
