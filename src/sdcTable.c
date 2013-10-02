@@ -30,13 +30,13 @@ void calcAggregationsstufen(int *indices, int *minDims, int *nDims) {
   for (i = 0; i < nDims[0]; i++) {
     to = j + anz;
     for (z = j; z < to; z++) {
-      j = j + 1
-        if(indices[j] == minDims[i]) {
-          indices[z] = 2;
-        }
-        else {
-          indices[z] = 1;
-        }
+      j = j + 1;
+      if(indices[j] == minDims[i]) {
+        indices[z] = 2;
+      }
+      else {
+        indices[z] = 1;
+      }
     }
   }
 }
