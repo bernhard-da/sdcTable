@@ -138,7 +138,7 @@ void extractIndicesAktQuader(int *vec, int *lengthSub, int *nDims, int *powers, 
   for (j=1; j <= lengthSubVec; j++) {
     for (i=1; i <= nDims[0]; i++) {
       index = ((i-1)*lengthSubVec)+j-1;
-      summe = summe + vec[index]* pow(10, powers[i-1]);
+      summe = summe + vec[index]* (int)pow(10, powers[i-1]);
     }
     final[k] = summe;
     k++;
