@@ -785,13 +785,11 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 		
 		codesOrig1 <-  list()
 		for ( i in 1:length(codesDefault1) ) {
-				codesOrig1[[i]] <- sapply(1:length(codesDefault1[[i]]), function(x) { 
-					calc.dimVar(get.dimInfo(dI1, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault1[[i]][x] )} )
+			codesOrig1[[i]] <- calc.dimVar(object=get.dimInfo(dI1, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault1[[i]] )
 		}
 		codesOrig2 <-  list()
 		for ( i in 1:length(codesDefault2) ) {
-				codesOrig2[[i]] <- sapply(1:length(codesDefault2[[i]]), function(x) { 
-					calc.dimVar(get.dimInfo(dI2, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault2[[i]][x] )} )
+			codesOrig2[[i]] <- calc.dimVar(object=get.dimInfo(dI2, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault2[[i]] )
 		}
 		
 		### find matching indices

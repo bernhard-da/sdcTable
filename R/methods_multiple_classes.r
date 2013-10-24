@@ -246,7 +246,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					if ( length(mInd2) > 0 ) {
 						codes[[i]][mInd2] <- cOriginalDupsUp[mInd1[mInd2]]
 					}
-					codes[[i]] <- sapply(codes[[i]], function(x) { calc.dimVar(dimObj[[i]], type='matchCodeDefault', input=x) } )
+					codes[[i]] <- calc.dimVar(object=dimObj[[i]], type='matchCodeDefault', input=codes[[i]])
 				} else if ( all(codes[[i]] %in% cDefault) ) {
 					# cat("no recoding necessary!\n")
 				} else {

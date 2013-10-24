@@ -92,20 +92,29 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
 			if ( !any(is.na(match(input, get.dimVar(object, type='codesDefault')))) ) {
 				out <- TRUE
 			}
+			out
 		}
 		
 		if ( type == 'matchCodeOrig' ) {
-			if ( length(input) > 1 ) {
-				stop("calc.dimVar:: length of 'input' must equal 1!\n")
-			}
-			out <- get.dimVar(object, type='codesOriginal')[match(input, get.dimVar(object, type='codesDefault'))]
+			d <- get.dimVar(object, type='codesDefault')
+			o <- get.dimVar(object, type='codesOriginal')
+			
+			out <- rep(NA, length(input))
+			for ( i in 1:length(d) ) {
+				out[which(input==d[i])] <- o[i]		
+			}		
+			out						
 		}
 		
 		if ( type == 'matchCodeDefault') {
-			if ( length(input) > 1 ) {
-				stop("calc.dimVar:: length of 'input' must equal 1!\n")
-			}
-			out <- get.dimVar(object, type='codesDefault')[match(input, get.dimVar(object, type='codesOriginal'))]
+			d <- get.dimVar(object, type='codesDefault')
+			o <- get.dimVar(object, type='codesOriginal')
+			
+			out <- rep(NA, length(input))
+			for ( i in 1:length(d) ) {
+				out[which(input==o[i])] <- d[i]		
+			}		
+			out				
 		}
 		
 		if ( type == 'standardize' ) {
@@ -117,10 +126,11 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
 				}
 				input[ind] <- get.dimVar(object, type='dupsUp')[matchInd]
 			}
-			out <- as.character(sapply(input, function(x) { calc.dimVar(object, type='matchCodeDefault', input=x) } ))
+			out <- calc.dimVar(object, type='matchCodeDefault', input)
 			if ( any(is.na(out)) ) {
 				stop("calc.dimVar:: matching not successful!\n")
 			}
+			out
 		}
 		
 		if ( type == 'requiredMinimalCodes' ) {
@@ -165,7 +175,7 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
 					}
 				}
 			}
-			out <- sapply(out, function(x) { calc.dimVar(object, type='matchCodeOrig', input=x)} )
+			out <- calc.dimVar(object, type='matchCodeOrig', input=out)
 			# add possible dups (recoding errors in rawData?? #
 			dupsUp <- get.dimVar(object, type='dupsUp')
 			if ( !is.null(dupsUp) ) {

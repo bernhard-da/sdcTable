@@ -1361,8 +1361,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			codesDefault <- lapply(1:length(strInfo), function(x) { mySplit(get.problemInstance(pI, type='strID'), strInfo[[x]][1]:strInfo[[x]][2]) } )
 			codesOrig <- list()
 			for ( i in 1:length(codesDefault) ) {
-				codesOrig[[i]] <- sapply(1:length(codesDefault[[i]]), function(x) {
-							calc.dimVar(dimInfo[[i]], type='matchCodeOrig', input=codesDefault[[i]][x] )} )
+				codesOrig[[i]] <- calc.dimVar(object=dimInfo[[i]], type="matchCodeOrig", input=codesDefault[[i]])
 			}
 			
 			if ( length(input) != 3 ) {
@@ -1410,7 +1409,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			strIDs <- get.problemInstance(pI, type='strID')
 			for ( i in seq_along(levelObj) ) {
 				codesDefault <- mySplit(strIDs, strInfo[[i]][1]:strInfo[[i]][2])
-				codesOriginal[[i]] <- sapply(1:length(codesDefault), function(x) { calc.dimVar(levelObj[[i]], type='matchCodeOrig', input=codesDefault[x]) } )
+				codesOriginal[[i]] <- calc.dimVar(object=levelObj[[i]], type='matchCodeOrig', input=codesDefault)
 			}
 			out <- data.frame(codesOriginal);
 			colnames(out) <- get.dimInfo(dI, type='varName')
@@ -1835,9 +1834,12 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			
 			newDims <- lapply(1:length(strInfo), function(x) { substr(get.problemInstance(pI, type='strID')[y], strInfo[[x]][1], strInfo[[x]][2]) } )
 			newDims2 <- lapply(1:length(newDims), function(x) { sort(unique(newDims[[x]])) } )
+			#newDimsOrigCodes <- lapply(1:length(newDims), function(k) {
+			#	sapply(newDims2[[k]], function(x) { calc.dimVar(dimInfo@dimInfo[[k]], type='matchCodeOrig', input=x) } )
+			#})
 			newDimsOrigCodes <- lapply(1:length(newDims), function(k) {
-				sapply(newDims2[[k]], function(x) { calc.dimVar(dimInfo@dimInfo[[k]], type='matchCodeOrig', input=x) } )
-			})
+				calc.dimVar(object=dimInfo@dimInfo[[k]], type='matchCodeOrig', input=newDims2[[k]]) 		
+			})	
 			
 			lenNewDims <- sapply(newDims2, length)-1
 			codesNew <- lapply(1:length(newDims), function(x) { c("@", rep("@@", lenNewDims[x])) } )
@@ -1872,13 +1874,12 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			}
 			x@dimInfo@strInfo <- strInfo
 			
-			### FIXME: slow but working ###
 			tmpRes <- lapply(1:length(newDims), function(x) { substr(get.problemInstance(pI, type='strID'), strInfoOrig[[x]][1], strInfoOrig[[x]][2]) }  )
 			lapply(1:length(tmpRes), function(x) {
-						tmpRes[[x]] <<- as.character(sapply(tmpRes[[x]], function(y) { calc.dimVar(dimInfoOld[[x]], type='matchCodeDefault', input=y) } ))
-					})
+				tmpRes[[x]] <- calc.dimVar(object=dimInfoOld[[x]], type='matchCodeDefault', input=tmpRes[[x]])
+			})
 			pI@strID <- pasteStrVec(unlist(tmpRes), length(tmpRes))
-			###############################
+
 			x <- set.sdcProblem(x, type='problemInstance', input=list(pI))
 			validObject(x)
 			return(x)			
