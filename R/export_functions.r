@@ -306,7 +306,7 @@ primarySuppression <- function(object, type, ...) {
 #' \item \code{OPT}: protect the complete problem at once using a cut and branch algorithm. The optimal algorithm should be used for small problem-instances only.
 #' \item \code{HITAS}: split the overall problem in smaller problems. These problems are protected using a top-down approach. 
 #' \item \code{HYPERCUBE}: protect the complete problem by protecting sub-tables with a fast heuristic that is based on finding and suppressing geometric structures (n-dimensional cubes) that are required to protect primary sensitive table cells. 
-#' \item \code{SIMPLEPROTECT}: heuristic, quick procedure which might be applied to very large problem instances
+#' \item \code{SIMPLEHEURISTIC}: heuristic, quick procedure which might be applied to very large problem instances
 #' }
 #' @param ... parameters used in the protection algorithm that has been selected. Parameters that can be changed are:
 #' \itemize{
