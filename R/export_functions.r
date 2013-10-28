@@ -94,13 +94,20 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 	# returns an object of class 'sdcProblem'
 	# 'doPrep()' is the old function 'newDimInfo()'
 	# since it also recodes inputData eventually, it was renamed
-	doPrep <- function(inputData, inputDims, varNames) {
+	doPrep <- function(inputData, inputDims) {
 		if ( any(sapply(inputDims, class) != "dimVar") ) {
 			stop("Error: all elements of 'inputDims' must be of class 'dimVar'!\n")
 		} 	
 		if ( class(inputData) != "dataObj") {
 			stop("Error: 'inputData' be of class 'dataObj'!\n")
 		}
+		
+		varNames <- get.dataObj(inputData, type='varName')
+		varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
+		
+		if ( !all(varNamesInDims %in% varNames) ) {
+			stop("makeProblem::doPrep() mismatch in variable names in 'inputData' and 'inputDims'!\n")
+		}	
 		
 		rawData <- get.dataObj(inputData, type='rawData')
 		
@@ -149,7 +156,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 							rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
 						}
 					}
-					inputData <- set.dataObj(inputData, type='rawData', input=rawData)
+					inputData <- set.dataObj(inputData, type='rawData', input=list(rawData))
 				}
 				ss[[i]] <- calc.dimVar(inputDims[[i]], type='standardize', input=rawData[[dimVarInd[i]]])
 			} else {
@@ -174,8 +181,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 				strInfo=strInfo,
 				vNames=vNamesInData,# because of ordering
 				posIndex=dimVarInd # because dimVars are re-ordered according to input data!
-		)
-		
+		)	
 		return(list(inputData=inputData, dimInfoObj=dimInfoObj))
 	}	
 	
@@ -183,11 +189,11 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 		dimList[[i]] <- init.dimVar(input=list(input=dimList[[i]], vName=names(dimList)[i])) 
 	}
 	
-	# generate inputData from data
+	## generate inputData from data
 	inputData <- init.dataObj(input=list(inputData=data, dimVarInd=dimVarInd, freqVarInd=freqVarInd, numVarInd=numVarInd, weightInd=weightInd,sampWeightInd=sampWeightInd,isMicroData=isMicroData))
 	
-	# check if all variable names listed in inputDims exist in the 
-	# specified dimensions of the input data obj
+	## check if all variable names listed in inputDims exist in the 
+	## specified dimensions of the input data
 	varNames <- get.dataObj(inputData, type='varName')
 	varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
 	
@@ -195,11 +201,11 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 		stop("makeProblem:: mismatch in variable names in 'inputData' and 'inputDims'!\n")
 	}
 	
-	# calculate the dimInfoObj and eventually recode inputData
-	# (eventually recode rawData slot of inputData if 'rawData' contains 'wrong' dups)
-	out <- doPrep(inputData, dimList, varNames)
+	## calculate the dimInfoObj and eventually recode inputData
+	## (eventually recode rawData slot of inputData if "rawData" contains "wrong" dups)
+	out <- doPrep(inputData, dimList)
 	
-	# use output of newDimInfo to 
+	## use output of doPrep() to calculate an object of class "sdcProblem"
 	prob <- calc.multiple(type='calcFullProblem', input=list(objectA=out$inputData, objectB=out$dimInfoObj))
 	prob
 }
