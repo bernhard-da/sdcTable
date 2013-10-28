@@ -1,10 +1,8 @@
 Package: sdcTable
 Version: 0.10.3
-Date: 2013-10-24
-Title: Methods for SDC (statistical disclosure control) in
-    tabular data
-Description: Implementation of methods for SDC (statistical
-    disclosure control) in tabular data
+Date: 2013-10-28
+Title: Methods for statistical disclosure control in tabular data
+Description: Implementation of methods for statistical disclosure control in tabular data
 Author: Bernhard Meindl
 Maintainer: Bernhard Meindl
     <bernhard.meindl@statistik.gv.at>
@@ -13,7 +11,8 @@ Depends:
     methods,
     Rcpp,
     Rglpk,
-    lpSolveAPI
+    lpSolveAPI,
+    data.table
 LazyLoad: yes
 LinkingTo: Rcpp
 License: GPL-2
