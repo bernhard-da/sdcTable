@@ -81,6 +81,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 			isMicroData <- TRUE
 			if ( is.null(freqVarInd) ) {
 				rawData[, freq:=as.numeric(rawData$N)]
+				freqVarInd <- which(colnames(rawData)=="freq")
 			} else {
 				f <- datO[,list(freq=sum(get(colnames(datO)[freqVarInd]))), by=key(datO)]$freq
 				rawData[,freq:=as.numeric(f)]
@@ -89,6 +90,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 			# data already aggregated
 			if ( is.null(freqVarInd) ) {
 				rawData[, freq:=as.numeric(rawData$N)]
+				freqVarInd <- which(colnames(rawData)=="freq")
 			} else {
 				rawData[, freq:=as.numeric(datO[,get(colnames(datO)[freqVarInd])])]
 			}					
