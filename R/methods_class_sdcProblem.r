@@ -716,7 +716,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 				if ( length(indRem) > 0 ) {
 					#if ( verbose ) {
 					#	cat("removing",length(indRem),"duplicated constraints...\n")
-}					#}
+					#}
 					mProb <- set.linProb(mProb, type='removeCompleteConstraint', input=list(indRem))
 				}
 				### bridgeless inequalities only at root-node ####
