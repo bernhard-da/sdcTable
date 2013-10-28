@@ -22,7 +22,6 @@
 #' @param numVarInd numeric vector (or NULL) defining the column-indices of additional numeric variables available in argument \code{data} 
 #' @param weightInd numeric vector of length 1 (or NULL) defining the column-index of a variable holding weights that should be used during as objective coefficients during the cut and branch algorithm to protect primary sensitive cells within argument \code{data} 
 #' @param sampWeightInd numeric vector of length 1 (or NULL) defining the column-index of a variable holding sampling weights within argument \code{data} 
-#' @param isMicroData logical vector of length 1 that is 'TRUE' if argument \code{data} are micro data and 'FALSE' otherwise
 #' 
 #' @return a \code{\link{sdcProblem-class}}-object
 #' 
@@ -70,8 +69,7 @@
 #' # weights are available in the input data
 #' freqVarInd <- numVarInd <- weightInd <- sampWeightInd <- NULL
 #' 
-#' # but we are dealing with micro data!
-#' isMicroData <- TRUE
+#' # we are dealing with micro data!
 #' 
 #' # creating an object of class \code{\link{sdcProblem-class}}
 #' problem <- makeProblem(
@@ -81,8 +79,7 @@
 #' 	freqVarInd=freqVarInd, 
 #' 	numVarInd=numVarInd, 
 #' 	weightInd=weightInd,
-#' 	sampWeightInd=sampWeightInd,
-#' 	isMicroData=isMicroData) 
+#' 	sampWeightInd=sampWeightInd) 
 #' 
 #' what do we have?
 #' print(class(problem))
@@ -90,7 +87,7 @@
 #' @rdname makeProblem
 #' @export makeProblem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NULL, weightInd=NULL,sampWeightInd=NULL,isMicroData) {
+makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NULL, weightInd=NULL,sampWeightInd=NULL) {
 	# returns an object of class 'sdcProblem'
 	# 'doPrep()' is the old function 'newDimInfo()'
 	# since it also recodes inputData eventually, it was renamed
@@ -190,7 +187,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 	}
 	
 	## generate inputData from data
-	inputData <- init.dataObj(input=list(inputData=data, dimVarInd=dimVarInd, freqVarInd=freqVarInd, numVarInd=numVarInd, weightInd=weightInd,sampWeightInd=sampWeightInd,isMicroData=isMicroData))
+	inputData <- init.dataObj(input=list(inputData=data, dimVarInd=dimVarInd, freqVarInd=freqVarInd, numVarInd=numVarInd, weightInd=weightInd,sampWeightInd=sampWeightInd))
 	
 	## check if all variable names listed in inputDims exist in the 
 	## specified dimensions of the input data
