@@ -52,7 +52,7 @@ setMethod(f='set.dataObj', signature=c('dataObj', 'character', 'listOrNULL'),
 		}
 		
 		if ( type == 'rawData' ) {
-			object@rawData <- input	
+			object@rawData <- input[[1]]
 		}
 		
 		validObject(object)
@@ -70,38 +70,65 @@ setMethod(f='init.dataObj', signature=c('list'),
 		numVarInd <- input$numVarInd
 		weightInd <- input$weightInd
 		sampWeightInd <- input$sampWeightInd
-		isMicroData <- input$isMicroData
 		
-		rawData <- as.list(inputData)[c(dimVarInd, freqVarInd,numVarInd,weightInd,sampWeightInd)]
-		if ( length(dimVarInd) >= 1 ) {
-			dimVarInd <- 1:length(dimVarInd)	
-			rawData[c(dimVarInd)] <- lapply(rawData[c(dimVarInd)], as.character)
-		}
-		last <- length(dimVarInd)	 
-		if ( is.null(freqVarInd) ) {
-			rawData$Freq <- rep(1, length(rawData[[1]]))
-			freqVarInd <- length(rawData)
-			if ( !is.null(sampWeightInd) ) {
-				rawData[[freqVarInd]] <- rawData$Freq*rawData[[sampWeightInd]]
-			}				
+		isMicroData <- FALSE
+			
+		## aggregate data, use data.table
+		datO <- data.table(inputData, key=colnames(inputData)[dimVarInd])
+		rawData <- datO[,.N, by=key(datO)]
+		
+		if ( any(rawData$N != 1)  ) {
+			isMicroData <- TRUE
+			if ( is.null(freqVarInd) ) {
+				rawData[, freq:=as.numeric(rawData$N)]
+			} else {
+				f <- datO[,list(freq=sum(get(colnames(datO)[freqVarInd]))), by=key(datO)]$freq
+				rawData[,freq:=as.numeric(f)]
+			}			
 		} else {
-			freqVarInd <- (last+1):((last)+length(freqVarInd))
-			last <- last+1
-			if ( !is.null(sampWeightInd) ) {
-				rawData[[freqVarInd]] <- rawData[[freqVarInd]]*rawData[[sampWeightInd]]
-			}				
-		}
-		if ( !is.null(numVarInd) ) {
-			numVarInd <- (last+1):((last)+length(numVarInd))
-		}	
-		last <- last+length(numVarInd)	
-		if ( !is.null(weightInd) ) {
-			weightInd <- (last+1):((last)+length(weightInd))
-		}
-		last <- last+length(weightInd)	
+			# data already aggregated
+			if ( is.null(freqVarInd) ) {
+				rawData[, freq:=as.numeric(rawData$N)]
+			} else {
+				rawData[, freq:=as.numeric(datO[,get(colnames(datO)[freqVarInd])])]
+			}					
+		}		
+		
+		rawData[,N:=NULL]
+		
 		if ( !is.null(sampWeightInd) ) {
-			sampWeightInd <- (last+1):((last)+length(sampWeightInd))
-		}			
+			sw <- datO[,list(sw=sum(get(colnames(datO)[sampWeightInd]))), by=key(datO)]$sw
+			rawData[, colnames(datO)[sampWeightInd]:=sw]
+			sampWeightInd <- ncol(rawData)
+			rawData[, freq:=as.numeric(sw*rawData$freq)]
+		}	
+		
+		## numvars
+		if ( !is.null(numVarInd) ) {
+			c.start <- ncol(rawData)
+			cols <- colnames(datO)[numVarInd]
+			for ( j in 1:length(cols)) {
+				v <- datO[,j=sum(get(cols[j])), by=key(datO)]$V1
+				rawData[,j=cols[j]:=as.numeric(v)]
+			}		
+			numVarInd <- (c.start+1):ncol(rawData)			
+		}	
+		
+		## weight var
+		if ( !is.null(weightInd) ) {
+			w <- datO[,list(w=sum(get(colnames(datO)[weightInd]))), by=key(datO)]$w
+			rawData[, colnames(datO)[weightInd]:=as.numeric(w)]
+			weightVarInd <- ncol(rawData)
+		}
+		
+		## do not use factors
+		cols <- colnames(rawData)[dimVarInd]
+		for ( j in 1:length(cols)) {
+			set(rawData,j=j,value=as.character(rawData[[cols[j]]]))
+		}
+		rm(datO)
+
+		setkeyv(rawData, colnames(rawData)[dimVarInd])
 		out <- new("dataObj",
 			rawData=rawData,
 			dimVarInd=dimVarInd,
