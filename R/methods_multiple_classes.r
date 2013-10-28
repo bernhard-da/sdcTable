@@ -31,7 +31,6 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 				final$indices[[i]] <- list()
 				levs <- as.integer(unlist(sapply(groups[[i]], strsplit, "-")))	
 				
-				###
 				res <- list()
 				for ( z in 1:length(dimInfo) ) {
 					res[[z]] <- list()
@@ -89,24 +88,17 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			nrVars <- length(levelObj)
 			nrCells <- get.problemInstance(x, type='nrVars')
 			freqs <- get.problemInstance(x, type='freq')
-			f <- pasteStrVec(expand(lapply(levelObj, function(x) { get.dimVar(x, type='codesDefault')})), length(levelObj))	
-			order <- match(strID,f)
-			f <- f[order]	
 			
 			constraintM <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrCells)))
 			for ( i in 1:nrVars ) {
 				lO <- levelObj[[i]]
 				keepList <- lapply(get.dimInfo(y, type='strInfo')[-i], function(k) { seq(k[1], k[2]) } )
 				keepList2 <- lapply(get.dimInfo(y, type='strInfo')[i], function(k) { seq(k[1], k[2]) } )
-				#f2 <- sapply(strID, function(x) { mySplitIndicesList(x, keepList2) } )
-				f2 <- mySplitIndicesList(strID, keepList2)
+				f1 <- f2 <- mySplitIndicesList(strID, keepList2)
 				
 				if ( nrVars > 1 ) { 
-					#f1 <- as.vector(sapply(strID, function(x) { mySplitIndicesList(x, keepList) } ))
-					f1 <- as.vector(mySplitIndicesList(strID, keepList))
-				} else {
-					f1 <- f2
-				}
+					f1 <- mySplitIndicesList(strID, keepList)
+				} 
 				
 				dimlO <- get.dimVar(lO, type='dims')
 				if ( length(unique(f2)) != 1 ) {
@@ -118,7 +110,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 							for ( z in 1:length(spl) ) {
 								ind <- rep(1,length(spl[[z]])) 
 								ind[which.max(freqs[spl[[z]]])] <- -1
-								if ( sum(freqs[spl[[z]]]*ind) != 0 ) {
+								if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
 									stop("something went wrong!\n")
 								}
 								constraintM <- calc.simpleTriplet(constraintM, type='addRow', input=list(index=spl[[z]], values=ind))
@@ -136,8 +128,8 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 						for ( z in 1:length(spl) ) {
 							ind <- rep(1,length(spl[[z]])) 
 							ind[which.max(freqs[spl[[z]]])] <- -1
-							if ( sum(freqs[spl[[z]]]*ind) != 0 ) {
-								stop("something went wrong! (z=",z,"und names(spl)[z]=",names(spl)[z],")\n")
+							if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
+								stop("something went wrong! (z=",z," und names(spl)[z]='",names(spl)[z],")\n")
 							}
 							constraintM <- calc.simpleTriplet(constraintM, type='addRow', input=list(index=spl[[z]], values=ind))
 						}				
@@ -195,47 +187,15 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			time.start <- proc.time()
 			rawData <- get.dataObj(x, type='rawData')
 			dimObj <- get.dimInfo(y, type='dimInfo')
+			ind.dimvars <- get.dataObj(x, type='dimVarInd')
+			ind.freq <- get.dataObj(x, type='freqVarInd')
 			
-			dimList <- numList <- weightList <- freqList <- NULL
-			dimList <- rawData[get.dataObj(x, type='dimVarInd')]
-			freqList <- rawData[get.dataObj(x, type='freqVarInd')]
+			## no need to aggregate data
+			## aggregation already done in 'init.dataObj()'
 			
-			if ( !is.null(get.dataObj(x, type='weightVarInd')) ) {
-				weightList <- rawData[get.dataObj(x, type='weightVarInd')]	
-			}
-			if ( !is.null(get.dataObj(x, type='numVarInd')) ) {
-				numList <- rawData[get.dataObj(x, type='numVarInd')]
-			}	
-			### match dimVars in rawData to valid codes ###
-			dimVarsData <- get.dataObj(x, type='dimVarInd')
-			dimVars <- get.dimInfo(y, type='posIndex')
-			
-			# not all possible dimensional variables are used
-			# we need to aggregate
-			if ( length(dimVars) < length(dimVarsData) | get.dataObj(x, type='isMicroData') == TRUE ) {
-				if ( length(dimVars) < length(dimVarsData) ) {
-					dimList <- dimList[-setdiff(dimVarsData, dimVars)]	
-				}
-				xx <- as.list(aggregate(freqList, dimList, sum))
-				if ( !is.null(numList) ) {
-					yy <- as.list(aggregate(numList, dimList, sum))
-				}				
-				if ( !is.null(weightList) ) {
-					zz <- as.list(aggregate(weightList, dimList, sum))	
-				}
-				dimList <- xx[1:(length(xx)-1)]
-				freqList <- xx[length(xx)]
-				
-				if ( !is.null(numList) ) {
-					numList <- yy[(length(dimVars)+1):(length(yy))]
-				}
-				if ( !is.null(weightList) ) {
-					weightList <-zz[(length(dimVars)+1):(length(zz))]
-				}			
-			}
-			
-			codes <- dimList
+			codes <- list(); length(codes) <- length(ind.dimvars)
 			for ( i in 1:length(codes) ) {
+				codes[[i]] <- rawData[[ind.dimvars[i]]]
 				cDefault <- get.dimVar(dimObj[[i]], type='codesDefault')
 				cOriginal <- get.dimVar(dimObj[[i]], type='codesOriginal')	
 				cOriginalDups <- get.dimVar(dimObj[[i]], type='dups')
@@ -246,123 +206,125 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					if ( length(mInd2) > 0 ) {
 						codes[[i]][mInd2] <- cOriginalDupsUp[mInd1[mInd2]]
 					}
-					codes[[i]] <- calc.dimVar(object=dimObj[[i]], type='matchCodeDefault', input=codes[[i]])
+					codes[[i]] <- calc.dimVar(object=dimObj[[i]], type='matchCodeDefault', input=rawData[[ind.dimvars[i]]])
 				} else if ( all(codes[[i]] %in% cDefault) ) {
 					# cat("no recoding necessary!\n")
 				} else {
 					stop("calc.multiple (type==calcFullProblem):: recoding not possible!\n")
 				}
 			}
-			strID <- as.character(pasteStrVec(unlist(codes), length(dimVars)))
 			
-			tableVars <- get.dimInfo(y, type='varName')
-			minTabObj <- list()
-			numVars <- get.dataObj(x, type='numVarNames')
-			dimInfo <- get.dimInfo(y, type='dimInfo') # list with objects of class 'dimVar'
-			
+			## calculate all possible combinations within the lowest levels of dim-vars
+			## if any combinations are missing (missing.codes), we have to set them to 0 later
+			strID <- as.character(pasteStrVec(unlist(codes), length(codes)))
 			exDims <- pasteStrVec(unlist(codes), length(codes))
-			possDims <- sort(pasteStrVec(as.character(expand(lapply(dimInfo, function(x) { get.dimVar(x, type='minimalCodesDefault') }), vector=TRUE)), length(dimInfo)))
+			possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { get.dimVar(x, type='minimalCodesDefault') }), vector=TRUE)), length(dimObj)))
+			missing.codes <- setdiff(possDims, exDims)
 			
-			# problematic are all levels that should exist, but do not exist
-			# they are filled with NA/0
-			probl <- setdiff(possDims, exDims)
-			if ( length(probl) > 0 ) {
-				strID <- c(strID, probl)
-				freqList[[1]] <- c(freqList[[1]], rep(0, length(probl)))
-				if ( !is.null(get.dataObj(x, type='weightVarInd')) ) {
-					weightList[[1]] <- c(weightList[[1]], rep(0, length(probl)))
+			## fill the table
+			nrIndexvars <- length(ind.dimvars)
+			fullDims <- lapply(dimObj, get.dimVar, type='dims')
+			
+			allCodes <- expand(lapply(dimObj, get.dimVar, type='codesDefault'), vector=FALSE)
+			fullTabObj <- data.table(ID=1:length(allCodes[[1]]))
+			for ( i in 1:length(allCodes)) {
+				fullTabObj[,colnames(rawData)[ind.dimvars][i]:=allCodes[[i]]]
+			}
+			setkeyv(fullTabObj, colnames(rawData)[ind.dimvars])	
+			fullTabObj[,ID:=NULL]
+			
+			## revert rawData codes to default codes
+			for ( j in seq_along(ind.dimvars) ) {
+				v <- calc.dimVar(object=dimObj[[j]], type="matchCodeDefault", input=rawData[,get(names(dimObj)[j])])
+				rawData[,names(dimObj)[j]:=v]
+			}
+			setkeyv(rawData, colnames(rawData)[ind.dimvars])	
+			
+			## replace NAs in rawData by 0 (required for aggregation)	
+			cols <- colnames(rawData)[(length(dimObj)+1):ncol(rawData)]
+			ind.na <- list(); length(ind.na) <- length(cols)
+			for ( i in 1:length(cols) ) {
+				ind.na[[i]] <- which(is.na(rawData[,cols[i],with=FALSE]))
+				if ( length(ind.na[[i]]) > 0 ) {
+					rawData[ind.na[[i]], cols[i]:=0]
+				}		
+			}
+			
+			## merge minDat to fullDat
+			fullTabObj <- merge(fullTabObj, rawData, all.x=TRUE)
+			
+			## set missing combinations of lowest levels to 0
+			## problematic are all levels that should exist, but do not exist
+			## they are filled with 0 so that we can aggregate
+			dim.vars <- colnames(fullTabObj)[ind.dimvars]
+			strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
+			
+			if ( length(missing.codes) > 0 ) {
+				index <- which(strID==missing.codes)
+				for ( i in 1:length(cols) ) {
+					fullTabObj[index, cols[i]:=0]
+				}		
+			}
+			
+			
+			## fill up missing dimensions
+			not.finished <- TRUE	
+			while ( not.finished ) {
+				cols <- (nrIndexvars+1):ncol(fullTabObj)
+				col.names <- colnames(fullTabObj)[cols]
+				for ( i in 1:nrIndexvars ) {
+					setkeyv(fullTabObj, dim.vars[-i])	
+					dat <- copy(fullTabObj) # we need to copy!
+					
+					cur.dim <- dimObj[[i]]@dims
+					for ( j in length(cur.dim):1 ) {
+						cur.levs <-  cur.dim[[j]]
+						out <- dat[dat[[ind.dimvars[i]]] %in% cur.levs[-1],]
+						out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
+						
+						row.ind <- which(fullTabObj[[ind.dimvars[i]]] == cur.levs[1])
+						for ( z in 1:length(col.names) ) {
+							v <- out[,col.names[z], with=FALSE]
+							fullTabObj[row.ind, col.names[z]:=v]
+						}
+					}
 				}
-				if ( !is.null(get.dataObj(x, type='numVarInd')) ) {
-					lapply(1:length(numList), function(x) { numList[[x]] <<- c(numList[[x]], rep(0, length(probl))) } )
+				if ( !is.na(fullTabObj[1,ind.freq,with=FALSE]) ) {
+					not.finished <- FALSE
 				}
+			}
+			
+			nrV <- nrow(fullTabObj)	
+			f <- fullTabObj[[ind.freq]]
+			strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
+			w <- numVarsList <- NULL
+			w.ind <- get.dataObj(x, type="weightVarInd")
+			if ( !is.null(w.ind) ) {
+				w <- fullTabObj[[w.ind]]
 			}	
-			
-			### fill the table
-			nrIndexvars <- length(dimInfo)
-			fullDims <- lapply(dimInfo, get.dimVar, type='dims')
-			
-			# complete
-			allDims <- pasteStrVec(expand(lapply(dimInfo, get.dimVar, type='codesDefault')), nrIndexvars)
-			
-			# the subtotals that need to be calculated
-			subTotals <- setdiff(allDims, strID)
-			
-			fullTabObj 			<- minTabObj
-			fullTabObj$strID 	<- c(strID, subTotals)
-			fullTabObj$Freq 	<- c(freqList[[1]], rep(NA, length(subTotals)))
-			
-			#fullTabObj$w <- NULL
-			if ( !is.null(get.dataObj(x, type='weightVarInd')) ) {
-				fullTabObj$w <- c(unlist(weightList), rep(NA, length(subTotals)))
-				attributes(fullTabObj) <- NULL
-			}
-			
-			numVarsList <- NULL
-			if ( !is.null(get.dataObj(x, type='numVarInd')) ) {
-				for ( k in 1:length(numList) ) {
-					numVarsList[[k]] <- c(as.vector(numList[[k]]), rep(NA, length(subTotals)))
-					names(numVarsList)[k] <- numVars[k]
+			n.ind <- get.dataObj(x, type="numVarInd")
+			if ( !is.null(n.ind) ) {
+				numVarsList <- list(); length(numVarsList) <- length(n.ind)
+				for ( n in 1:length(n.ind) ) {
+					numVarsList[[n]] <- fullTabObj[[n.ind[n]]]
 				}
+			}		
+			
+			## replace 0 in rawData by NA if they have been replaced earlier
+			for ( i in 1:length(ind.na) ) {
+				if ( length(ind.na[[i]]) > 0 ) {
+					rawData[ind.na[[i]], cols[i]:=NA]
+				}		
 			}
-			
-			info <- get.dimInfo(y, type='strInfo')
-			minI <- 1
-			maxI <- max(unlist(info))
-			
-			splitFactors <- keepIndices <- list()
-			codeInfo <- numCodes <- numSplitFactors <- list()
-			for( i in 1:nrIndexvars ) {	
-				codeInfo[[i]] <- list()
-				keepIndices[[i]] <- seq(info[[i]][1], info[[i]][2]) 
-				splitFactors[[i]] <- mySplit(fullTabObj$strID, keepIndices[[i]])
-				
-				# prepare all possible codes only once!
-				splitF <- unique(splitFactors[[i]])
-				for ( j in 1:length(splitF) ) {
-					codeInfo[[i]][[j]] <- list()
-					codeInfo[[i]][[j]]$upper <- splitF[j]
-					codeInfo[[i]][[j]]$lower <- calc.dimVar(dimObj[[i]], type='requiredMinimalCodes', input=splitF[j])
-				}
-				numCodes[[i]] <- as.numeric(sapply(codeInfo[[i]], function(x) { x$upper}))
-				numSplitFactors[[i]] <- as.numeric(splitFactors[[i]])
-			}
-			facsRawData <- pasteStrVec(unlist(rawData[get.dataObj(x, type='dimVarInd')]), length(get.dataObj(x, type='dimVarInd')), coll="-")
-			
-			runIndex <- which(is.na(fullTabObj$Freq))
-			freqVarInd <- get.dataObj(x, type='freqVarInd')
-			numVarInd <- get.dataObj(x, type='numVarInd')
-			weightVarInd <- get.dataObj(x, type='weightVarInd')
-			
-			for ( z in runIndex ) {
-				codes <- lapply(1:nrIndexvars, function(x) {
-					codeInfo[[x]][[which(numCodes[[x]] == numSplitFactors[[x]][z])]]$lower
-				})
-				
-				facsCodes <- unique(pasteStrVec(expand(codes, vector=TRUE), length(codes), coll="-"))
-				
-				index <- which(facsRawData %in% facsCodes)
-				fullTabObj[["Freq"]][z] <- sum(rawData[[freqVarInd]][index])
-				
-				if ( !is.null(weightVarInd) ) {
-					fullTabObj[["w"]][z] <- sum(rawData[[weightVarInd]][index]) 	
-				}
-				
-				if ( !is.null(numVarInd) ) {
-					res <- lapply(numVarInd, function(u) { sum(rawData[[u]][index])  } )
-					for ( k in 1:length(numVarsList) ) {
-						numVarsList[[k]][z] <- res[[k]]
-					} 
-				}	
-			}
-			nrV <- length(fullTabObj$strID)
+			x <- set.dataObj(x, type="rawData", input=list(rawData))	
 			
 			problemInstance <- new("problemInstance",			
-				strID=fullTabObj$strID,
-				Freq=fullTabObj$Freq,
-				w=fullTabObj$w,
+				strID=strID,
+				Freq=f,
+				w=w,
 				numVars=numVarsList,
 				lb=rep(0, nrV),
-				ub=sapply(fullTabObj$Freq, function(x) { max(2*x, 5)}),
+				ub=sapply(f, function(x) { max(2*x, 5)}),
 				LPL=rep(1, nrV),
 				UPL=rep(1, nrV),
 				SPL=rep(0, nrV),
@@ -379,7 +341,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 				indicesDealtWith=NULL,
 				elapsedTime=(proc.time()-time.start)[3]
 			)
-			return(sdcProblem)		
-		}		
+			return(sdcProblem)	
+	}
 	}
 )
