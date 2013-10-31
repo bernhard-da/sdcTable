@@ -1,0 +1,4 @@
+# 0.10.2
+ - fix compiler warnings
+ - multiple performance increaseas for makeProblem() using data.table package
+ - new dependency data.table 
