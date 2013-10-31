@@ -62,8 +62,9 @@ setMethod(f='get.simpleTriplet', signature=c('simpleTriplet','character', 'list'
 			names(tmp) <- seq_along(tmp)
 			tmp[names(y)] <- sapply(y, paste, collapse = "\r")
 			dupRows <- which(duplicated(tmp))
-			if ( length(dupRows) == 0 )
+			if ( length(dupRows) == 0 ) {
 				dupRows <- NULL
+			}
 			return(dupRows)		
 		}
 		
@@ -77,13 +78,13 @@ setMethod(f='get.simpleTriplet', signature=c('simpleTriplet','character', 'list'
 		}
 		
 		if ( type == 'getRow' ) {
-			index <- input[[1]]
+			## if somebody specifies a vector of length > 1
+			## the row with the first index is returned
+			index <- input[[1]][1]
 			if ( !index %in% 1:get.simpleTriplet(object, type='nrRows', input=list()) ) {
 				stop("get.simpleTriplet:: parameter 'index' must be >=1 and <=",get.simpleTriplet(object, type='nrRows', input=list()),"!\n")			
 			}	
-			if ( length(index) != 1 ) {
-				stop("get.simpleTriplet:: parameter 'index' must have length 1!\n")			
-			}			
+
 			out <- NULL
 			indI <- which(get.simpleTriplet(object, type='rowInd', input=list()) == index)
 			if ( length(indI) > 0 ) {
@@ -99,13 +100,12 @@ setMethod(f='get.simpleTriplet', signature=c('simpleTriplet','character', 'list'
 		}
 		
 		if ( type == 'getCol' ) {
-			index <- input[[1]]
+			## if somebody specifies a vector of length > 1
+			## the column with the first index is returned
+			index <- input[[1]][1]
 			if ( !index %in% 1:get.simpleTriplet(object, type='nrCols', input=list()) ) {
 				stop("get.simpleTriplet:: parameter 'index' must be >=1 and <=",get.simpleTriplet(object, type='nrCols', input=list()),"!\n")			
 			}	
-			if ( length(index) != 1 ) {
-				stop("get.simpleTriplet:: parameter 'index' must have length 1!\n")			
-			}			
 			out <- NULL
 			indJ <- which(get.simpleTriplet(object, type='colInd', input=list()) == index)
 			if ( length(indJ) > 0 ) {
@@ -320,19 +320,21 @@ setMethod(f='init.simpleTriplet', signature=c('character', 'list'),
 			stop("init.simpleTriplet:: check argument 'type'!\n")
 		}	
 
-		out <- new("simpleTriplet")
 		if ( type == 'simpleTriplet' ) {
 			matA <- input$mat
 			dims <- dim(matA)
-			out <- new("simpleTriplet")
-			out@nrRows <- 0
-			out@nrCols <- dims[2]
-			if ( dims[1] > 0 ) {
-				for (i in 1:dims[1] ) {
-					indices <- which(matA[i,] != 0)
-					out <- calc.simpleTriplet(out, type='addRow', input=list(index=indices, values=matA[i, indices]))
-				} 
-			}
+			v <- as.vector(t(matA))
+			ind <- v!=0
+			i <- rep(1:dims[1], each=dims[2])[ind==TRUE]
+			j <- rep(1:dims[2], length=dims[1]*dims[2])[ind]
+			v <- v[ind]			
+			out <- new("simpleTriplet",
+				i=i,
+				j=j,
+				v=v,
+				nrRows=dims[1],	
+				nrCols=dims[2]
+			)	
 		}
 
 		if ( type == 'simpleTripletDiag' ) {
