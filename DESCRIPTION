@@ -1,5 +1,5 @@
 Package: sdcTable
-Version: 0.10.2
+Version: 0.10.3
 Date: 2013-10-31
 Title: Methods for statistical disclosure control in tabular data
 Description: Implementation of methods for statistical disclosure control in
