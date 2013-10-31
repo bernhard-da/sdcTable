@@ -413,8 +413,7 @@ prob.microDat <- makeProblem(
 	freqVarInd=NULL, 
 	numVarInd=4:5, 
 	weightInd=NULL,
-	sampWeightInd=NULL,
-	isMicroData=TRUE) 
+	sampWeightInd=NULL) 
 @
 
 First we have to combine the objects describing the hierarchical variables 'V1',
@@ -440,8 +439,7 @@ The remaining parameters are quite self-explanatory and shorty described:
 	contains info on weights that should be used in the secondary cell suppression
 	problem instead of cell counts
 	\item {\bf sampWeightInd}: if not {\tt NULL} an index specifying the column
-	holding sampling weights for each person | group  
-	\item {\bf isMicroData}: {\tt TRUE} if input are micro data and {\tt FALSE} otherwise.
+	holding sampling weights for each person | group
 \end{itemize}
 
 Building an object of class {\tt sdcProblem} using the complete, pre-aggregated 
@@ -458,15 +456,13 @@ prob.completeDat <- makeProblem(
 	freqVarInd=4, 
 	numVarInd=5:6, 
 	weightInd=NULL,
-	sampWeightInd=NULL,
-	isMicroData=FALSE) 
+	sampWeightInd=NULL) 
 #print(table(prob.completeDat@problemInstance@Freq))
 @
 The only difference is that in this case we define parameter 'freqVarInd' that
 specifies a column within the input data set {\tt completeData} containing
 information on cell counts. Also the indices of argument 'numVarInd' are different
-that in the first example and argument 'isMicroData' is now of course {\tt FALSE}
-since we are dealing with pre-aggregated data.\\
+to the first example.\\
 
 In any case, both procedures return an object of class {\tt sdcProblem} as can
 easily be checked:
