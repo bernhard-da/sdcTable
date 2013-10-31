@@ -14,7 +14,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
 			strIDs <- get.problemInstance(pI, type='strID')
 			
-			### create classes and groups
+			## create classes and groups
 			tmpDat <- expand.grid(lapply(1:length(dimInfo), function(x) { 1:get.dimVar(dimInfo[[x]], type='nrLevels') } ))
 			groups <- apply(tmpDat, 1, function(x) { paste(x, collapse="-")})
 			classes <- apply(tmpDat, 1, sum)
@@ -24,7 +24,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			groups <- groups[sortOrder]
 			splitGroups <- split(groups, classes)
 			
-			### create tables for all classes and groups 
+			## create tables for all classes and groups 
 			final <- list()
 			final$groups <- as.list(groups)
 			final$indices <- list()
@@ -64,17 +64,16 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 								tmp <- tmp[1:(max(which(tmp$levOrig==levs[z]))),]
 								res[[z]][[length(res[[z]])+1]] <- sort(unique(as.character(tmp$codesDefault)))
 							}
-						} # end for(k)-loop				
-					} # end else
-				} # end for(z)-loop
+						}	
+					}
+				}
 				final$indices[[i]] <- list()
-				final$strIDs[[i]] <- list()
 				combs <- expand.grid(lapply(1:length(res), function(x) { 1:length(res[[x]]) } ))
 				for ( m in 1:nrow(combs) ) {
-					final$strIDs[[i]][[m]] <- pasteStrVec(expand(lapply(1:ncol(combs), function(x) { res[[x]][[combs[m,x]]] })), ncol(combs))
-					final$indices[[i]][[m]] <- which(strIDs %in% final$strIDs[[i]][[m]])
+					final.strIDs <- pasteStrVec(expand(lapply(1:ncol(combs), function(x) { res[[x]][[combs[m,x]]] })), ncol(combs))
+					final$indices[[i]][[m]] <- which(strIDs %in% final.strIDs)
 				}			
-			} # end for(i)-loop
+			}
 			final$nrGroups <- length(groups)
 			final$nrTables <- sum(sapply(1:final$nrGroups, function(x) { length(final$indices[[x]]) } ))				
 			return(final)		
@@ -119,7 +118,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 						}				
 					} else {
 						splitInd <- which(f2 %in% get.dimVar(lO, type='dims')[[which(dimInd==TRUE)]])
-						### only 1 dimension?
+						## only 1 dimension
 						if ( nrVars > 1 ) {
 							spl <- split(splitInd, f1[splitInd])	
 						} else {
@@ -146,7 +145,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			nrVars <- get.problemInstance(x, type='nrVars')	
 			A <- calc.multiple(type='genMatMFull', input=list(objectA=x, objectB=y))
 			
-			### calculating (logical) constraints for the master problem ###
+			## calculating (logical) constraints for the master problem ##
 			# idea: for each constraint at least 2 suppressions must 
 			# exist if one xi != 0! (http://www.eia.doe.gov/ices2/missing_papers.pdf)
 			newCutsMaster <- init.cutList(type='empty', input=list(nrCols=nrVars))
@@ -343,6 +342,6 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 				elapsedTime=(proc.time()-time.start)[3]
 			)
 			return(sdcProblem)	
-	}
+		}
 	}
 )
