@@ -236,17 +236,17 @@ setMethod(f='calc.simpleTriplet', signature=c('simpleTriplet', 'character', 'lis
 				stop("calc.simpleTriplet (type==modifyCol):: length of parameter 'colInd' must equal 1!\n")
 			}
 			if ( !all(rowInd %in% 1:get.simpleTriplet(object, type='nrRows', input=list())) ) {
-				stop("calc.simpleTriplet (type==modifyCol)::: check dimensions of parameter 'rowInd'!\n")
+				stop("calc.simpleTriplet (type==modifyCol):: check dimensions of parameter 'rowInd'!\n")
 			}		
 			if ( !colInd %in% 1:get.simpleTriplet(object, type='nrCols', input=list()) ) {
-				stop("calc.simpleTriplet (type==modifyCol)::: check dimensions of parameter 'colInd'!\n")
+				stop("calc.simpleTriplet (type==modifyCol):: check dimensions of parameter 'colInd'!\n")
 			}
 			if ( length(rowInd) != length(values) ) {
-				stop("calc.simpleTriplet (type==modifyCol)::: dimensions of 'rowInd' and 'values' do not match!\n")
+				stop("calc.simpleTriplet (type==modifyCol):: dimensions of 'rowInd' and 'values' do not match!\n")
 			}
 			ind <- which(get.simpleTriplet(object, type='colInd', input=list()) %in% colInd)
 			if ( length(ind) == 0 ) {
-				stop("calc.simpleTriplet (type==modifyCol)::: no column to modify!\n")
+				stop("calc.simpleTriplet (type==modifyCol):: no column to modify!\n")
 			}		
 			for ( i in seq_along(rowInd) ) {
 				object <- calc.simpleTriplet(object, type='modifyCell', input=list(rowInd[i], colInd, values[i]))	
@@ -260,7 +260,6 @@ setMethod(f='calc.simpleTriplet', signature=c('simpleTriplet', 'character', 'lis
 		
 			if ( any(length(values), length(rowInd), length(colInd) != 1) ) {
 				stop("calc.simpleTriplet (type==modifyCell):: length of all arguments 'rowInd', 'colInd', 'values' must equal 1!\n")
-			
 			}
 			if ( !all(colInd %in% 1:get.simpleTriplet(object, type='nrCols', input=list())) ) {		
 				stop("calc.simpleTriplet (type==modifyCell):: check dimensions of parameter 'colInd'!\n")			
@@ -275,7 +274,7 @@ setMethod(f='calc.simpleTriplet', signature=c('simpleTriplet', 'character', 'lis
 				object@i <- get.simpleTriplet(object, type='rowInd', input=list())[-ind]
 				object@j <- get.simpleTriplet(object, type='colInd', input=list())[-ind]
 				object@v <- get.simpleTriplet(object, type='values', input=list())[-ind]				
-			} else if (length(ind)==0 & values!=0) {
+			} else if ( length(ind)==0 & values!=0 ) {
 				object@i <- c(get.simpleTriplet(object, type='rowInd', input=list()), rowInd)
 				object@j <- c(get.simpleTriplet(object, type='colInd', input=list()), colInd)
 				object@v <- c(get.simpleTriplet(object, type='values', input=list()), values)	
