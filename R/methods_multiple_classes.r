@@ -2,6 +2,7 @@
 #' @rdname calc.multiple-method
 setMethod(f='calc.multiple', signature=c('character', 'list'),
 	definition=function(type, input) {
+		.SD <- ID <- NULL
 		if (!type %in% c('makePartitions', 'genMatMFull', 
 				'makeAttackerProblem', 'calcFullProblem') ) {
 			stop("calc.multiple:: argument 'type' is not valid!\n")

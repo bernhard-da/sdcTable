@@ -64,6 +64,7 @@ setMethod(f='set.dataObj', signature=c('dataObj', 'character', 'listOrNULL'),
 #' @rdname init.dataObj-method
 setMethod(f='init.dataObj', signature=c('list'),
 	definition=function(input) { 
+		freq <- N <- .N <- NULL
 		inputData <- input$inputData
 		dimVarInd <- input$dimVarInd
 		freqVarInd <- input$freqVarInd

@@ -1,8 +1,9 @@
 Package: sdcTable
-Version: 0.10.3
-Date: 2013-10-28
+Version: 0.10.2
+Date: 2013-10-31
 Title: Methods for statistical disclosure control in tabular data
-Description: Implementation of methods for statistical disclosure control in tabular data
+Description: Implementation of methods for statistical disclosure control in
+    tabular data
 Author: Bernhard Meindl
 Maintainer: Bernhard Meindl
     <bernhard.meindl@statistik.gv.at>

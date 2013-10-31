@@ -4,6 +4,7 @@
 #' @import "Rglpk"
 #' @import "stringr"
 #' @import "lpSolveAPI"
+#' @import "data.table"
 
 setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
 setClassUnion('numericOrNULL', c('numeric', 'NULL'))
