@@ -400,14 +400,15 @@ setClass(
 		nrCols=numeric(0)			
 	),
 	validity=function(object) {
-		if ( length(get.simpleTriplet(object, type='rowInd', input=list())) != length(get.simpleTriplet(object, type='colInd', input=list())) )
-			stop("simpleTriplet:: Length of 'i' and 'j' differ!\n")
-		if ( length(get.simpleTriplet(object, type='rowInd', input=list())) != length(get.simpleTriplet(object, type='values', input=list())) )
-			stop("simpleTriplet:: Length of 'i' and 'v' differ!\n")	
-		if ( length(get.simpleTriplet(object, type='nrRows', input=list())) != 1 )
-			stop("simpleTriplet:: length of 'nrRows' must equal 1!\n")	
-		if ( length(get.simpleTriplet(object, type='nrCols', input=list())) != 1 )
-			stop("simpleTriplet:: length of 'nrCols' must equal 1!\n")	
+		if ( length(object@i) != length(object@j) ) {
+			stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
+		}			
+		if ( length(object@i) != length(object@v) ) {
+			stop("simpleTriplet:: length of 'i' and 'v' differ!\n")	
+		}			
+		if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
+			stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n")	
+		}
 		return(TRUE)
 	}
 )
