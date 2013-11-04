@@ -110,10 +110,10 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
 	x <- glp_call_interface(
 		obj, 
 		n_of_objective_vars, 
-		sdcTable:::get.simpleTriplet(mat, type='rowInd', input=list()), 			
-		sdcTable:::get.simpleTriplet(mat, type='colInd', input=list()), 
-		sdcTable:::get.simpleTriplet(mat, type='values', input=list()), 
-		length(sdcTable:::get.simpleTriplet(mat, type='values', input=list())), 		
+		get.simpleTriplet(mat, type='rowInd', input=list()), 			
+		get.simpleTriplet(mat, type='colInd', input=list()), 
+		get.simpleTriplet(mat, type='values', input=list()), 
+		length(get.simpleTriplet(mat, type='values', input=list())), 		
 		
 		rhs, direction_of_constraints, n_of_constraints, is_integer, 
 		integers, binaries, 
