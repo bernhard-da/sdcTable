@@ -24,8 +24,6 @@
 }
 \author{Bernhard Meindl \url{<bernhard.meindl@statistik.gv.at>}}
 
-\newcommand{\sdcTable}{{\tt sdcTable}}
-
 \title{\sdcTable~Vignette}
 \begin{document}
 \maketitle
