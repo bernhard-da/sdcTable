@@ -1,5 +1,6 @@
-# 0.10.2
+# 0.10.3
  - fix compiler warnings
  - multiple performance increases for makeProblem() using data.table package
  - new dependency data.table 
  - do not save strIDs in partitionObj, not used anywhere
+ - move vignette to vignettes-directory
