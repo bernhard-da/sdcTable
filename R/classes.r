@@ -484,16 +484,16 @@ setClass(
 		if ( length(object@objective) != length(object@types) ) {
 			stop("linProb:: Length of 'objective' and 'types' differ!\n")
 		}			
-		if ( !all(object@bounds$lower$indices %in% 1:length(object@direction)) ) {
+		if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
 			stop("linProb:: wrong indices of 'boundsLower!'\n")
 		}			
-		if ( !all(object@bounds$upper$indices %in% 1:length(object@direction)) ) {
+		if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
 			stop("linProb:: wrong indices of 'boundsUpper!'\n")
 		}					
-		if ( length(object@bounds$lower$indices) != length(object@bounds$lower$value) ) {
+		if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
 			stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
 		}
-		if ( length(object@bounds$upper$indices) != length(object@bounds$upper$value) ) {
+		if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
 			stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
 		}			
 		if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
