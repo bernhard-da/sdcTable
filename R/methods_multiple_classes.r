@@ -260,27 +260,35 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
 			
 			if ( length(missing.codes) > 0 ) {
-				index <- which(strID==missing.codes)
+				index <- which(strID%in%missing.codes)
 				for ( i in 1:length(cols) ) {
 					fullTabObj[index, cols[i]:=0]
 				}		
 			}
-			
-			
+					
 			## fill up missing dimensions
 			not.finished <- TRUE	
 			while ( not.finished ) {
 				cols <- (nrIndexvars+1):ncol(fullTabObj)
 				col.names <- colnames(fullTabObj)[cols]
 				for ( i in 1:nrIndexvars ) {
-					setkeyv(fullTabObj, dim.vars[-i])	
+					if ( length(dim.vars) > 1 ) {
+						setkeyv(fullTabObj, dim.vars[-i])		
+					} else {
+						setkeyv(fullTabObj, dim.vars[1])	
+					}
+					
 					dat <- copy(fullTabObj) # we need to copy!
 					
 					cur.dim <- dimObj[[i]]@dims
 					for ( j in length(cur.dim):1 ) {
 						cur.levs <-  cur.dim[[j]]
 						out <- dat[dat[[ind.dimvars[i]]] %in% cur.levs[-1],]
-						out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
+						if ( length(key(out))==1 ) {
+							out <- out[,lapply(.SD,sum), .SDcols=col.names]
+						} else {
+							out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
+						}			
 						
 						row.ind <- which(fullTabObj[[ind.dimvars[i]]] == cur.levs[1])
 						for ( z in 1:length(col.names) ) {

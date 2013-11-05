@@ -77,7 +77,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 		## aggregate data, use data.table
 		datO <- data.table(inputData, key=colnames(inputData)[dimVarInd])
 		rawData <- datO[,.N, by=key(datO)]
-		
+		dimVarInd <- 1:(ncol(rawData)-1)
 		if ( any(rawData$N != 1)  ) {
 			isMicroData <- TRUE
 			if ( is.null(freqVarInd) ) {
@@ -96,8 +96,8 @@ setMethod(f='init.dataObj', signature=c('list'),
 				rawData[, freq:=as.numeric(datO[,get(colnames(datO)[freqVarInd])])]
 			}					
 		}		
-		
 		rawData[,N:=NULL]
+		freqVarInd <- which(colnames(rawData)=="freq")
 		
 		if ( !is.null(sampWeightInd) ) {
 			sw <- datO[,list(sw=sum(get(colnames(datO)[sampWeightInd]))), by=key(datO)]$sw
@@ -132,6 +132,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 		rm(datO)
 
 		setkeyv(rawData, colnames(rawData)[dimVarInd])
+
 		out <- new("dataObj",
 			rawData=rawData,
 			dimVarInd=dimVarInd,
