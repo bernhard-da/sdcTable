@@ -284,7 +284,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					for ( j in length(cur.dim):1 ) {
 						cur.levs <-  cur.dim[[j]]
 						out <- dat[dat[[ind.dimvars[i]]] %in% cur.levs[-1],]
-						if ( length(key(out))==1 ) {
+						if ( length(dim.vars)==1 ) {
 							out <- out[,lapply(.SD,sum), .SDcols=col.names]
 						} else {
 							out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
