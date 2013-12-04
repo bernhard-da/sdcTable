@@ -3,4 +3,4 @@ sdcTable
 
 This is the git-repo for sdcTable development.
 
-On github, development of the package takes place. please use stable cran version.
+Here on github, development of the package takes place. A stable version is provided on CRAN.
