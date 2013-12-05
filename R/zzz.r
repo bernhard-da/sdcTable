@@ -1,3 +1,3 @@
 .onAttach <- function(lib, pkg) {
-	packageStartupMessage("Package sdcTable 0.10.3 has been loaded!\n")
+	packageStartupMessage(paste("Package sdcTable",packageVersion("sdcTable"),"has been loaded!\n"))
 }
