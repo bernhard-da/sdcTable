@@ -143,6 +143,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 		
 		ss <- list()
 		for ( i in seq_along(dimVarInd) ) {
+			remove.vals <- FALSE
 			if ( !calc.dimVar(inputDims[[i]], type='hasDefaultCodes', input=rawData[[dimVarInd[i]]]) ) {
 				dups <- get.dimVar(inputDims[[i]], type='dups')
 				if ( length(dups) > 0 ) {
@@ -150,7 +151,14 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 					for ( k in length(dups):1 ) {
 						ind <- which(rawData[[dimVarInd[i]]]==dups[k])
 						if ( length(ind) > 0 ) {
-							rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
+							if ( i > 1 ) {
+								remove.vals <- TRUE
+							}
+							if ( length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0 ) {
+								rawData <- rawData[-ind,]
+							} else {
+								rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
+							}			
 						}
 					}
 					inputData <- set.dataObj(inputData, type='rawData', input=list(rawData))
@@ -159,6 +167,12 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 			} else {
 				ss[[i]] <- rawData[[dimVarInd[i]]]
 			}
+			# remove entries in ss[[1]...ss[[i-1]]
+			if ( remove.vals ) {
+				for ( z in 1:(i-1)) {
+					ss[[z]] <- ss[[z]][-ind]
+				}						
+			}			
 		}
 		strID <- pasteStrVec(as.vector(unlist(ss)), length(posIndex))		
 		
@@ -203,7 +217,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 	out <- doPrep(inputData, dimList)
 	
 	## use output of doPrep() to calculate an object of class "sdcProblem"
-	prob <- calc.multiple(type='calcFullProblem', input=list(objectA=out$inputData, objectB=out$dimInfoObj))
+	prob <- calc.multiple(type='calcFullProblem', s)
 	prob
 }
 
