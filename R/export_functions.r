@@ -217,7 +217,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 	out <- doPrep(inputData, dimList)
 	
 	## use output of doPrep() to calculate an object of class "sdcProblem"
-	prob <- calc.multiple(type='calcFullProblem', s)
+	prob <- calc.multiple(type='calcFullProblem', input=list(objectA=out$inputData, objectB=out$dimInfoObj))
 	prob
 }
 
