@@ -253,6 +253,14 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			## merge minDat to fullDat
 			fullTabObj <- merge(fullTabObj, rawData, all.x=TRUE)
 			
+			## missing dimensions in raw data are filled up with zeros
+			ind <- which(is.na(fullTabObj$freq))
+			if ( length(ind) > 0 ) {
+				for ( k in 1:length(cols) ) {
+					fullTabObj[ind, cols[k]:=0]
+				}				
+			}
+			
 			## set missing combinations of lowest levels to 0
 			## problematic are all levels that should exist, but do not exist
 			## they are filled with 0 so that we can aggregate
@@ -317,6 +325,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					numVarsList[[n]] <- fullTabObj[[n.ind[n]]]
 				}
 			}		
+			names(numVarsList) <- colnames(get.dataObj(x, type="rawData"))[n.ind]		
 			
 			## replace 0 in rawData by NA if they have been replaced earlier
 			for ( i in 1:length(ind.na) ) {
