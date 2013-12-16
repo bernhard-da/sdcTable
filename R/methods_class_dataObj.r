@@ -126,9 +126,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 		
 		## do not use factors
 		cols <- colnames(rawData)[dimVarInd]
-		for ( j in 1:length(cols)) {
-			set(rawData,j=j,value=as.character(rawData[[cols[j]]]))
-		}
+		rawData[,cols] <- rawData[, lapply(.SD, as.character), .SDcols=cols]
 		rm(datO)
 
 		setkeyv(rawData, colnames(rawData)[dimVarInd])
