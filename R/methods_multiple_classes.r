@@ -325,8 +325,11 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					numVarsList[[n]] <- fullTabObj[[n.ind[n]]]
 				}
 			}		
-			names(numVarsList) <- colnames(get.dataObj(x, type="rawData"))[n.ind]		
 			
+			if ( length(n.ind) > 0 ) {
+				names(numVarsList) <- colnames(get.dataObj(x, type="rawData"))[n.ind]		
+			}
+						
 			## replace 0 in rawData by NA if they have been replaced earlier
 			for ( i in 1:length(ind.na) ) {
 				if ( length(ind.na[[i]]) > 0 ) {
