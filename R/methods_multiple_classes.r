@@ -254,10 +254,10 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			fullTabObj <- merge(fullTabObj, rawData, all.x=TRUE)
 			
 			## missing dimensions in raw data are filled up with zeros
-			ind <- which(is.na(fullTabObj$freq))
+			ind <- which(is.na(rawData$freq))
 			if ( length(ind) > 0 ) {
 				for ( k in 1:length(cols) ) {
-					fullTabObj[ind, cols[k]:=0]
+					rawData[ind, cols[k]:=0]
 				}				
 			}
 			
