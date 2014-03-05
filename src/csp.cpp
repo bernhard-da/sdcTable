@@ -56,7 +56,7 @@ void write_constraint_pool(list<mprob_constraint>& constraint_pool) {
     f << "\nconstraint nr " << nr << ":\n";
 
     f << "index | values: ";
-    for ( int i = 0; i < iter->indices.size(); ++i ) {
+    for ( unsigned int i = 0; i < iter->indices.size(); ++i ) {
       f << iter->indices[i] << " (" << iter->values[i] << ") ";
     }
     f << "\n";
@@ -1130,9 +1130,9 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 }
 
 bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& constraint_pool, sdcinfo *info, vector<double> &xi) {
-  //if ( info->verbose == true ) {
-  //  printf("checking if current best solution is valid! --> ");
-  //}
+  if ( info->verbose == true ) {
+    printf("checking if current best solution is valid! --> ");
+  }
   bool ok = false;
   int nr_additional_constraints = 0;
 
@@ -1328,12 +1328,12 @@ extern "C" {
     }    
     bool res = is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
 
-    //if ( info.verbose == true ) {
-    //  if ( res == true ) {
-    //    printf("ok!\n");
-    //  } else {
-    //    printf("no valid solution!\n");
-    //  }
-    //}
+    if ( info.verbose == true ) {
+      if ( res == true ) {
+        printf("ok!\n");
+      } else {
+        printf("keine gueltige loesung!\n");
+      }
+    }
   }
 }
