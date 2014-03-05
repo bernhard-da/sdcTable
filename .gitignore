@@ -1,5 +1,7 @@
 *.o
+
 *.so
 *.dll
+*.a
 .project
 man
