@@ -66,16 +66,13 @@ void write_constraint_pool(list<mprob_constraint>& constraint_pool) {
 }
 
 void clean_up_constraints(glp_prob *mprob) {
-  bool is_slack;
   vector<int> remove_indices;
   for( int i=1; i<=glp_get_num_rows(mprob); ++i ) {
-    is_slack = false;
     /* 
       http://bit.ly/1nxC5Rm
       basic row <--> inactive constraint
     */    
     if ( glp_get_row_stat(mprob, i) == 1 ) {
-      is_slack = true;
       remove_indices.push_back(i);
     }
   }
@@ -140,13 +137,12 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
   int nr_elements;
   int nr_added=0;
   double lhs;
-  bool first=true;
 
   int run_ind = 0;
   for(std::list<mprob_constraint>::iterator iter=constraint_pool.begin(); iter!=constraint_pool.end(); ++iter) {
     /* calculate inner product */
     lhs = 0;
-    for ( int i=0; i<iter->indices.size(); ++i ) {
+    for ( unsigned int i=0; i<iter->indices.size(); ++i ) {
       lhs = lhs + glp_get_col_prim(mprob, iter->indices[i]) * iter->values[i];
     }    
 
@@ -216,7 +212,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
       }
       */
       glp_set_mat_row(mprob, lastrow, nr_elements, indices2, vals2);        
-      iter->is_active == true;
+      iter->is_active = true;
 
       /*
       if ( first == true ) {
@@ -339,7 +335,6 @@ glp_prob * setup_attacker_problem(sdcinfo *info, vector<double> &xi) {
   glp_load_matrix(aprob, info->cells_mat-1, info->ja, info->ia, info->ar);  
 
   /* row bounds eqal zero when initializing the problem */
-  int bound, index;
   for ( int j=1; j<=rr; ++j ) {
     glp_set_row_bnds(aprob, j, GLP_FX, 0.0, 0.0);
   }
@@ -375,7 +370,6 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   int nr_additional_constraints = 0;
 
   /* update objective function */  
-  int nr_vars = glp_get_num_cols(aprob);
   int nr_rows = glp_get_num_rows(aprob);
 
   int nr_real_variables = nr_rows;
@@ -414,7 +408,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   glp_set_obj_dir(aprob, GLP_MIN);
 
   /* 1) maximize the problem */
-  if ( info->UPL[indexvar-1] > 0 | info->SPL[indexvar-1] > 0 ) {
+  if ( info->UPL[indexvar-1] > 0 || info->SPL[indexvar-1] > 0 ) {
     /* set rowbound to 1 for the active cell cell */
     glp_set_row_bnds(aprob, indexvar, GLP_FX, 1, 1);        
 
@@ -442,7 +436,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   }
 
   /* 2) minimize the problem */
-  if ( info->LPL[indexvar-1] > 0 | info->SPL[indexvar-1] > 0 ) {
+  if ( info->LPL[indexvar-1] > 0 || info->SPL[indexvar-1] > 0 ) {
     /* set rowbound to -1 for the active cell cell */
     glp_set_row_bnds(aprob, indexvar, GLP_FX, -1, -1);        
     glp_simplex(aprob, NULL);
@@ -587,7 +581,7 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
 }
 
 void heuristic_solution_primitive(sdcinfo *info) {
-  double bound;  
+  double bound = 0.0;  
   for ( int i=0; i < info->nr_vars; ++i ) {
     info->current_best_solution[i] = 1;
     bound += info->vals[i];
@@ -706,7 +700,6 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, in
 }
 
 void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> &xi) {
-  int nr_vars = glp_get_num_cols(aprob);  
   int nr_real_variables = info->nr_vars;
   vector<double> HIGH(info->len_prim);
   vector<double> LOW(info->len_prim);
@@ -746,10 +739,10 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
   // define vectors for possible insert into master problem
   double constraint_values_min[nr_real_variables+1];
   double constraint_values_max[nr_real_variables+1];
-  double constraint_values_tot[nr_real_variables+1];  
+  //double constraint_values_tot[nr_real_variables+1];  
 
   int constraint_indices[nr_real_variables+1];
-  double constraint_val, len, zmin, zmax;
+  double constraint_val, zmin, zmax;
 
   /* initialize constraints index vector (1:nr of variables) */
   for ( int i=0; i <= nr_real_variables; ++i ) {
@@ -846,7 +839,7 @@ int calculate_branching_variable(glp_prob *mprob, vector<double> &xi, sdcinfo *i
 
   double bmin, bmax;
   double totmax=0.0;
-  int bv;
+  int bv = 0;
   for ( int i=0; i < tmp_max; ++i ) {
     // set branching variable to 0
     glp_set_col_bnds(mprob, index_pair[i].index, GLP_FX, 0, 0);
@@ -945,7 +938,7 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
 
       bridgeless = 1;
       for ( int k=1; k <= info->nr_vars; ++k ) {
-        double tmp = xi[k-1];
+        //double tmp = xi[k-1];
 
         if ( abs(glp_get_col_prim(mprob, k)) > info->tol ) {
           nr_additional_constraints2 += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, bridgeless, false);
@@ -977,7 +970,6 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
   vector<int> cur_indices;
   vector<double> cur_vals;
   bool is_int;
-  int nr_additional_constraints;
 
   if ( info->verbose == true ) {
     printf("\nbranch and bound algorithm is starting!\n");
@@ -1022,7 +1014,7 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
     //}   
     
     if ( info->verbose == true ) {
-      printf("current node has %d elements!\n", cur_node.indices.size());
+      printf("current node has %d elements!\n", (int)cur_node.indices.size());
     }
     for ( int i=1; i<=info->nr_vars; ++i ) {
       glp_set_col_bnds(mprob, i, GLP_DB, 0, 1);
@@ -1030,9 +1022,9 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 
     /* reset bounds */
     if ( info->verbose == true ) {
-      printf("fixing %d variables in the master problem with %d constraints ...\n", cur_node.indices.size(), glp_get_num_rows(mprob));
+      printf("fixing %d variables in the master problem with %d constraints ...\n", (int)cur_node.indices.size(), glp_get_num_rows(mprob));
     }
-    for ( int i=0; i<cur_node.indices.size(); ++i ) {
+    for ( unsigned int i=0; i<cur_node.indices.size(); ++i ) {
       glp_set_col_bnds(mprob, cur_node.indices[i], GLP_FX, cur_node.values[i], cur_node.values[i]);
     }
     for ( int i=0; i < info->len_prim; ++i ) {
@@ -1050,7 +1042,7 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
     is_int = solve_relaxation(mprob, aprob, constraint_pool, info, xi); 
 
     /* reset bounds in mprob */        
-    for ( int i=0; i<cur_node.indices.size(); ++i ) {
+    for ( unsigned int i=0; i<cur_node.indices.size(); ++i ) {
       glp_set_col_bnds(mprob, cur_node.indices[i], GLP_DB, 0, 1);
     }        
 
@@ -1119,7 +1111,7 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
       }       
       /* removing current node from pool */
       if ( info->verbose == true ) {
-        printf("poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", pool.size(), info->upper_bound, constraint_pool.size());
+        printf("poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", (int)pool.size(), info->upper_bound, (int)constraint_pool.size());
       }
       //if ( pool.size() >= 200 ) {
       //  stop_ind = 1;
@@ -1172,7 +1164,7 @@ extern "C" {
     /* constraint pool */
     list<mprob_constraint> constraint_pool;
 
-    int bridgeless, use_existing_solution;
+    int use_existing_solution;
     bool is_int;
 
     /* converting to std::vectors */
@@ -1193,7 +1185,7 @@ extern "C" {
       v_LB[i] = vals[i] - lb[i];			
       v_UB[i] = ub[i] - vals[i];
     }
-    double upper_bound, lower_bound;
+    //double upper_bound, lower_bound;
 
     /* 
        solution vectors for heuristic and 
@@ -1289,7 +1281,7 @@ extern "C" {
       printf("[done] (upper_bound=%g)\n", info.upper_bound);
     }
 
-    int upper_bound_original = info.upper_bound;
+    //int upper_bound_original = info.upper_bound;
 
     /* solve relaxation of master problem */
     if ( info.verbose == true ) {
