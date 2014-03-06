@@ -970,7 +970,13 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			
 			if ( input$method == 'OPT' ) {
 				object <- set.sdcProblem(object, type='elapsedTime', input=list(get.sdcProblem(object, type='elapsedTime') + (proc.time()-start.time)[3]))
-				result <- calc.sdcProblem(object=object, type='cutAndBranch', input=input)
+				
+				if ( input$useC == TRUE ) {
+					result <- csp_cpp(sdcProblem=object, verbose=input$verbose)
+				} else {
+					result <- calc.sdcProblem(object=object, type='cutAndBranch', input=input)
+				}
+				
 				if ( save==TRUE ) {
 					fn <- paste(input$method,"_Object-Final.RData", sep="")
 					save(object, file=fn)
@@ -1061,7 +1067,11 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 							probNew <- set.sdcProblem(probNew, type='problemInstance', input=list(pI.new))
 							
 							### solving the problem
-							probNew <- calc.sdcProblem(object=probNew, type='cutAndBranch', input=input)
+							if ( input$useC == TRUE ) {
+								probNew <- csp_cpp(sdcProblem=probNew, verbose=input$verbose)
+							} else {
+								probNew <- calc.sdcProblem(object=probNew, type='cutAndBranch', input=input)
+							}
 							
 							### update sdcStatus
 							status <- get.problemInstance(get.sdcProblem(probNew, type='problemInstance'), type='sdcStatus')

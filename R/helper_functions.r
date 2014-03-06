@@ -285,6 +285,7 @@ genParaObj <- function(selection, ...) {
 		paraObj$fastSolution <- FALSE 
 		paraObj$fixVariables <- TRUE 
 		paraObj$approxPerc <- 10
+		paraObj$useC <- FALSE
 		
 		# HYPERCUBE - parameter
 		paraObj$protectionLevel <- 80 
@@ -340,6 +341,89 @@ genParaObj <- function(selection, ...) {
 	return(paraObj)
 }
 
+# convert simple triplet to matrix
+st_to_mat <- function(x) { 		
+  n.rows <- get.simpleTriplet(x, type='nrRows', input=list())
+  n.cols <- get.simpleTriplet(x, type='nrCols', input=list())
+  M <- matrix(0, nrow=n.rows, ncol=n.cols)
+	
+  i.x <- get.simpleTriplet(x, type='rowInd', input=list())
+  j.x <- get.simpleTriplet(x, type='colInd', input=list())
+  v.x <- get.simpleTriplet(x, type='values', input=list())
+  for ( i in 1:get.simpleTriplet(x, type='nrCells', input=list()) ) {
+    M[i.x[i], j.x[i]] <- v.x[i]
+  }
+  # matrizen from attackers problem are transposed -> switch!
+  return(t(M))
+}
+
+csp_cpp <- function(sdcProblem, verbose) {	
+  pI <- get.sdcProblem(sdcProblem, type="problemInstance")
+  dimInfo <- get.sdcProblem(sdcProblem, type="dimInfo")
+  aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
+	
+  ind_prim <- as.integer(get.problemInstance(pI, "primSupps"))
+  len_prim <- as.integer(length(ind_prim))
+	
+  ind_fixed <- as.integer(get.problemInstance(pI, "forcedCells"))
+  len_fixed <- as.integer(length(ind_fixed))
+	
+  aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
+  attProbM <- init.simpleTriplet("simpleTriplet", input=list(mat=st_to_mat(aProb@constraints)))
+	
+  ia <- as.integer(c(0, get.simpleTriplet(attProbM, type="rowInd", list())))
+  ja <- as.integer(c(0, get.simpleTriplet(attProbM, type="colInd", list())))
+  ar <- as.double(c(0, get.simpleTriplet(attProbM, type="values", list())))
+	
+  cells_mat <- as.integer(length(ia))
+  nr_vars <- as.integer(get.simpleTriplet(attProbM, type="nrCols", list()))
+  nr_rows <- as.integer(get.simpleTriplet(attProbM, type="nrRows", list()))
+	
+  vals <- as.integer(get.problemInstance(pI, type="freq"))
+	
+  lb <- as.double(get.problemInstance(pI, type="lb"))
+  ub <- as.double(get.problemInstance(pI, type="ub"))	
+	
+  LPL <- as.integer(get.problemInstance(pI, type="LPL"))
+  UPL <- as.integer(get.problemInstance(pI, type="UPL"))
+  SPL <- as.integer(get.problemInstance(pI, type="SPL"))
+	
+  final_pattern <- as.integer(rep(0, length(vals)))
+  time.start <- proc.time()
+  res <- .C("csp", 
+    	ind_prim=ind_prim, 
+    	len_prim=len_prim, 
+    	ind_fixed=ind_fixed,
+    	len_fixed=len_fixed,
+    	ia=ia, 
+    	ja=ja, 
+    	ar=ar, 
+    	cells_mat=cells_mat,
+    	nr_vars=nr_vars,
+    	nr_rows=nr_rows,
+    	vals=vals,
+    	lb=lb, ub=ub,
+    	LPL=LPL,
+    	UPL=UPL,
+    	SPL=SPL,
+    	final_pattern=final_pattern,
+    	verbose=as.integer(verbose))
+	
+	nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")
+	status_new <- rep("s", nr_vars)
+	status_new[res$final_pattern!=0] <- "x"
+	status_new[ind_prim] <- "u"	
+	if ( length(ind_fixed) > 0 ) {
+		status_new[ind_fixed] <- "z"
+	}	
+	sdcProblem@problemInstance <- set.problemInstance(sdcProblem@problemInstance, type="sdcStatus", list(index=1:nr_vars, values=status_new))
+	
+	time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
+	sdcProblem <- set.sdcProblem(sdcProblem, type="elapsedTime", input=list(time.el))
+	
+	sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))	
+	return(sdcProblem)
+}
 
 ### Primaersperrungen ###
 # object (class=sdcProblem)

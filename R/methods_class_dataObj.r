@@ -77,6 +77,7 @@ setMethod(f='init.dataObj', signature=c('list'),
 		## aggregate data, use data.table
 		datO <- data.table(inputData, key=colnames(inputData)[dimVarInd])
 		rawData <- datO[,.N, by=key(datO)]
+		
 		dimVarInd <- 1:(ncol(rawData)-1)
 		if ( any(rawData$N != 1)  ) {
 			isMicroData <- TRUE
@@ -107,11 +108,12 @@ setMethod(f='init.dataObj', signature=c('list'),
 		}	
 		
 		## numvars
+		nr_keys <- length(key(datO))
 		if ( !is.null(numVarInd) ) {
 			c.start <- ncol(rawData)
 			cols <- colnames(datO)[numVarInd]
 			for ( j in 1:length(cols)) {
-				v <- datO[,j=sum(get(cols[j])), by=key(datO)]$V1
+				v <- datO[,j=sum(get(cols[j])), by=key(datO)][[nr_keys+1]]
 				rawData[,j=cols[j]:=as.numeric(v)]
 			}		
 			numVarInd <- (c.start+1):ncol(rawData)			

@@ -338,7 +338,8 @@ primarySuppression <- function(object, type, ...) {
 #' \item \code{maxVars}: a numeric vector of length 1 (or NULL) defining the maximum problem size in terms of decision variables for which an optimization should be tried. If the number of decision variables in the current problem are larger than parameter \code{maxVars}, only a possible non-optimal, heuristic solution is calculated. Parameter \code{safe} has a default value of 'NULL'
 #' \item \code{fastSolution}: logical vector of length 1 defining if or if not the cut and branch algorithm will be started or if the possibly non-optimal heuristic solution is returned independent of parameter \code{maxVars}. Parameter \code{fastSolution} has a default value of 'FALSE'
 #' \item \code{fixVariables}: logical vector of length 1 defining whether or not it should be tried to fix some variables to zero or one based on reduced costs early in the cut and branch algorithm. Parameter \code{fixVariables} has a default value of 'TRUE'
-#' \item \code{approxPerc}: numeric vector of length 1 that defines a percentage for which a integer solution of the cut and branch algorithm is accepted as optimal with respect to the upper bound given by the (relaxed) solution of the master problem. Its default value is set to '10'}
+#' \item \code{approxPerc}: numeric vector of length 1 that defines a percentage for which a integer solution of the cut and branch algorithm is accepted as optimal with respect to the upper bound given by the (relaxed) solution of the master problem. Its default value is set to '10'
+#' \item \code{useC}: boolean vector of length 1 defining if c++ implementation of the secondary cell suppression problem should be used, defaults to FALSE}
 #' \item parameters used for HYPERCUBE procedure:
 #' \itemize{
 #' \item \code{protectionLevel}: numeric vector of length 1 specifying the required protection level for the HYPERCUBE-procedure. Its default value is 80
