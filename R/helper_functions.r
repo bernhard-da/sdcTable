@@ -285,7 +285,7 @@ genParaObj <- function(selection, ...) {
 		paraObj$fastSolution <- FALSE 
 		paraObj$fixVariables <- TRUE 
 		paraObj$approxPerc <- 10
-		paraObj$useC <- TRUE
+		paraObj$useC <- FALSE
 		
 		# HYPERCUBE - parameter
 		paraObj$protectionLevel <- 80 
