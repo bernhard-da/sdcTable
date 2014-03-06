@@ -1,3 +1,4 @@
+#include <R.h>
 #include <glpk.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +86,7 @@ void clean_up_constraints(glp_prob *mprob) {
       remove_indices2[k+1] = remove_indices[k];
     }    
     glp_del_rows(mprob, remove_indices.size(), remove_indices2); 
-    //printf("\n--> we have removed %d constraints from mprob!\n", nr_elements);
+    //Rprintf("\n--> we have removed %d constraints from mprob!\n", nr_elements);
   }
 }
 
@@ -108,7 +109,7 @@ void remove_invalid_constraints(glp_prob *mprob) {
     }
 
     if ( lhs < glp_get_row_lb(mprob, i) ) {
-      printf("lhs=%g | lb=%g\n", lhs, glp_get_row_lb(mprob, i));
+      Rprintf("lhs=%g | lb=%g\n", lhs, glp_get_row_lb(mprob, i));
 
       is_invalid = true;
       remove_indices.push_back(i);
@@ -123,7 +124,7 @@ void remove_invalid_constraints(glp_prob *mprob) {
       remove_indices2[k+1] = remove_indices[k];
     }    
     glp_del_rows(mprob, remove_indices.size(), remove_indices2); 
-    printf("\n--> we have removed %d constraints from mprob (bounding)!\n", nr_elements);
+    Rprintf("\n--> we have removed %d constraints from mprob (bounding)!\n", nr_elements);
   }
 }
 */
@@ -153,7 +154,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
       is_violated = true;
 
       //if ( first == true ) {
-      //  printf("run_ind=%d\n", run_ind);
+      //  Rprintf("run_ind=%d\n", run_ind);
       //  write_constraint_pool(constraint_pool);
       //  first = false;
       //}
@@ -183,7 +184,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
 
       /*
          if ( first == true ) {
-         printf("run_ind=%d\n", run_ind);
+         Rprintf("run_ind=%d\n", run_ind);
          write_constraint_pool(constraint_pool);
          glp_write_lp(mprob, NULL, "mprob_debug1.txt"); 
          }
@@ -206,7 +207,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
       if ( first == true ) {
         for ( int k=0; k <nr_elements+1; ++k ) {
           if ( vals2[k] > 0 ) {
-            printf("ind2=%d | vals2=%g\n", indices2[k], vals2[k]);
+            Rprintf("ind2=%d | vals2=%g\n", indices2[k], vals2[k]);
           }
         }
       }
@@ -216,7 +217,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
 
       /*
       if ( first == true ) {
-        printf("lastrow=%d\n", lastrow);
+        Rprintf("lastrow=%d\n", lastrow);
         glp_write_lp(mprob, NULL, "mprob_debug2.txt"); 
         first = false;
       } 
@@ -224,7 +225,7 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
     }      
     run_ind += 1;
   }
-  //printf("--> we have added %d constraints to the master problem!\n", nr_added);
+  //Rprintf("--> we have added %d constraints to the master problem!\n", nr_added);
 }
 
 void update_constraint_pool(list<mprob_constraint>& constraint_pool, int *constraint_indices, double *constraint_values, double bound, int type, int nr_vars) {
@@ -509,12 +510,12 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   }
   /*  
   if ( info->verbose == true && bridgeless == 0 ) {
-    printf("prim_supp=%d (%d): [[ %g | %g ]]\n", indexvar, info->vals[indexvar-1], zmin, zmax);
+    Rprintf("prim_supp=%d (%d): [[ %g | %g ]]\n", indexvar, info->vals[indexvar-1], zmin, zmax);
   }
   */
   /*
   if ( info->verbose && bridgeless == 1 ) {
-    printf("bridgevar=%d (%d): [[ %g | %g ]]\n", indexvar, info->vals[indexvar-1], zmin, zmax);
+    Rprintf("bridgevar=%d (%d): [[ %g | %g ]]\n", indexvar, info->vals[indexvar-1], zmin, zmax);
   }
   */
   return(nr_additional_constraints);
@@ -689,7 +690,8 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, in
   if ( use_existing_solution == 1 ) {
     if ( bound < info->upper_bound ) {
       if ( info->verbose == true ) {
-        printf("improved heuristic solution was found: bound=%f!\n", bound);
+        Rprintf("improved heuristic solution was found: bound=%f!\n", bound);
+        R_FlushConsole();
       }
       for ( int i=0; i < info->nr_vars; ++i ) {
         info->current_best_solution[i] = heuristic_solution[i];
@@ -907,7 +909,7 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
     for ( int j=1; j <= info->nr_vars; ++j ) {
       if ( glp_get_col_type(mprob, j) != GLP_FX ) {
         if ( glp_get_col_dual(mprob, j) > (info->upper_bound - lower_bound) ) {
-          //printf("--> removing var %d: dc[%d]=%g > %f\n", j, j, glp_get_col_dual(mprob, j), (upper_bound - lower_bound));
+          //Rprintf("--> removing var %d: dc[%d]=%g > %f\n", j, j, glp_get_col_dual(mprob, j), (upper_bound - lower_bound));
           glp_set_col_bnds(mprob, j, GLP_FX, 0, 0);
           nr_removed_vars += 1;
         }	        
@@ -915,10 +917,10 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
     }
     /*
     if ( info->verbose == true ) {
-      printf("%d variables were removed due to reduced costs!\n", nr_removed_vars);
+      Rprintf("%d variables were removed due to reduced costs!\n", nr_removed_vars);
     }
     */
-    //sprintf(mprob_name, "master_problem_%d.txt", run_ind);
+    //sRprintf(mprob_name, "master_problem_%d.txt", run_ind);
     //glp_write_lp(mprob, NULL, mprob_name);
 
     /* solve attacker problems for all primary sensitive cells */
@@ -926,10 +928,10 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
     for ( int k=0; k < info->len_prim; ++k ) {
       nr_additional_constraints1 += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, bridgeless, false);
 
-      //sprintf(attack_name, "attackers_problem_%d.txt", run_ind);
+      //Rprintf(attack_name, "attackers_problem_%d.txt", run_ind);
       //glp_write_lp(aprob, NULL, attack_name);
     }
-    //printf("----------------------\n");
+    //Rprintf("----------------------\n");
 
     /* generating bridgeless inequalities */
     if ( nr_additional_constraints1 == 0 ) {
@@ -944,9 +946,9 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
           nr_additional_constraints2 += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, bridgeless, false);
         }
       }
-      //printf("----------------------\n");
+      //Rprintf("----------------------\n");
     }
-    //printf("add_const1=%d | add_const2=%d\n", nr_additional_constraints1,nr_additional_constraints2);
+    //Rprintf("add_const1=%d | add_const2=%d\n", nr_additional_constraints1,nr_additional_constraints2);
   }
   while ( nr_additional_constraints1 + nr_additional_constraints2 > 0 );  
 
@@ -972,8 +974,9 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
   bool is_int;
 
   if ( info->verbose == true ) {
-    printf("\nbranch and bound algorithm is starting!\n");
-    printf("--> starting to calculate branching variable.\n");
+    Rprintf("\nbranch and bound algorithm is starting!\n");
+    Rprintf("--> starting to calculate branching variable.\n");
+    R_FlushConsole();
   }
 
   /* calculate first branching variable (with index startig from 1!) */
@@ -981,11 +984,13 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 
   /* define a queue to my branch_objects */ 
   if ( info->verbose == true ) {
-    printf("--> initializing pool with first branchvar=%d...", bvar);
+    Rprintf("--> initializing pool with first branchvar=%d...", bvar);
+    R_FlushConsole();
   }
   list<branchnode> pool;
   if ( info->verbose == true ) {
-    printf("[done]\n");
+    Rprintf("[done]\n");
+    R_FlushConsole();
   }
   branchnode n1, n2;
   cur_indices.push_back(bvar);
@@ -1008,13 +1013,14 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 
     //remove_invalid_constraints(mprob);
 
-    //printf("... current indices that will be fixed ... \n");
+    //Rprintf("... current indices that will be fixed ... \n");
     //for ( int i=0; i<cur_node.indices.size(); ++i ) {
-    //  printf("fixing variable %d to %g!\n", cur_node.indices[i], cur_node.values[i]);
+    //  Rprintf("fixing variable %d to %g!\n", cur_node.indices[i], cur_node.values[i]);
     //}   
     
     if ( info->verbose == true ) {
-      printf("current node has %d elements!\n", (int)cur_node.indices.size());
+      Rprintf("current node has %d elements!\n", (int)cur_node.indices.size());
+      R_FlushConsole();
     }
     for ( int i=1; i<=info->nr_vars; ++i ) {
       glp_set_col_bnds(mprob, i, GLP_DB, 0, 1);
@@ -1022,7 +1028,8 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 
     /* reset bounds */
     if ( info->verbose == true ) {
-      printf("fixing %d variables in the master problem with %d constraints ...\n", (int)cur_node.indices.size(), glp_get_num_rows(mprob));
+      Rprintf("fixing %d variables in the master problem with %d constraints ...\n", (int)cur_node.indices.size(), glp_get_num_rows(mprob));
+      R_FlushConsole();
     }
     for ( unsigned int i=0; i<cur_node.indices.size(); ++i ) {
       glp_set_col_bnds(mprob, cur_node.indices[i], GLP_FX, cur_node.values[i], cur_node.values[i]);
@@ -1049,19 +1056,22 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
     /* constraint added is not valid -> we have to remove the node from the pool */
     if ( glp_get_status(mprob) == GLP_NOFEAS ) {
       if ( info->verbose == true ) {
-        printf("current node is not solvable. we are removing it!\n");
+        Rprintf("current node is not solvable. we are removing it!\n");
+        R_FlushConsole();
       }
       pool.pop_back();      
     } else {
       if ( glp_get_obj_val(mprob) > info->upper_bound ) {
         if ( info->verbose == true ) {
-          printf("current node has obj > current best solution! --> pruning!\n");
+          Rprintf("current node has obj > current best solution! --> pruning!\n");
+          R_FlushConsole();
         }
         pool.pop_back();
       } else {
         if ( is_int == true ) {
           if ( info->verbose == true ) {
-            printf("we are finished and have a new valid best solution!\n"); 
+            Rprintf("we are finished and have a new valid best solution!\n"); 
+            R_FlushConsole();
           }
           // info->upper_bound and info->current_best_solution are updated in solve_relaxation()
           pool.pop_back();          
@@ -1070,21 +1080,25 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
           bvar = calculate_branching_variable(mprob, xi, info); 
           if ( bvar == 0 ) {
             if ( info->verbose == true ) {
-              printf("no more branching possible!\n");
+              Rprintf("no more branching possible!\n");
+              R_FlushConsole();
             }
           } else {
             if ( info->verbose == true ) {
-              printf("we got another non-integer solution and ");
-              printf("are branching again on variable %d!\n", bvar);               
+              Rprintf("we got another non-integer solution and ");
+              Rprintf("are branching again on variable %d!\n", bvar);               
+              R_FlushConsole();
             }
             
             /* trying to improve current best solution using our heuristics */
             if ( info->verbose == true ) {
-              printf("trying to improve solution with our heuristic approach ...");
+              Rprintf("trying to improve solution with our heuristic approach ...");
+              R_FlushConsole();
             }
             heuristic_solution(incprob, info, xi, 1);
             if ( info->verbose == true ) {
-              printf("[done] (upper_bound=%g)\n", info->upper_bound);
+              Rprintf("[done] (upper_bound=%g)\n", info->upper_bound);
+              R_FlushConsole();
             }
             /* add constraints to pool */        
             branchnode a1, a2;
@@ -1111,7 +1125,8 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
       }       
       /* removing current node from pool */
       if ( info->verbose == true ) {
-        printf("poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", (int)pool.size(), info->upper_bound, (int)constraint_pool.size());
+        Rprintf("poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", (int)pool.size(), info->upper_bound, (int)constraint_pool.size());
+        R_FlushConsole();
       }
       //if ( pool.size() >= 200 ) {
       //  stop_ind = 1;
@@ -1122,9 +1137,11 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 }
 
 bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& constraint_pool, sdcinfo *info, vector<double> &xi) {
+  /*
   if ( info->verbose == true ) {
-    printf("checking if current best solution is valid! --> ");
+    Rprintf("checking if current best solution is valid! --> ");
   }
+  */
   bool ok = false;
   int nr_additional_constraints = 0;
 
@@ -1150,7 +1167,6 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
   if ( nr_additional_constraints== 0 ) {
     ok = true;
   }
-  //glp_write_lp(aprob, NULL, "aprob_validation.txt");
   return(ok);
 }
 
@@ -1246,54 +1262,65 @@ extern "C" {
 
     /* set up attackers problem with given solution of master problem */
     if ( info.verbose == true ) { 
-      printf("setting up attacker's problem...");
+      Rprintf("setting up attacker's problem...");
+      R_FlushConsole();
     }
     glp_prob *aprob = setup_attacker_problem(pinfo, xi);
     if ( info.verbose == true ) {
-      printf("[done]\n");
+      Rprintf("[done]\n");
+      R_FlushConsole();
     }
     /* perform pre-processing and initialize constraint-pool */
     if ( info.verbose == true ) {
-      printf("performing preprocessing phase...");
+      Rprintf("performing preprocessing phase...");
+      R_FlushConsole();
     }
     preprocess(aprob, mprob, pinfo, xi); 
     if ( info.verbose == true ) {
-      printf("[done]\n");
+      Rprintf("[done]\n");
+      R_FlushConsole();
     }
     
     /* set up incremental attacker problem */
     if ( info.verbose == true ) {
-      printf("setup incremental attacker's problem...");
+      Rprintf("setup incremental attacker's problem...");
+      R_FlushConsole();
     }
     glp_prob *incprob = setup_incprob(pinfo, xi);
     if ( info.verbose == true ) {
-      printf("[done]\n");
+      Rprintf("[done]\n");
+      R_FlushConsole();
     }
     
     /* calculate a heuristic solution and return an upper_bound */
     use_existing_solution = 0;
     if ( info.verbose == true ) {
-      printf("calculate a heuristic solution...");
+      Rprintf("calculate a heuristic solution...");
+      R_FlushConsole();
     }
     heuristic_solution(incprob, pinfo, xi, use_existing_solution);
     //heuristic_solution_primitive(pinfo);
     if ( info.verbose == true ) {
-      printf("[done] (upper_bound=%g)\n", info.upper_bound);
+      Rprintf("[done] (upper_bound=%g)\n", info.upper_bound);
+      R_FlushConsole();
     }
 
     //int upper_bound_original = info.upper_bound;
 
     /* solve relaxation of master problem */
     if ( info.verbose == true ) {
-      printf("solve the relaxation of the master problem (%d constraints)...", glp_get_num_rows(mprob));
+      Rprintf("solve the relaxation of the master problem (%d constraints)...", glp_get_num_rows(mprob));
+      R_FlushConsole();
     }
     is_int = solve_relaxation(mprob, aprob, constraint_pool, pinfo, xi);    
     if ( info.verbose == true ) {
-      printf("[done]\n");      
+      Rprintf("[done]\n");
+      R_FlushConsole();      
     }
     if ( is_int == true ) {
       if ( info.verbose == true ) {
-        printf("we are finished and have a valid integer solution!\n");
+        Rprintf("we are finished and have a valid integer solution!\n");
+        R_FlushConsole();
       }
       if ( glp_get_obj_val(mprob) < info.upper_bound ) {
         info.upper_bound = glp_get_obj_val(mprob);
@@ -1305,27 +1332,26 @@ extern "C" {
     } else {
       /* we have to do branch and bound to get an integer solution */
       if ( info.verbose == true ) {
-        printf("we are not finished and have to enforce integrality on current solution using branch/bound!\n");
+        Rprintf("we are not finished and have to enforce integrality on current solution using branch/bound!\n");
+        R_FlushConsole();
       }
       branch_and_bound(mprob, aprob, incprob, constraint_pool, pinfo, xi);    
     }
     if ( info.verbose == true ) {
-      printf("algorithm has terminated!\n");
-      printf("best solution has an objective val of %g.\n", info.upper_bound);
+      Rprintf("algorithm has terminated!\n");
+      Rprintf("best solution has an objective val of %g.\n", info.upper_bound);
+      R_FlushConsole();
     }
     /* update final solution */
     for ( int i=0; i<info.nr_vars; ++i ) {
       final_pattern[i] = info.current_best_solution[i];
       xi[i] = final_pattern[i];
     }    
+    
     bool res = is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
-
-    if ( info.verbose == true ) {
-      if ( res == true ) {
-        printf("ok!\n");
-      } else {
-        printf("keine gueltige loesung!\n");
-      }
+    if ( info.verbose == true && res == false ) {
+      Rprintf("WARNING: no valid solution found. Please contact package maintainer\n");
+      R_FlushConsole();
     }
   }
 }
