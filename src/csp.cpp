@@ -78,16 +78,13 @@ void clean_up_constraints(glp_prob *mprob) {
     }
   }
 
-  int nr_elements = remove_indices.size();  
+  int nr_elements = remove_indices.size();
   if ( nr_elements > 0 ) {
-    int remove_indices2[nr_elements+1];
-    remove_indices2[0] = -1;
-    for ( int k=0; k<nr_elements; ++k ) {
-      remove_indices2[k+1] = remove_indices[k];
-    }    
-    glp_del_rows(mprob, remove_indices.size(), remove_indices2); 
-    //Rprintf("\n--> we have removed %d constraints from mprob!\n", nr_elements);
+    remove_indices.insert(remove_indices.begin(), -1);
+    /* http://bit.ly/1icaxj4 -> we can use a pointer to the first element using a stl-vector */
+    glp_del_rows(mprob, remove_indices.size()-1, &remove_indices[0]);
   }
+  //Rprintf("\n--> we have removed %d constraints from mprob!\n", remove_indices.size()-1);
 }
 
 /* we remove invalid constraints due to fixing variables! */
@@ -135,7 +132,6 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
      if so, set it to active and add it to master problem   
   */
   bool is_violated;
-  int nr_elements;
   int nr_added=0;
   double lhs;
 
@@ -152,12 +148,6 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
     // GLP_LO
     if ( (iter->type == 2) and (lhs < iter->low) ) { 
       is_violated = true;
-
-      //if ( first == true ) {
-      //  Rprintf("run_ind=%d\n", run_ind);
-      //  write_constraint_pool(constraint_pool);
-      //  first = false;
-      //}
     }   
     /*
     // GLP_UP
@@ -182,53 +172,24 @@ void insert_violated_constraints(glp_prob *mprob, list<mprob_constraint>& constr
       glp_add_rows(mprob, 1); // add one constraint
       int lastrow = glp_get_num_rows(mprob);
 
-      /*
-         if ( first == true ) {
-         Rprintf("run_ind=%d\n", run_ind);
-         write_constraint_pool(constraint_pool);
-         glp_write_lp(mprob, NULL, "mprob_debug1.txt"); 
-         }
-      */
       if ( iter->type == 2 ) {
         glp_set_row_bnds(mprob, lastrow, GLP_LO, iter->low, iter->up);
       }
 
-      nr_elements = iter->indices.size();
-      int indices2[nr_elements+1];
-      double vals2[nr_elements+1];
-      indices2[0] = -1;
-      vals2[0] = -1;
-      for ( int k=0; k<nr_elements; ++k ) {
-        indices2[k+1] = iter->indices[k];
-        vals2[k+1] = iter->values[k];
-      }
+      vector<int> indices2 = iter->indices;
+      vector<double> vals2 = iter->values;
+      indices2.insert(indices2.begin(), -1);
+      vals2.insert(vals2.begin(), -1);
+      glp_set_mat_row(mprob, lastrow, indices2.size()-1, &indices2[0], &vals2[0]);
 
-      /*
-      if ( first == true ) {
-        for ( int k=0; k <nr_elements+1; ++k ) {
-          if ( vals2[k] > 0 ) {
-            Rprintf("ind2=%d | vals2=%g\n", indices2[k], vals2[k]);
-          }
-        }
-      }
-      */
-      glp_set_mat_row(mprob, lastrow, nr_elements, indices2, vals2);        
       iter->is_active = true;
-
-      /*
-      if ( first == true ) {
-        Rprintf("lastrow=%d\n", lastrow);
-        glp_write_lp(mprob, NULL, "mprob_debug2.txt"); 
-        first = false;
-      } 
-      */
     }      
     run_ind += 1;
   }
   //Rprintf("--> we have added %d constraints to the master problem!\n", nr_added);
 }
 
-void update_constraint_pool(list<mprob_constraint>& constraint_pool, int *constraint_indices, double *constraint_values, double bound, int type, int nr_vars) {
+void update_constraint_pool(list<mprob_constraint>& constraint_pool, vector<int> &constraint_indices, vector<double> &constraint_values, double bound, int type, int nr_vars) {
   mprob_constraint con;
 
   vector<int> ind;
@@ -295,7 +256,7 @@ bool solution_is_integer(glp_prob *linprob, double tol) {
   return result;
 }
 
-void update_master_problem(glp_prob *mprob, int *constraint_indices, double *constraint_values, double bound) {
+void update_master_problem(glp_prob *mprob, vector<int> &constraint_indices, vector<double> &constraint_values, double bound) {
   glp_add_rows(mprob, 1); // add one constraint
   int lastrow = glp_get_num_rows(mprob);
   int nr_vars = glp_get_num_cols(mprob);
@@ -386,18 +347,18 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   }    
 
   // define vectors for possible insert into master problem
-  double constraint_values_min[nr_real_variables+1];
-  double constraint_values_max[nr_real_variables+1];
-  double constraint_values_tot[nr_real_variables+1];
+  vector<double> constraint_values_min; constraint_values_min.reserve(nr_real_variables+1);
+  vector<double> constraint_values_max; constraint_values_max.reserve(nr_real_variables+1);
+  vector<double> constraint_values_tot; constraint_values_tot.reserve(nr_real_variables+1);
 
-  double alphas_min[nr_real_variables+1];
-  double alphas_max[nr_real_variables+1];
-  double betas_min[nr_real_variables+1];
-  double betas_max[nr_real_variables+1]; 
-  double alphas_tot[nr_real_variables+1]; 
-  double betas_tot[nr_real_variables+1]; 
+  vector<double> alphas_min; alphas_min.reserve(nr_real_variables+1);
+  vector<double> alphas_max; alphas_max.reserve(nr_real_variables+1);
+  vector<double> betas_min; betas_min.reserve(nr_real_variables+1);
+  vector<double> betas_max; betas_max.reserve(nr_real_variables+1);
+  vector<double> alphas_tot; alphas_tot.reserve(nr_real_variables+1);
+  vector<double> betas_tot; betas_tot.reserve(nr_real_variables+1);
 
-  int constraint_indices[nr_real_variables+1];
+  vector<int> constraint_indices; constraint_indices.reserve(nr_real_variables+1);
   double constraint_val, len, zmin, zmax;
 
   //int stat_up, stat_down;
@@ -540,9 +501,9 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   }
 
   int nr_constraints = (info->cells_mat - 2*nr_vars -1);
-  int ia2[1+nr_constraints*2];
-  int ja2[1+nr_constraints*2];
-  double ar2[1+nr_constraints*2];
+  vector<int> ia2; ia2.reserve(1+nr_constraints*2);
+  vector<int> ja2; ja2.reserve(1+nr_constraints*2);
+  vector<double> ar2; ar2.reserve(1+nr_constraints*2);
 
   ia2[0] = 0;
   ja2[0] = 0;
@@ -575,8 +536,8 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   }  
 
   /* calculate length of array including leading 0 */
-  int s_ia2 = (sizeof(ia2)/sizeof(*ia2));
-  glp_load_matrix(incprob, s_ia2-1, ia2, ja2, ar2);
+  glp_load_matrix(incprob, ia2.size()-1, &ia2[0], &ja2[0], &ar2[0]);
+
   //glp_write_lp(incprob, NULL, "incprob.txt");
   return incprob;
 }
@@ -592,10 +553,7 @@ void heuristic_solution_primitive(sdcinfo *info) {
 
 void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, int use_existing_solution) {
   int ik, nr;
-  int heuristic_solution[info->nr_vars];
-  for ( int i=0; i<info->nr_vars; ++i) {
-    heuristic_solution[i] = 0;
-  }
+  vector<int> heuristic_solution; heuristic_solution.reserve(info->nr_vars);
 
   /* set obj coefficients */
   double v;
@@ -739,11 +697,10 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
   }       
 
   // define vectors for possible insert into master problem
-  double constraint_values_min[nr_real_variables+1];
-  double constraint_values_max[nr_real_variables+1];
-  //double constraint_values_tot[nr_real_variables+1];  
-
-  int constraint_indices[nr_real_variables+1];
+  vector<double> constraint_values_min; constraint_values_min.reserve(nr_real_variables+1);
+  vector<double> constraint_values_max; constraint_values_max.reserve(nr_real_variables+1);
+  vector<int> constraint_indices; constraint_indices.reserve(nr_real_variables+1);
+  
   double constraint_val, zmin, zmax;
 
   /* initialize constraints index vector (1:nr of variables) */
@@ -871,12 +828,12 @@ int calculate_branching_variable(glp_prob *mprob, vector<double> &xi, sdcinfo *i
 
 /* delete all (row)-constraints from a problem */
 void delete_all_constraints(glp_prob *p) {
-  int xx[glp_get_num_rows(p)];
+  vector<int> xx; xx.reserve(glp_get_num_rows(p));
   int nrs = glp_get_num_rows(p);
   for ( int i=1; i<=nrs; ++i ) {
     xx[i] = i;
   }
-  glp_del_rows(p, nrs, xx);
+  glp_del_rows(p, nrs, &xx[0]);
 }
 
 bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& constraint_pool, sdcinfo *info, vector<double> &xi) {
@@ -1146,12 +1103,12 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
   int nr_additional_constraints = 0;
 
   /* delete all constraints from mprob */
-  int del_rows[glp_get_num_rows(mprob)];
+  vector<int> del_rows; del_rows.reserve(glp_get_num_rows(mprob));
   int nrs = glp_get_num_rows(mprob);
   for ( int i=1; i<=nrs; ++i ) {
     del_rows[i] = i;
   }
-  glp_del_rows(mprob, nrs, del_rows);  
+  glp_del_rows(mprob, nrs, &del_rows[0]);  
 
   for ( int k=0; k < info->len_prim; ++k ) {
     nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, 0, false);
