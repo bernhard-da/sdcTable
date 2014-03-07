@@ -165,3 +165,4 @@ void normQuader(int *indices, int *nDims, int *lVec) {
     indices[j] = 0;
   }
 }
+
