@@ -359,7 +359,9 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   vector<double> betas_tot; betas_tot.reserve(nr_real_variables+1);
 
   vector<int> constraint_indices; constraint_indices.reserve(nr_real_variables+1);
-  double constraint_val, len, zmin, zmax;
+  double constraint_val, len;
+  double zmin = 0.0;
+  double zmax = 0.0;
 
   //int stat_up, stat_down;
 
