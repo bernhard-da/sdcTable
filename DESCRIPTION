@@ -10,7 +10,7 @@ Maintainer: Bernhard Meindl
 Depends:  
     stringr,  
     methods,  
-    Rcpp,  
+		Rcpp (>= 0.11.0),  
     Rglpk,  
     lpSolveAPI,  
     data.table  
