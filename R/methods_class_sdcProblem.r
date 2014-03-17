@@ -972,7 +972,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 				object <- set.sdcProblem(object, type='elapsedTime', input=list(get.sdcProblem(object, type='elapsedTime') + (proc.time()-start.time)[3]))
 				
 				if ( input$useC == TRUE ) {
-					result <- csp_cpp(sdcProblem=object, verbose=input$verbose)
+					result <- csp_cpp(sdcProblem=object, attackonly=FALSE, verbose=input$verbose)
 				} else {
 					result <- calc.sdcProblem(object=object, type='cutAndBranch', input=input)
 				}
@@ -1068,7 +1068,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 							
 							### solving the problem
 							if ( input$useC == TRUE ) {
-								probNew <- csp_cpp(sdcProblem=probNew, verbose=input$verbose)
+								probNew <- csp_cpp(sdcProblem=probNew, attackonly=FALSE, verbose=input$verbose)
 							} else {
 								probNew <- calc.sdcProblem(object=probNew, type='cutAndBranch', input=input)
 							}

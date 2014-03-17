@@ -357,14 +357,15 @@ st_to_mat <- function(x) {
   return(t(M))
 }
 
-csp_cpp <- function(sdcProblem, verbose) {	
+csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {	
   pI <- get.sdcProblem(sdcProblem, type="problemInstance")
   dimInfo <- get.sdcProblem(sdcProblem, type="dimInfo")
   aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
 	
   ind_prim <- as.integer(get.problemInstance(pI, "primSupps"))
   len_prim <- as.integer(length(ind_prim))
-	
+	bounds_min <- bounds_max <- rep(0, len_prim)
+  
   ind_fixed <- as.integer(get.problemInstance(pI, "forcedCells"))
   len_fixed <- as.integer(length(ind_fixed))
 	
@@ -388,11 +389,18 @@ csp_cpp <- function(sdcProblem, verbose) {
   UPL <- as.integer(get.problemInstance(pI, type="UPL"))
   SPL <- as.integer(get.problemInstance(pI, type="SPL"))
 	
+  if ( attackonly == TRUE ) {
+    attackonly <- as.integer(1)
+  } else {
+    attackonly <- as.integer(0)
+  }
   final_pattern <- as.integer(rep(0, length(vals)))
   time.start <- proc.time()
   res <- .C("csp", 
     	ind_prim=ind_prim, 
     	len_prim=len_prim, 
+      bounds_min=bounds_min,
+      bounds_max=bounds_max,
     	ind_fixed=ind_fixed,
     	len_fixed=len_fixed,
     	ia=ia, 
@@ -407,22 +415,28 @@ csp_cpp <- function(sdcProblem, verbose) {
     	UPL=UPL,
     	SPL=SPL,
     	final_pattern=final_pattern,
+      attackonly=attackonly,
     	verbose=as.integer(verbose))
 	
-	nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")
-	status_new <- rep("s", nr_vars)
-	status_new[res$final_pattern!=0] <- "x"
-	status_new[ind_prim] <- "u"	
-	if ( length(ind_fixed) > 0 ) {
-		status_new[ind_fixed] <- "z"
-	}	
-	sdcProblem@problemInstance <- set.problemInstance(sdcProblem@problemInstance, type="sdcStatus", list(index=1:nr_vars, values=status_new))
-	
-	time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
-	sdcProblem <- set.sdcProblem(sdcProblem, type="elapsedTime", input=list(time.el))
-	
-	sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))	
-	return(sdcProblem)
+  if ( attackonly == TRUE ) {
+    df <- data.frame(prim_supps=res$ind_prim, val=res$vals[res$ind_prim], bounds_low=res$bounds_min, bounds_up=res$bounds_max)
+    return(df)
+  } else {
+    nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")
+    status_new <- rep("s", nr_vars)
+    status_new[res$final_pattern!=0] <- "x"
+    status_new[ind_prim] <- "u"	
+    if ( length(ind_fixed) > 0 ) {
+      status_new[ind_fixed] <- "z"
+    }	
+    sdcProblem@problemInstance <- set.problemInstance(sdcProblem@problemInstance, type="sdcStatus", list(index=1:nr_vars, values=status_new))
+    
+    time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
+    sdcProblem <- set.sdcProblem(sdcProblem, type="elapsedTime", input=list(time.el))
+    
+    sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))	
+    return(sdcProblem)    
+  }
 }
 
 ### Primaersperrungen ###

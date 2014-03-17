@@ -225,6 +225,8 @@ struct sdcinfo {
   double *ar;
   int *ind_prim;
   int len_prim;
+  vector<double> att_max;
+  vector<double> att_min;
   int *ind_fixed;
   int len_fixed;
   int cells_mat;
@@ -248,6 +250,7 @@ bool is_integer(double n, double tol) {
 bool solution_is_integer(glp_prob *linprob, double tol) {
   bool result = true;
   for (	int i=1; i<=glp_get_num_cols(linprob); ++i ) {
+    //printf("\nsol[%d]=%g", i, glp_get_col_prim(linprob,i));
     if ( is_integer(glp_get_col_prim(linprob, i), tol) == false ) {
       result = false;
       break;
@@ -329,6 +332,15 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     info->SPL[indexvar-1] = 1;
   }
 
+  int tmp_ind = 0;
+  if ( bridgeless == 0 ) {
+    for ( int k=0; k<info->len_prim; ++k ) {
+      if ( indexvar == info->ind_prim[k] ) {
+        tmp_ind = k;
+        break;
+      }
+    }
+  }
   int nr_additional_constraints = 0;
 
   /* update objective function */  
@@ -347,18 +359,18 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   }    
 
   // define vectors for possible insert into master problem
-  vector<double> constraint_values_min; constraint_values_min.reserve(nr_real_variables+1);
-  vector<double> constraint_values_max; constraint_values_max.reserve(nr_real_variables+1);
-  vector<double> constraint_values_tot; constraint_values_tot.reserve(nr_real_variables+1);
+  vector<double> constraint_values_min(nr_real_variables+1);
+  vector<double> constraint_values_max(nr_real_variables+1);
+  vector<double> constraint_values_tot(nr_real_variables+1);
 
-  vector<double> alphas_min; alphas_min.reserve(nr_real_variables+1);
-  vector<double> alphas_max; alphas_max.reserve(nr_real_variables+1);
-  vector<double> betas_min; betas_min.reserve(nr_real_variables+1);
-  vector<double> betas_max; betas_max.reserve(nr_real_variables+1);
-  vector<double> alphas_tot; alphas_tot.reserve(nr_real_variables+1);
-  vector<double> betas_tot; betas_tot.reserve(nr_real_variables+1);
+  vector<double> alphas_min(nr_real_variables+1);
+  vector<double> alphas_max(nr_real_variables+1);
+  vector<double> betas_min(nr_real_variables+1);
+  vector<double> betas_max(nr_real_variables+1);
+  vector<double> alphas_tot(nr_real_variables+1);
+  vector<double> betas_tot(nr_real_variables+1);
 
-  vector<int> constraint_indices; constraint_indices.reserve(nr_real_variables+1);
+  vector<int> constraint_indices(nr_real_variables+1);
   double constraint_val, len;
   double zmin = 0.0;
   double zmax = 0.0;
@@ -378,6 +390,9 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
 
     glp_simplex(aprob, NULL);		
     zmax = glp_get_obj_val(aprob);
+    if ( bridgeless == 0 ) {
+      info->att_max[tmp_ind] = zmax;
+    }
     //stat_up = glp_get_status(aprob);
     //glp_write_lp(aprob, NULL, "aprob-max.txt");
 
@@ -405,6 +420,9 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     glp_set_row_bnds(aprob, indexvar, GLP_FX, -1, -1);        
     glp_simplex(aprob, NULL);
     zmin = (-1)*glp_get_obj_val(aprob);
+    if ( bridgeless == 0 ) {
+      info->att_min[tmp_ind] = zmin;
+    }
     //stat_down = glp_get_status(aprob);
 
     //glp_write_lp(aprob, NULL, "aprob-min.txt");  
@@ -503,9 +521,9 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   }
 
   int nr_constraints = (info->cells_mat - 2*nr_vars -1);
-  vector<int> ia2; ia2.reserve(1+nr_constraints*2);
-  vector<int> ja2; ja2.reserve(1+nr_constraints*2);
-  vector<double> ar2; ar2.reserve(1+nr_constraints*2);
+  vector<int> ia2(1+nr_constraints*2);
+  vector<int> ja2(1+nr_constraints*2);
+  vector<double> ar2(1+nr_constraints*2);
 
   ia2[0] = 0;
   ja2[0] = 0;
@@ -536,7 +554,6 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   for ( int i=1; i<=info->nr_rows; ++i ) {
     glp_set_row_bnds(incprob, i, GLP_FX, 0.0, 0.0);
   }  
-
   /* calculate length of array including leading 0 */
   glp_load_matrix(incprob, ia2.size()-1, &ia2[0], &ja2[0], &ar2[0]);
 
@@ -555,8 +572,7 @@ void heuristic_solution_primitive(sdcinfo *info) {
 
 void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, int use_existing_solution) {
   int ik, nr;
-  vector<int> heuristic_solution; heuristic_solution.reserve(info->nr_vars);
-
+  vector<int> heuristic_solution(info->nr_vars);
   /* set obj coefficients */
   double v;
   for ( int j=1; j<=info->nr_vars; ++j ) {
@@ -699,9 +715,9 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
   }       
 
   // define vectors for possible insert into master problem
-  vector<double> constraint_values_min; constraint_values_min.reserve(nr_real_variables+1);
-  vector<double> constraint_values_max; constraint_values_max.reserve(nr_real_variables+1);
-  vector<int> constraint_indices; constraint_indices.reserve(nr_real_variables+1);
+  vector<double> constraint_values_min(nr_real_variables+1);
+  vector<double> constraint_values_max(nr_real_variables+1);
+  vector<int> constraint_indices(nr_real_variables+1);
   
   double constraint_val, zmin, zmax;
 
@@ -830,7 +846,7 @@ int calculate_branching_variable(glp_prob *mprob, vector<double> &xi, sdcinfo *i
 
 /* delete all (row)-constraints from a problem */
 void delete_all_constraints(glp_prob *p) {
-  vector<int> xx; xx.reserve(glp_get_num_rows(p));
+  vector<int> xx(glp_get_num_rows(p));
   int nrs = glp_get_num_rows(p);
   for ( int i=1; i<=nrs; ++i ) {
     xx[i] = i;
@@ -1105,21 +1121,21 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
   int nr_additional_constraints = 0;
 
   /* delete all constraints from mprob */
-  vector<int> del_rows; del_rows.reserve(glp_get_num_rows(mprob));
+  vector<int> del_rows(glp_get_num_rows(mprob)+1);
   int nrs = glp_get_num_rows(mprob);
-  for ( int i=1; i<=nrs; ++i ) {
-    del_rows[i] = i;
+  if ( nrs > 0 ) {
+    for ( int i=1; i<=nrs; ++i ) {
+      del_rows[i] = i;
+    }
+    glp_del_rows(mprob, nrs, &del_rows[0]);  
   }
-  glp_del_rows(mprob, nrs, &del_rows[0]);  
-
   for ( int k=0; k < info->len_prim; ++k ) {
     nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, 0, false);
   }
-  int bridgeless = 1;
   for ( int k=1; k <= info->nr_vars; ++k ) {
     double tmp = xi[k-1];
     if ( glp_get_col_type(mprob, k) != GLP_FX && abs(tmp) > 1e-9 ) {
-      nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, bridgeless, false);
+      nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, 1, false);
     }
   }
 
@@ -1130,9 +1146,9 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
 }
 
 extern "C" { 
-  void csp(int *ind_prim, int *len_prim, int *ind_fixed, int *len_fixed, int *ia, int *ja, double *ar, 
+  void csp(int *ind_prim, int *len_prim, double *bounds_min, double *bounds_max, int *ind_fixed, int *len_fixed, int *ia, int *ja, double *ar, 
       int *cells_mat, int *nr_vars, int *nr_rows, int *vals, double *lb, double *ub,
-      int *LPL, int *UPL, int *SPL, int *final_pattern, int *verbose) {
+      int *LPL, int *UPL, int *SPL, int *final_pattern, int *attackonly, int *verbose) {
 
     glp_term_out(GLP_OFF);
 
@@ -1203,6 +1219,15 @@ extern "C" {
     info.LPL = v_LPL; info.UPL = v_UPL; info.SPL = v_SPL;
     info.UB = v_UB; info.LB = v_LB; 
     info.ind_prim = ind_prim; info.len_prim = len_prim[0];
+
+    vector<double> att_max, att_min;
+
+    info.att_max = att_max;
+    info.att_min = att_min;
+    for ( int i=0; i<info.len_prim; ++i ) {
+      info.att_min.push_back(info.vals[info.ind_prim[i]]);
+      info.att_max.push_back(info.vals[info.ind_prim[i]]);
+    }
     info.ind_fixed= ind_fixed; info.len_fixed = len_fixed[0];
     info.cells_mat = cells_mat[0]; info.nr_vars = nr_vars[0]; info.nr_rows = nr_rows[0];
     info.upper_bound = -1; info.current_best_solution = xi_heur;
@@ -1250,7 +1275,17 @@ extern "C" {
       Rprintf("[done]\n");
       R_FlushConsole();
     }
-    
+
+    bool testsol;
+    if ( attackonly[0] == 1 ) {
+      testsol = is_valid_solution(aprob, mprob, constraint_pool, pinfo, xi);
+      for ( int i=0; i<info.len_prim; ++i ) {
+        bounds_min[i] = info.att_min[i];
+        bounds_max[i] = info.att_max[i];
+      }
+      return;
+    }
+
     /* calculate a heuristic solution and return an upper_bound */
     use_existing_solution = 0;
     if ( info.verbose == true ) {
@@ -1306,7 +1341,7 @@ extern "C" {
       final_pattern[i] = info.current_best_solution[i];
       xi[i] = final_pattern[i];
     }    
-    
+   
     bool res = is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
     if ( info.verbose == true && res == false ) {
       Rprintf("WARNING: no valid solution found. Please contact package maintainer\n");

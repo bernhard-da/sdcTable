@@ -1,3 +1,4 @@
+export(attack)
 export(calc.cutList)
 export(calc.dimVar)
 export(calc.linProb)
