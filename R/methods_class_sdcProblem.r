@@ -56,7 +56,7 @@ setMethod(f='get.sdcProblem', signature=c('sdcProblem','character'),
 setMethod(f='set.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 	definition=function(object, type, input) { 
 		if ( !type %in% c('problemInstance', 'partition', 'rule.freq', 'rule.nk', 
-				'rule.p', 'startI', 'startJ', 'indicesDealtWith', 'elapsedTime') ) {
+				'rule.p', 'rule.pk', 'startI', 'startJ', 'indicesDealtWith', 'elapsedTime') ) {
 			stop("set.sdcProblem:: check argument 'type'!\n")
 		}
 		
@@ -90,7 +90,7 @@ setMethod(f='set.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 #' @rdname calc.sdcProblem-method
 setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 	definition=function(object, type, input) { 
-		if ( !type %in% c('rule.freq', 'rule.nk', 'rule.p', 'heuristicSolution',
+		if ( !type %in% c('rule.freq', 'rule.nk', 'rule.p', 'rule.pq', 'heuristicSolution',
 			'cutAndBranch', 'anonWorker', 'ghmiter', 'preprocess', 'cellID', 
 			'finalize', 'ghmiter.diagObj', 'ghmiter.calcInformation', 
 			'ghmiter.suppressQuader', 'ghmiter.selectQuader', 
@@ -174,12 +174,15 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 		}		
 		
 		# p-percent rule
-		if ( type == 'rule.p' ) {
+		if ( type %in% c('rule.p', 'rule.pq') ) {
 			pPercRule <- function(celltot, cont1, cont2, p) {
 				# if TRUE, cell needs to be suppressed
 				(celltot - cont1 - cont2) < (p/100*cont1) 
 			}			
-			
+			pqRule <- function(celltot, cont1, cont2, p, q) {
+			  # if TRUE, cell needs to be suppressed			  
+			  (celltot - cont1 - cont2) < (p/q)*cont1 
+			}					
 			if ( !get.dataObj(get.sdcProblem(object, type='dataObj'), type='isMicroData') ) {
 				stop("p-percent rule can only be applied if micro-data are available!\n")
 			}
@@ -189,8 +192,6 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			numVarInds <- get.dataObj(dataObj, type='numVarInd')
 			strIDs <- get.problemInstance(pI, type='strID')
 			
-			#p <- input$p
-			#numVarInd <- input$numVarInd
 			numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
 			
 			# calculate contributing indices
@@ -201,8 +202,13 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 			cellTotals <- get.problemInstance(pI, type='numVars')[[input$numVarInd]]		
 			
 			# suppStatus: TRUE:unsafe, FALSE: safe
-			pState <- sapply(1:get.problemInstance(pI, type='nrVars'), function(x) {  pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p) } ) 
-			
+			if (type  == 'rule.p' ) {
+			  pState <- sapply(1:get.problemInstance(pI, type='nrVars'), function(x) { pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p) } ) 
+			}
+			if (type  == 'rule.pq' ) {
+			  pState <- sapply(1:get.problemInstance(pI, type='nrVars'), function(x) { pqRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$pq[1], input$pq[2]) } ) 
+			}
+      
 			suppIndex <- which(pState==TRUE)
 			if ( length(suppIndex) > 0 ) {
 				pI <- set.problemInstance(pI, type='sdcStatus', input=list(index=suppIndex, values=rep("u", length(suppIndex))))	

@@ -224,6 +224,9 @@ genParaObj <- function(selection, ...) {
 		paraObj$n <- 2
 		paraObj$k <- 85
 		
+		# pq-rule
+		paraObj$pq <- c(25, 50)    
+    
 		paraObj$numVarInd <- NA
 		
 		newPara <- list(...)
@@ -242,26 +245,36 @@ genParaObj <- function(selection, ...) {
 			}
 		}
 		
-		if ( any(sapply(paraObj, length)!=1) ) {
-			stop("genPara (type=='control.primary'): arguments for primary suppression are not valid!\n")
-		}
+		#if ( any(sapply(paraObj, length)!=1) ) {
+		#	stop("genPara (type=='control.primary'): arguments for primary suppression are not valid!\n")
+		#}
 		if ( !is.logical(paraObj$allowZeros) ) {
 			stop("genPara (type=='control.primary'): argument 'allowZeros' must be logical!\n")
-		}
-		
+		}		
 		if ( !all(c(is.numeric(paraObj$maxN), is.numeric(paraObj$p), is.numeric(paraObj$n), is.numeric(paraObj$k))) ) {
 			stop("genPara (type=='control.primary'): arguments 'maxN', 'p', 'n' and 'k' must be numeric!\n")
 		}
-		
+		if ( length(paraObj$pq) != 2 ) {
+		  stop("genPara (type=='control.primary'): length of argument 'pq' must equal 2!\n")
+		}    
 		if ( paraObj$k < 1 | paraObj$k >= 100) {
-			stop("genPara (type=='control.primary'):argument 'k' must be >= 1 and < 100!\n")
+			stop("genPara (type=='control.primary'): argument 'k' must be >= 1 and < 100!\n")
 		}			
 		if ( paraObj$p < 1 | paraObj$p >= 100) {
-			stop("genPara (type=='control.primary'):argument p must be >= 1 and < 100!\n")
+			stop("genPara (type=='control.primary'): argument p must be >= 1 and < 100!\n")
 		}	
+		if ( paraObj$pq[1] < 1 | paraObj$pq[1] >= 100) {
+		  stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be >= 1 and < 100!\n")
+		}			
+		if ( paraObj$pq[2] < 1 | paraObj$pq[2] >= 100) {
+		  stop("genPara (type=='control.primary'): argument 'q' of 'pq' must be >= 1 and < 100!\n")
+		}					
+		if ( paraObj$pq[1] >= paraObj$pq[2] ) {
+		  stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be < argument 'q' of 'pq'\n")
+		}		    
 		if ( !is.na(paraObj$numVarInd) ) {
 			if ( !paraObj$numVarInd %in% 1:length(numVarIndices) ) {
-				stop("genPara (type=='control.primary'):argument 'numVarInd' must be >= 1 and <=",length(numVarIndices),"!\n")
+				stop("genPara (type=='control.primary'): argument 'numVarInd' must be >= 1 and <=",length(numVarIndices),"!\n")
 			}				
 		}
 		return(paraObj)

@@ -67,9 +67,8 @@
 #' 
 #' # no variables holding counts, numeric values, weights or sampling 
 #' # weights are available in the input data
-#' freqVarInd <- numVarInd <- weightInd <- sampWeightInd <- NULL
-#' 
-#' # we are dealing with micro data!
+#' numVarInd <- 3 # column holding a numeric variable
+#' freqVarInd <- weightInd <- sampWeightInd <- NULL # not available in this example
 #' 
 #' # creating an object of class \code{\link{sdcProblem-class}}
 #' problem <- makeProblem(
@@ -236,15 +235,17 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 #' \item \code{freq}: apply frequency rule with parameters \code{maxN} and \code{allowZeros}
 #' \item \code{nk}: apply nk-dominance rule with parameters \code{n}, \code{k} and \code{numVarInd}
 #' \item \code{p}: apply p-percent rule with parameters \code{p} and \code{numVarInd}
+#' \item \code{pq}: apply pq-rule with parameters \code{p} and \code{q}
 #' }
 #' @param ... parameters used in the identification of primary sensitive cells. Parameters that can be modified|changed are:
 #' \itemize{
 #' \item \code{maxN}: numeric vector of length 1 used when applying the frequency rule. All cells having counts <= \code{maxN} are set as primary suppressed. The default value of \code{maxN} is 3.
 #' \item \code{allowZeros}: logical vector of length 1 specifying if empty cells (count==0) should be considered sensitive when using the frequency rule. The default value of \code{allowZeros} is 'FALSE' so that empty cells are not considered primary sensitive by default.
 #' \item \code{p}: numeric vector of length 1 specifying parameter \code{p} that is used when applying the p-percent rule with default value of 80.
+#' \item \code{pq}: numeric vector of length 2 specifying parameters \code{p} and \code{q} that are used when applying the pq-rule with the default being c(25, 50).
 #' \item \code{n}: numeric vector of length 1 specifying parameter \code{n} that is used when applying the nk-dominance rule. Parameter \code{n} is set to 2 by default.
 #' \item \code{k}: numeric vector of length 1 specifying parameter \code{k} that is used when applying the nk-dominance rule. Parameter \code{n} is set to 85 by default.
-#' \item \code{numVarInd}: numeric vector of length 1 specifying the index of the numerical variable that should be used to identify cells that are dominated by 2 (p-percent rule) or n (nk-dominance)-rule. If \code{type} is either 'nk' or 'p' it is mandatory to specify p.
+#' \item \code{numVarInd}: numeric vector of length 1 specifying the index of the numerical variable that should be used to identify cells that are dominated by 2 (p-percent rule) or n (nk-dominance)-rule. If \code{type} is either 'nk', 'p' or 'pq', it is mandatory to specify \code{numVarInd}.
 #' }
 #' @return a \code{\link{sdcProblem-class}} object
 #'  
@@ -274,12 +275,12 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 #' }
 #' @rdname primarySuppression
 #' @export primarySuppression
-#' @note the nk-dominance rule and the p-percent rule can only be applied if micro data have been used as input data to function \code{\link{makeProblem}}.
+#' @note the nk-dominance rule, the p-percent rule and the pq-rule can only be applied if micro data have been used as input data to function \code{\link{makeProblem}}.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 primarySuppression <- function(object, type, ...) {
 	start.time <- proc.time()
-	if ( !type %in% c('nk', 'freq', 'p') ) {
-		stop("valid types are 'nk', 'freq' or 'p'!\n")
+	if ( !type %in% c('nk', 'freq', 'p', 'pq') ) {
+		stop("valid types are 'nk', 'freq', 'p' or 'pq'!\n")
 	}
 	
 	numVarsIndices <- get.dataObj(get.sdcProblem(object, type='dataObj'), type='numVarInd')
@@ -302,6 +303,13 @@ primarySuppression <- function(object, type, ...) {
 		}
 		object <- calc.sdcProblem(object, type="rule.p", input=paraList)
 	}	
+  
+	if ( type == "pq") {
+	  if ( is.na(paraList$numVarInd) ) {
+	    stop("argument 'numVarInd' must be specified!\n")
+	  }
+	  object <- calc.sdcProblem(object, type="rule.pq", input=paraList)
+	}	  
 	
 	elapsed.time <- get.sdcProblem(object, type='elapsedTime') + (proc.time() - start.time)[3]
 	object <- set.sdcProblem(object, type='elapsedTime', input=list(elapsed.time)) 
@@ -381,14 +389,16 @@ protectTable <- function(object, method, ...) {
 	}
 	
 	paraList <- genParaObj(selection='control.secondary', method=method, ...)
+  if ( length(get.problemInstance(object@problemInstance, type="primSupps")) == 0 ) {
+    return(calc.sdcProblem(object, type='finalize', input=paraList))
+  }  
+  
 	if ( method == 'SIMPLEHEURISTIC' ) {
 		out <- performQuickSuppression(object, input=paraList)	
 	} else {
 		out <- calc.sdcProblem(object, type='anonWorker', input=paraList)
-	}
-	
-	safeObj <- calc.sdcProblem(out, type='finalize', input=paraList)
-	safeObj
+	}	
+	return(calc.sdcProblem(out, type='finalize', input=paraList))
 }
 
 #' attacking primary suppressed cells and calculating current lower and upper bounds

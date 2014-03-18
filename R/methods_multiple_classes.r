@@ -185,14 +185,18 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 			x <- input$objectA
 			y <- input$objectB
 			time.start <- proc.time()
-			rawData <- get.dataObj(x, type='rawData')
+			datO <- get.dataObj(x, type='rawData')
 			dimObj <- get.dimInfo(y, type='dimInfo')
+      
+      # we have to aggregate if we are dealing with microdata
+      if ( get.dataObj(x, type='isMicroData') ) {
+        rawData <- datO[, lapply(.SD, sum, na.rm=TRUE), by=key(datO), .SDcols=setdiff(colnames(datO), key(datO))]
+      } else {
+        rawData <- copy(datO)
+      }   
 			ind.dimvars <- get.dataObj(x, type='dimVarInd')
 			ind.freq <- get.dataObj(x, type='freqVarInd')
-			
-			## no need to aggregate data
-			## aggregation already done in 'init.dataObj()'
-			
+		
 			codes <- list(); length(codes) <- length(ind.dimvars)
 			for ( i in 1:length(codes) ) {
 				codes[[i]] <- rawData[[ind.dimvars[i]]]
@@ -336,8 +340,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 					rawData[ind.na[[i]], cols[i]:=NA]
 				}		
 			}
-			x <- set.dataObj(x, type="rawData", input=list(rawData))	
-			
+			x <- set.dataObj(x, type="rawData", input=list(datO))  
 			problemInstance <- new("problemInstance",			
 				strID=strID,
 				Freq=f,
