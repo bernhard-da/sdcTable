@@ -26,7 +26,6 @@
 #' @return a \code{\link{sdcProblem-class}}-object
 #' 
 #' @examples
-#' \dontrun{ 
 #' # loading micro data
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/microData1.RData", sep="")
@@ -34,6 +33,9 @@
 #' 
 #' having a look at the data structure
 #' str(microData)
+#' 
+#' we can observe that we have a micro data set consisting of two spanning 
+#' variables ('region' and 'gender') and one numeric variable ('val') 
 #' 
 #' # specify structure of hierarchical variable 'region'
 #' # levels 'A' to 'D' sum up to a Total
@@ -65,10 +67,12 @@
 #' # - variable 'gender': second column
 #' dimVarInd <- c(1,2) 
 #' 
+#' third column containts a numeric variable
+#' numVarInd <- 3 
+#'
 #' # no variables holding counts, numeric values, weights or sampling 
-#' # weights are available in the input data
-#' numVarInd <- 3 # column holding a numeric variable
-#' freqVarInd <- weightInd <- sampWeightInd <- NULL # not available in this example
+#' weights are available in the input data
+#' freqVarInd <- weightInd <- sampWeightInd <- NULL
 #' 
 #' # creating an object of class \code{\link{sdcProblem-class}}
 #' problem <- makeProblem(
@@ -82,7 +86,6 @@
 #' 
 #' what do we have?
 #' print(class(problem))
-#' }
 #' @rdname makeProblem
 #' @export makeProblem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
