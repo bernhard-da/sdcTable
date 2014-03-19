@@ -37,41 +37,41 @@ setClassUnion('listOrNULL', c('list', 'NULL'))
 #' @note objects of class \code{dataObj} are input for slot \code{dataObj} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='dataObj', 
-	representation=representation(			
-		rawData='listOrNULL',
-		dimVarInd='numericOrNULL',
-		freqVarInd='numericOrNULL',
-		numVarInd='numericOrNULL',
-		weightVarInd='numericOrNULL',
-		sampWeightInd='numericOrNULL',
-		isMicroData='logicalOrNULL'
-	),
-	prototype=prototype(
-		rawData=NULL,
-		dimVarInd=NULL,
-		freqVarInd=NULL,
-		numVarInd=NULL,
-		weightVarInd=NULL,
-		sampWeightInd=NULL,
-		isMicroData=NULL
-	),
-	validity=function(object) {
-		if ( !all(get.dataObj(object, type='freqVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
-			stop("dataObj:: check input parameter 'freqVarInd'!\n")
-		}
-		if ( !all(get.dataObj(object, type='numVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
-			stop("dataObj:: check input parameter 'numVarInd'!\n")
-		}	
-		if ( length(get.dataObj(object, type='weightVarInd')) > 1 ) {
-			stop("dataObj:: length of parameter 'weightVarInd' must not be greater than 1!\n")
-		}			
-		if ( length(get.dataObj(object, type='sampWeightInd')) > 1 ) {
-			stop("dataObj:: length of parameter 'sampWeightInd' must not be greater than 1!\n")
-		}	
-		return(TRUE)
-	}
-)	
+  Class='dataObj', 
+  representation=representation(      
+    rawData='listOrNULL',
+    dimVarInd='numericOrNULL',
+    freqVarInd='numericOrNULL',
+    numVarInd='numericOrNULL',
+    weightVarInd='numericOrNULL',
+    sampWeightInd='numericOrNULL',
+    isMicroData='logicalOrNULL'
+  ),
+  prototype=prototype(
+    rawData=NULL,
+    dimVarInd=NULL,
+    freqVarInd=NULL,
+    numVarInd=NULL,
+    weightVarInd=NULL,
+    sampWeightInd=NULL,
+    isMicroData=NULL
+  ),
+  validity=function(object) {
+    if ( !all(get.dataObj(object, type='freqVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
+      stop("dataObj:: check input parameter 'freqVarInd'!\n")
+    }
+    if ( !all(get.dataObj(object, type='numVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
+      stop("dataObj:: check input parameter 'numVarInd'!\n")
+    } 
+    if ( length(get.dataObj(object, type='weightVarInd')) > 1 ) {
+      stop("dataObj:: length of parameter 'weightVarInd' must not be greater than 1!\n")
+    }     
+    if ( length(get.dataObj(object, type='sampWeightInd')) > 1 ) {
+      stop("dataObj:: length of parameter 'sampWeightInd' must not be greater than 1!\n")
+    } 
+    return(TRUE)
+  }
+) 
 
 #' S4 class describing a dimInfo-object
 #'
@@ -91,36 +91,36 @@ setClass(
 #' @note objects of class \code{dimInfo} are input for slots in classes \code{sdcProblem} and \code{safeObj} 
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='dimInfo', 
-	representation=representation(			
-		dimInfo='listOrNULL',
-		strID='characterOrNULL',
-		strInfo='listOrNULL',
-		vNames='characterOrNULL',
-		posIndex='numericOrNULL'
-	),
-	prototype=prototype(
-		dimInfo=NULL,
-		strID=NULL,
-		strInfo=NULL,		
-		vNames=NULL,
-		posIndex=NULL
-	),
-	validity=function(object) {
-		if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='posIndex')) ) {
-			stop("dimInfo:: parameter 'vNames' and 'posIndex' differ in length!\n")
-		}
-		if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='dimInfo')) ) {
-			stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
-		}	
-		if ( length(get.dimInfo(object, type='strInfo')) != length(get.dimInfo(object, type='varName')) ) {
-			stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
-		}		
-		if ( any(sapply(get.dimInfo(object, type='dimInfo'), "class") != "dimVar" ) ) {
-			stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
-		}		
-		return(TRUE)
-	}
+  Class='dimInfo', 
+    representation=representation(      
+    dimInfo='listOrNULL',
+    strID='characterOrNULL',
+    strInfo='listOrNULL',
+    vNames='characterOrNULL',
+    posIndex='numericOrNULL'
+  ),
+  prototype=prototype(
+    dimInfo=NULL,
+    strID=NULL,
+    strInfo=NULL,   
+    vNames=NULL,
+    posIndex=NULL
+  ),
+  validity=function(object) {
+    if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='posIndex')) ) {
+      stop("dimInfo:: parameter 'vNames' and 'posIndex' differ in length!\n")
+    }
+    if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='dimInfo')) ) {
+      stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
+    } 
+    if ( length(get.dimInfo(object, type='strInfo')) != length(get.dimInfo(object, type='varName')) ) {
+      stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
+    }   
+    if ( any(sapply(get.dimInfo(object, type='dimInfo'), "class") != "dimVar" ) ) {
+      stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
+    }   
+    return(TRUE)
+  }
 )
 
 #' S4 class describing a dimVar-object
@@ -148,38 +148,38 @@ setClass(
 #' @note objects of class \code{dimVar} form the base for elements in slot \code{dimInfo} of class \code{dimInfo}. 
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='dimVar', 
-	representation=representation(			
-		codesOriginal='characterOrNULL',
-		codesDefault='characterOrNULL',
-		codesMinimal='logicalOrNULL',
-		vName='characterOrNULL',
-		levels='numericOrNULL',
-		structure='numericOrNULL', 
-		dims='listOrNULL',
-		dups='characterOrNULL',
-		dupsUp='characterOrNULL'
-	),
-	prototype=prototype(
-		codesOriginal=NULL,
-		codesDefault=NULL,
-		codesMinimal=NULL,
-		vName=NULL,
-		levels=NULL,
-		structure=NULL, 
-		dims=NULL,
-		dups=NULL,
-		dupsUp=NULL
-	),
-	validity=function(object) {
-		if ( length(get.dimVar(object, type='codesOriginal')) != length(get.dimVar(object, type='codesDefault')) ) {
-			stop("dimVar:: length of 'codesOriginal' and 'codesDefault' differ!\n")
-		}
-		if ( length(get.dimVar(object, type='varName')) != 1 ) {
-			stop("dimVar:: length of 'vName' must equal 1!\n")
-		}
-		return(TRUE)
-	}
+  Class='dimVar', 
+  representation=representation(      
+    codesOriginal='characterOrNULL',
+    codesDefault='characterOrNULL',
+    codesMinimal='logicalOrNULL',
+    vName='characterOrNULL',
+    levels='numericOrNULL',
+    structure='numericOrNULL', 
+    dims='listOrNULL',
+    dups='characterOrNULL',
+    dupsUp='characterOrNULL'
+  ),
+  prototype=prototype(
+    codesOriginal=NULL,
+    codesDefault=NULL,
+    codesMinimal=NULL,
+    vName=NULL,
+    levels=NULL,
+    structure=NULL, 
+    dims=NULL,
+    dups=NULL,
+    dupsUp=NULL
+  ),
+  validity=function(object) {
+    if ( length(get.dimVar(object, type='codesOriginal')) != length(get.dimVar(object, type='codesDefault')) ) {
+      stop("dimVar:: length of 'codesOriginal' and 'codesDefault' differ!\n")
+    }
+    if ( length(get.dimVar(object, type='varName')) != 1 ) {
+      stop("dimVar:: length of 'vName' must equal 1!\n")
+    }
+    return(TRUE)
+  }
 )
 
 #' S4 class describing a problemInstance-object
@@ -210,77 +210,74 @@ setClass(
 #' @note objects of class \code{problemInstance} are used as input for slot \code{problemInstance} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='problemInstance', 
-	representation=representation(			
-		strID='characterOrNULL',
-		Freq='numericOrNULL',
-		w='numericOrNULL',
-		numVars='listOrNULL',
-		lb='numericOrNULL',
-		ub='numericOrNULL',
-		LPL='numericOrNULL',
-		UPL='numericOrNULL',
-		SPL='numericOrNULL', 
-		sdcStatus='characterOrNULL'
-	),
-	prototype=prototype(
-		strID=NULL,
-		Freq=NULL,
-		w=NULL,
-		numVars=NULL,
-		lb=NULL,
-		ub=NULL,
-		LPL=NULL,
-		UPL=NULL,
-		SPL=NULL,
-		sdcStatus=NULL
-	),
-	validity=function(object) {
-		if ( !all.equal(
-			length(get.problemInstance(object, type='strID')),
-			length(get.problemInstance(object, type='freq')),	
-			length(get.problemInstance(object, type='lb')),	
-			length(get.problemInstance(object, type='ub')),	
-			length(get.problemInstance(object, type='SPL')),
-			length(get.problemInstance(object, type='LPL')),
-			length(get.problemInstance(object, type='UPL')),
-			length(get.problemInstance(object, type='sdcStatus'))) ) {
-			stop("problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL' and 'sdcStatus' must have the same length!\n")
-		}
-
-		if ( !is.null(get.problemInstance(object, type='numVars')) ) {
-			if ( !all(sapply(get.problemInstance(object, type='numVars'), length) == length(get.problemInstance(object, type='numVars')[[1]])) ) {
-				stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
-			}
-		}	
-		
-		if ( !is.null(get.problemInstance(object, type='numVars')[[1]]) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='numVars')[[1]]) ) {
-			stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
-		}	
-		if ( !is.null(get.problemInstance(object, type='w')) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='w')) ) {
-			stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
-		}	
-	
-		if ( any(get.problemInstance(object, type='lb') <= get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL')) == FALSE ) {
-			stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
-		}
-		if ( any(get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL') <= get.problemInstance(object, type='freq')) == FALSE ) {
-			stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
-		}
-		if ( any(get.problemInstance(object, type='freq') <= get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL')) == FALSE ) {
-			stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
-		}
-		if ( any(get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL') <= get.problemInstance(object, type='ub')) == FALSE) {
-			stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
-		} 
-		if ( any(get.problemInstance(object, type='ub') - get.problemInstance(object, type='lb') >= get.problemInstance(object, type='SPL')) == FALSE) {
-			stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
-		}
-		if ( !all(get.problemInstance(object, type='sdcStatus') %in% c('s','u','x','z')) ) {
-			stop("problemInstance:: valid codes for sdcStatus are 'z', 's', 'x' or 'u'!\n")
-		}
-		return(TRUE)
-	}
+  Class='problemInstance', 
+  representation=representation(      
+    strID='characterOrNULL',
+    Freq='numericOrNULL',
+    w='numericOrNULL',
+    numVars='listOrNULL',
+    lb='numericOrNULL',
+    ub='numericOrNULL',
+    LPL='numericOrNULL',
+    UPL='numericOrNULL',
+    SPL='numericOrNULL', 
+    sdcStatus='characterOrNULL'
+  ),
+  prototype=prototype(
+    strID=NULL,
+    Freq=NULL,
+    w=NULL,
+    numVars=NULL,
+    lb=NULL,
+    ub=NULL,
+    LPL=NULL,
+    UPL=NULL,
+    SPL=NULL,
+    sdcStatus=NULL
+  ),
+  validity=function(object) {
+    if ( !all.equal(
+      length(get.problemInstance(object, type='strID')),
+      length(get.problemInstance(object, type='freq')), 
+      length(get.problemInstance(object, type='lb')), 
+      length(get.problemInstance(object, type='ub')), 
+      length(get.problemInstance(object, type='SPL')),
+      length(get.problemInstance(object, type='LPL')),
+      length(get.problemInstance(object, type='UPL')),
+      length(get.problemInstance(object, type='sdcStatus'))) ) {
+        stop("problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL' and 'sdcStatus' must have the same length!\n")
+    }
+    if ( !is.null(get.problemInstance(object, type='numVars')) ) {
+      if ( !all(sapply(get.problemInstance(object, type='numVars'), length) == length(get.problemInstance(object, type='numVars')[[1]])) ) {
+        stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
+      }
+    } 
+    if ( !is.null(get.problemInstance(object, type='numVars')[[1]]) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='numVars')[[1]]) ) {
+      stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
+    } 
+    if ( !is.null(get.problemInstance(object, type='w')) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='w')) ) {
+      stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
+    } 
+    if ( any(get.problemInstance(object, type='lb') <= get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL')) == FALSE ) {
+      stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
+    }
+    if ( any(get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL') <= get.problemInstance(object, type='freq')) == FALSE ) {
+      stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
+    }
+    if ( any(get.problemInstance(object, type='freq') <= get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL')) == FALSE ) {
+      stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
+    }
+    if ( any(get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL') <= get.problemInstance(object, type='ub')) == FALSE) {
+      stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
+    } 
+    if ( any(get.problemInstance(object, type='ub') - get.problemInstance(object, type='lb') >= get.problemInstance(object, type='SPL')) == FALSE) {
+      stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
+    }
+    if ( !all(get.problemInstance(object, type='sdcStatus') %in% c('s','u','x','z')) ) {
+      stop("problemInstance:: valid codes for sdcStatus are 'z', 's', 'x' or 'u'!\n")
+    }
+    return(TRUE)
+  }
 )
 
 setClassUnion('dataObjOrNULL', c('dataObj', 'NULL'))
@@ -317,51 +314,51 @@ setClassUnion('problemInstanceOrNULL', c('problemInstance', 'NULL'))
 #' @note objects of class \code{sdcProblem} are typically generated by function \code{\link{makeProblem}} and are the input of functions \code{\link{primarySuppression}} and \code{\link{protectTable}} 
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='sdcProblem', 
-	representation=representation(			
-		dataObj='dataObjOrNULL',
-		dimInfo='dimInfoOrNULL',
-		problemInstance='problemInstanceOrNULL',
-		partition='listOrNULL',
-		startI='numeric',
-		startJ='numeric',
-		indicesDealtWith='numericOrNULL',
-		elapsedTime='numericOrNULL'
-	),
-	prototype=prototype(
-		dataObj=NULL,
-		dimInfo=NULL,
-		problemInstance=NULL,
-		partition=NULL,
-		startI=1,
-		startJ=1,
-		indicesDealtWith=NULL,
-		elapsedTime=NULL
-	),
-	validity=function(object) {
-		if ( get.sdcProblem(object, type='startI') > get.sdcProblem(object, type='partition')$nrGroups ) {
-			stop("argument 'startI' must be <=",get.sdcProblem(object, type='partition')$nrGroups,"!\n")
-		}
-		if ( get.sdcProblem(object, type='startJ') > length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]) ) {
-			stop("argument 'startJ' must be <=",length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]),"!\n")
-		}	
-		if ( length(get.sdcProblem(object, type='startI')) != 1 ) {
-			stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
-		}
-		if ( length(get.sdcProblem(object, type='startJ')) != 1 ) {
-			stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
-		}			
-		if ( get.sdcProblem(object, type='startI') < 1 ) {
-			stop("sdcProblem:: argument 'startI' must be >= 1!\n")
-		}
-		if ( get.sdcProblem(object, type='startJ') < 1 ) {
-			stop("sdcProblem:: argument 'startJ' must be >= 1!\n")
-		}
-		if ( length(get.sdcProblem(object, type='elapsedTime')) != 1 ) {
-			stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
-		}	
-		return(TRUE)
-	}
+  Class='sdcProblem', 
+  representation=representation(      
+    dataObj='dataObjOrNULL',
+    dimInfo='dimInfoOrNULL',
+    problemInstance='problemInstanceOrNULL',
+    partition='listOrNULL',
+    startI='numeric',
+    startJ='numeric',
+    indicesDealtWith='numericOrNULL',
+    elapsedTime='numericOrNULL'
+  ),
+  prototype=prototype(
+    dataObj=NULL,
+    dimInfo=NULL,
+    problemInstance=NULL,
+    partition=NULL,
+    startI=1,
+    startJ=1,
+    indicesDealtWith=NULL,
+    elapsedTime=NULL
+  ),
+  validity=function(object) {
+    if ( get.sdcProblem(object, type='startI') > get.sdcProblem(object, type='partition')$nrGroups ) {
+      stop("argument 'startI' must be <=",get.sdcProblem(object, type='partition')$nrGroups,"!\n")
+    }
+    if ( get.sdcProblem(object, type='startJ') > length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]) ) {
+      stop("argument 'startJ' must be <=",length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]),"!\n")
+    } 
+    if ( length(get.sdcProblem(object, type='startI')) != 1 ) {
+      stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
+    }
+    if ( length(get.sdcProblem(object, type='startJ')) != 1 ) {
+      stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
+    }     
+    if ( get.sdcProblem(object, type='startI') < 1 ) {
+      stop("sdcProblem:: argument 'startI' must be >= 1!\n")
+    }
+    if ( get.sdcProblem(object, type='startJ') < 1 ) {
+      stop("sdcProblem:: argument 'startJ' must be >= 1!\n")
+    }
+    if ( length(get.sdcProblem(object, type='elapsedTime')) != 1 ) {
+      stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
+    } 
+    return(TRUE)
+  }
 )
 
 #' S4 class describing a simpleTriplet-object
@@ -384,33 +381,33 @@ setClass(
 #' @note objects of class \code{simpleTriplet} are input of slot \code{constraints} in class \code{\link{linProb-class}} and slot slot \code{con} in class \code{\link{cutList-class}}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='simpleTriplet', 
-	representation=representation(			
-		i='numericOrNULL',
-		j='numericOrNULL',
-		v='numericOrNULL',
-		nrRows='numericOrNULL',
-		nrCols='numericOrNULL'
-	),
-	prototype=prototype(
-		i=numeric(0),
-		j=numeric(0),
-		v=numeric(0),
-		nrRows=numeric(0),
-		nrCols=numeric(0)			
-	),
-	validity=function(object) {
-		if ( length(object@i) != length(object@j) ) {
-			stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
-		}			
-		if ( length(object@i) != length(object@v) ) {
-			stop("simpleTriplet:: length of 'i' and 'v' differ!\n")	
-		}			
-		if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
-			stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n")	
-		}
-		return(TRUE)
-	}
+  Class='simpleTriplet', 
+  representation=representation(      
+    i='numericOrNULL',
+    j='numericOrNULL',
+    v='numericOrNULL',
+    nrRows='numericOrNULL',
+    nrCols='numericOrNULL'
+  ),
+  prototype=prototype(
+    i=numeric(0),
+    j=numeric(0),
+    v=numeric(0),
+    nrRows=numeric(0),
+    nrCols=numeric(0)     
+  ),
+  validity=function(object) {
+    if ( length(object@i) != length(object@j) ) {
+      stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
+    }     
+    if ( length(object@i) != length(object@v) ) {
+      stop("simpleTriplet:: length of 'i' and 'v' differ!\n") 
+    }     
+    if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
+      stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n") 
+    }
+    return(TRUE)
+  }
 )
 setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 
@@ -450,57 +447,57 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 #' @note when solving the problems in the procedure, minimization of the objective is performed.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='linProb', 
-	representation=representation(			
-		objective='numericOrNULL',
-		constraints='simpleTripletOrNULL',
-		direction='characterOrNULL',
-		rhs='numericOrNULL',
-		boundsLower='listOrNULL',
-		boundsUpper='listOrNULL',
-		types='characterOrNULL'
-	),
-	prototype=prototype(
-		objective=NULL,
-		constraints=NULL,
-		direction=NULL,
-		rhs=NULL,
-		boundsLower=NULL,
-		boundsUpper=NULL,
-		types=NULL		
-	),
-	validity=function(object) {
-		if ( length(object@rhs) != length(object@direction) ) {
-			stop("linProb:: length of 'rhs' and 'direction' differ!\n")
-		}
-		nrRows.constraints <- get.simpleTriplet(object@constraints, type='nrRows', input=list()) 
-		if ( length(object@direction) != nrRows.constraints ) {
-			stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n")	
-		}
-		nrCols.constraints <- get.simpleTriplet(object@constraints, type='nrCols', input=list()) 
-		if ( length(object@objective) != nrCols.constraints ) {
-			stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")	
-		}
-		if ( length(object@objective) != length(object@types) ) {
-			stop("linProb:: Length of 'objective' and 'types' differ!\n")
-		}			
-		if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
-			stop("linProb:: wrong indices of 'boundsLower!'\n")
-		}			
-		if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
-			stop("linProb:: wrong indices of 'boundsUpper!'\n")
-		}					
-		if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
-			stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
-		}
-		if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
-			stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
-		}			
-		if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
-			stop("linProb:: illegal symbols in 'direction' differ!\n")
-		} 			
-		return(TRUE)
-	}
+  Class='linProb', 
+  representation=representation(      
+    objective='numericOrNULL',
+    constraints='simpleTripletOrNULL',
+    direction='characterOrNULL',
+    rhs='numericOrNULL',
+    boundsLower='listOrNULL',
+    boundsUpper='listOrNULL',
+    types='characterOrNULL'
+  ),
+  prototype=prototype(
+    objective=NULL,
+    constraints=NULL,
+    direction=NULL,
+    rhs=NULL,
+    boundsLower=NULL,
+    boundsUpper=NULL,
+    types=NULL    
+  ),
+  validity=function(object) {
+    if ( length(object@rhs) != length(object@direction) ) {
+      stop("linProb:: length of 'rhs' and 'direction' differ!\n")
+    }
+    nrRows.constraints <- get.simpleTriplet(object@constraints, type='nrRows', input=list()) 
+    if ( length(object@direction) != nrRows.constraints ) {
+      stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n") 
+    }
+    nrCols.constraints <- get.simpleTriplet(object@constraints, type='nrCols', input=list()) 
+    if ( length(object@objective) != nrCols.constraints ) {
+      stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")  
+    }
+    if ( length(object@objective) != length(object@types) ) {
+      stop("linProb:: Length of 'objective' and 'types' differ!\n")
+    }     
+    if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
+      stop("linProb:: wrong indices of 'boundsLower!'\n")
+    }     
+    if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
+      stop("linProb:: wrong indices of 'boundsUpper!'\n")
+    }         
+    if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
+      stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
+    }
+    if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
+      stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
+    }     
+    if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
+      stop("linProb:: illegal symbols in 'direction' differ!\n")
+    }       
+    return(TRUE)
+  }
 )
 
 #' S4 class describing a cutList-object
@@ -529,29 +526,29 @@ setClass(
 #' @note objects of class \code{cutList} are dynamically generated (and removed) during the cut and branch algorithm when solving the secondary cell suppression problem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='cutList', 
-	representation=representation(			
-		con='simpleTriplet',
-		direction='character',
-		rhs='numeric'
-	),
-	prototype=prototype(
-		con=new("simpleTriplet"),
-		direction=character(0),
-		rhs=numeric(0)	
-	),
-	validity=function(object) {
-		if ( get.simpleTriplet(get.cutList(object, type='constraints'), type='nrRows', input=list()) != length(get.cutList(object, type='direction')) ) {
-			stop("cutList:: number of rows of 'con' and length of 'direction' differs!\n")
-		}
-		if ( length(get.cutList(object, type='direction'))!= length(get.cutList(object, type='rhs')) ) {
-			stop("cutList:: length of 'direction' and 'rhs' differ!\n")
-		}
-		if ( !all(get.cutList(object, type='direction') %in% c(">", ">=", "==", "<", "<=")) ) {
-			stop("cutList:: elements of 'direction' must only contain symbols '>', '>=', '==', '<' or '<='!\n")
-		}
-		return(TRUE)
-	}
+  Class='cutList', 
+  representation=representation(      
+    con='simpleTriplet',
+    direction='character',
+    rhs='numeric'
+  ),
+  prototype=prototype(
+    con=new("simpleTriplet"),
+    direction=character(0),
+    rhs=numeric(0)  
+  ),
+  validity=function(object) {
+    if ( get.simpleTriplet(get.cutList(object, type='constraints'), type='nrRows', input=list()) != length(get.cutList(object, type='direction')) ) {
+      stop("cutList:: number of rows of 'con' and length of 'direction' differs!\n")
+    }
+    if ( length(get.cutList(object, type='direction'))!= length(get.cutList(object, type='rhs')) ) {
+      stop("cutList:: length of 'direction' and 'rhs' differ!\n")
+    }
+    if ( !all(get.cutList(object, type='direction') %in% c(">", ">=", "==", "<", "<=")) ) {
+      stop("cutList:: elements of 'direction' must only contain symbols '>', '>=', '==', '<' or '<='!\n")
+    }
+    return(TRUE)
+  }
 )
 
 #' S4 class describing a safeObj-object
@@ -592,49 +589,49 @@ setClass(
 #' @note objects of class \code{safeObj} are returned after the function \code{\link{protectTable}} has finished.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-	Class='safeObj', 
-	representation=representation(			
-		finalData='dataframeOrNULL',
-		dimInfo='dimInfoOrNULL',
-		nrNonDuplicatedCells='numericOrNULL',
-		nrPrimSupps='numericOrNULL',
-		nrSecondSupps='numericOrNULL',
-		nrPublishableCells='numericOrNULL',
-		suppMethod='characterOrNULL',
-		elapsedTime='numericOrNULL'
-	),
-	prototype=prototype(
-		finalData=NULL,
-		dimInfo=NULL,
-		nrNonDuplicatedCells=NULL,
-		nrPrimSupps=NULL,
-		nrSecondSupps=NULL,
-		nrPublishableCells=NULL,
-		suppMethod=NULL,
-		elapsedTime=NULL
-	),
-	validity=function(object) {
-		if ( length(get.safeObj(object, type='nrPrimSupps', input=list())) != 1 ) {
-			stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
-		}	
-		if ( length(get.safeObj(object, type='nrNonDuplicatedCells', input=list())) != 1 ) {
-			stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
-		}			
-		if ( length(get.safeObj(object, type='nrSecondSupps', input=list())) != 1 ) {
-			stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
-		}	
-		if ( length(get.safeObj(object, type='nrPublishableCells', input=list())) != 1 ) {
-			stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
-		}
-		if ( length(get.safeObj(object, type='suppMethod', input=list())) != 1 ) {
-			stop("safeObj:: length of 'suppMethod' must equal 1!\n")
-		}
-		if ( !get.safeObj(object, type='suppMethod', input=list()) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
-			stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
-		}	
-		if ( length(get.safeObj(object, type='elapsedTime', input=list())) != 1 ) {
-			stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
-		}		
-		return(TRUE)
-	}
+  Class='safeObj', 
+  representation=representation(      
+    finalData='dataframeOrNULL',
+    dimInfo='dimInfoOrNULL',
+    nrNonDuplicatedCells='numericOrNULL',
+    nrPrimSupps='numericOrNULL',
+    nrSecondSupps='numericOrNULL',
+    nrPublishableCells='numericOrNULL',
+    suppMethod='characterOrNULL',
+    elapsedTime='numericOrNULL'
+  ),
+  prototype=prototype(
+    finalData=NULL,
+    dimInfo=NULL,
+    nrNonDuplicatedCells=NULL,
+    nrPrimSupps=NULL,
+    nrSecondSupps=NULL,
+    nrPublishableCells=NULL,
+    suppMethod=NULL,
+    elapsedTime=NULL
+  ),
+  validity=function(object) {
+    if ( length(get.safeObj(object, type='nrPrimSupps', input=list())) != 1 ) {
+      stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
+    } 
+    if ( length(get.safeObj(object, type='nrNonDuplicatedCells', input=list())) != 1 ) {
+      stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
+    }     
+    if ( length(get.safeObj(object, type='nrSecondSupps', input=list())) != 1 ) {
+      stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
+    } 
+    if ( length(get.safeObj(object, type='nrPublishableCells', input=list())) != 1 ) {
+      stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
+    }
+    if ( length(get.safeObj(object, type='suppMethod', input=list())) != 1 ) {
+      stop("safeObj:: length of 'suppMethod' must equal 1!\n")
+    }
+    if ( !get.safeObj(object, type='suppMethod', input=list()) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
+      stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
+    } 
+    if ( length(get.safeObj(object, type='elapsedTime', input=list())) != 1 ) {
+      stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
+    }   
+    return(TRUE)
+  }
 )
