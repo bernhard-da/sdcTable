@@ -2020,3 +2020,45 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
     }
   }
 )
+
+#' summarize \code{\link{sdcProblem-class}} objects
+#'
+#' extract and show relevant information stored in \code{\link{sdcProblem-class}} objects
+#'
+#' @aliases summary,sdcProblem-method
+#' @rdname summary-method
+#' @export
+#' @docType methods
+setMethod(f='summary', signature='sdcProblem',
+  definition=function(object, ...) {
+    pI <- get.sdcProblem(object, type="problemInstance")
+    dO <- get.sdcProblem(object, type="dataObj")
+    dI <- get.sdcProblem(object, type="dimInfo")
+    if ( get.dataObj(dO, type="isMicroData") ) {
+      cat("The raw data contains micro data!")
+      if ( length(pI@numVars) > 0 ) {
+        cat("--> the use of dominance rules for primary suppressions is possible!")
+      }
+      cat("\n")
+    } else {
+      cat("The raw data contain pre-aggregated (tabular) data!\n")
+    } 
+    
+    nrcells <- get.problemInstance(pI, type="nrVars")
+    dim_names <- get.dimInfo(dI, type="varName")
+ 
+    cat("\nThe complete table to protect consists of",nrcells,"cells and has",length(dim_names),"spanning variables.") 
+    
+    cat("\nThe distribution of\n")
+    cat("- primary unsafe (u)\n")
+    cat("- secondary suppressed (x)\n")
+    cat("- forced to publish (z) and\n")
+    cat("- selectable for secondary suppression (s) cells is shown below:\n")
+    print(table(get.problemInstance(pI, type="sdcStatus")))
+    
+    nr_tables <- get.sdcProblem(object, type="partition")$nrTables
+    cat("\nIf this table is protected with heuristic methods, a total of",nr_tables,"has (sub)tables must be considered!\n")    
+
+  }
+)
+
