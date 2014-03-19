@@ -31,11 +31,11 @@
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/microData1.RData", sep="")
 #' microData <- get(load(fn))
 #' 
-#' having a look at the data structure
+#' # having a look at the data structure
 #' str(microData)
 #' 
-#' we can observe that we have a micro data set consisting of two spanning 
-#' variables ('region' and 'gender') and one numeric variable ('val') 
+#' # we can observe that we have a micro data set consisting of two spanning 
+#' # variables ('region' and 'gender') and one numeric variable ('val') 
 #' 
 #' # specify structure of hierarchical variable 'region'
 #' # levels 'A' to 'D' sum up to a Total
@@ -67,11 +67,11 @@
 #' # - variable 'gender': second column
 #' dimVarInd <- c(1,2) 
 #' 
-#' third column containts a numeric variable
+#' # third column containts a numeric variable
 #' numVarInd <- 3 
 #'
 #' # no variables holding counts, numeric values, weights or sampling 
-#' weights are available in the input data
+#' # weights are available in the input data
 #' freqVarInd <- weightInd <- sampWeightInd <- NULL
 #' 
 #' # creating an object of class \code{\link{sdcProblem-class}}
@@ -84,7 +84,7 @@
 #'  weightInd=weightInd,
 #'  sampWeightInd=sampWeightInd) 
 #' 
-#' what do we have?
+#' # what do we have?
 #' print(class(problem))
 #' @rdname makeProblem
 #' @export makeProblem
@@ -269,15 +269,15 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 #' # this cell should be considered senstive according the the freq-rule with parameter 'maxN' equal to 2!
 #' p1 <- primarySuppression(problem, type='freq', maxN=2)
 #'
-#' we can also apply a p-percent rule with parameter 'p' being 30 as below.
-#' This is only possible if we are dealing with micro data and we also have to specify the index of 
-#' a numeric variable.
+#' # we can also apply a p-percent rule with parameter 'p' being 30 as below.
+#' # This is only possible if we are dealing with micro data and we also have to specify the index of 
+#' # a numeric variable.
 #' p2 <- primarySuppression(problem, type='p', p=30, numVarInd=1) 
 #'
-#' looking at anonymization states we see, that exactly one cell is primary suppressed (sdcStatus=='u')
-#' and the remaining cells are possible candidates for secondary suppression (sdcStatus=='s') given
-#' the frequency rule with parameter 'maxN=2'. 
-#' Applying the p-percent rule with parameter 'p=30' resulted in two primary suppressions.
+#' # looking at anonymization states we see, that exactly one cell is primary suppressed (sdcStatus=='u')
+#' # and the remaining cells are possible candidates for secondary suppression (sdcStatus=='s') given
+#' # the frequency rule with parameter 'maxN=2'. 
+#' # Applying the p-percent rule with parameter 'p=30' resulted in two primary suppressions.
 #' data.frame(p1.sdc=getInfo(p1, type='sdcStatus'), p2.sdc=getInfo(p2, type="sdcStatus"))
 #' 
 #' @rdname primarySuppression
@@ -371,7 +371,6 @@ primarySuppression <- function(object, type, ...) {
 #' 
 #' @return an \code{\link{safeObj-class}} object
 #' @examples
-#' \dontrun{ 
 #' # load problem (as it was created after performing primary suppression
 #' # in the example of \code{\link{primarySuppression}})
 #' sp <- searchpaths()
@@ -379,14 +378,13 @@ primarySuppression <- function(object, type, ...) {
 #' problem <- get(load(fn))
 #' 
 #' # protect the table using the 'HITAS' algorithm with verbose output
-#' protectedData <- protectTable(problem, method='HITAS', verbose=TRUE)
+#' protectedData <- protectTable(problem, method='HITAS', verbose=TRUE, useC=TRUE)
 #' 
 #' # showing a summary
 #' summary(protectedData)
 #' 
 #' # looking at the final table with result suppression pattern
 #' print(getInfo(protectedData, type='finalData'))
-#' }
 #' @rdname protectTable
 #' @export protectTable
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
@@ -471,9 +469,8 @@ attack <- function(object, verbose=FALSE) {
 #' @return manipulated data dependend on arguments \code{object} and \code{type}
 #' 
 #' @examples
-#' \dontrun{ 
 #' # load problem (as it was created in the example 
-#' of \code{\link{makeProblem}})
+#' # of \code{\link{makeProblem}})
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/problem.RData", sep="")
 #' problem <- get(load(fn))
@@ -482,19 +479,18 @@ attack <- function(object, verbose=FALSE) {
 #' print(class(problem))
 #' 
 #' for ( slot in c('lb','ub','LPL','SPL','UPL','sdcStatus', 
-#'      'freq', 'strID', 'numVars', 'w') ) {
-#' cat('slot', slot,':\n')
-#'  print(getInfo(problem, type=slot))
+#'   'freq', 'strID', 'numVars', 'w') ) {
+#'   cat('slot', slot,':\n')
+#'   print(getInfo(problem, type=slot))
 #' }
 #'
 #' # extracting information for objects of class \code{\link{safeObj-class}} 
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/protectedData.RData", sep="")
 #' protectedData <- get(load(fn)) 
 #' for ( slot in c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps', 
-#'      'nrSecondSupps', 'nrPublishableCells', 'suppMethod') ) {
-#'  cat('slot', slot,':\n')
-#'  print(getInfo(protectedData, type=slot))
-#' }
+#'   'nrSecondSupps', 'nrPublishableCells', 'suppMethod') ) {
+#'   cat('slot', slot,':\n')
+#'   print(getInfo(protectedData, type=slot))
 #' }
 #' @rdname getInfo
 #' @export getInfo
@@ -547,25 +543,24 @@ getInfo <- function(object, type) {
 #' @return a \code{\link{sdcProblem-class}}- or \code{\link{problemInstance-class}} object
 #' 
 #' @examples
-#' \dontrun{ 
-#' # load primary suppressed data (as created in the example 
-#' of \code{\link{primarySuppression}})
+#' # load primary suppressed data (created in the example of \code{\link{primarySuppression}})
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/problemWithSupps.RData", sep="")
 #' problem <- get(load(fn))
 #' 
 #' # which is the overall total?
-#' index.tot <- which.max(getInfo(problem, 'freq')
+#' index.tot <- which.max(getInfo(problem, 'freq'))
 #' index.tot
 #' 
-#' # the anonymization state of the total is
+#' # we see that the cell with index.tot==1 is the overall total and its
+#' # anonymization state of the total can be extracted as follows:
 #' print(getInfo(problem, type='sdcStatus')[index.tot])
 #' 
 #' # we want this cell to never be suppressed
 #' problem <- setInfo(problem, type='sdcStatus', index=index.tot, input='z')
 #' 
+#' # we can verify this:
 #' print(getInfo(problem, type='sdcStatus')[index.tot])
-#' }
 #' @rdname setInfo
 #' @export setInfo
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
