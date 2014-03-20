@@ -137,7 +137,10 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
       numVarInds <- get.dataObj(dataObj, type='numVarInd')
       
       numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
-      
+      if ( any(numVal < 0 ) ) {
+        stop("dominance rules can only be applied to numeric variables with only positive values!\n")
+      }     
+   
       # calculate contributing indices
       indices <- lapply(1:get.problemInstance(pI, type='nrVars'), function(x) { calc.sdcProblem(object, type='contributingIndices', input=list(strIDs[x])) } )
       
@@ -193,7 +196,10 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
       strIDs <- get.problemInstance(pI, type='strID')
       
       numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
-      
+      if ( any(numVal < 0 ) ) {
+        stop("dominance rules can only be applied to numeric variables with only positive values!\n")
+      }     
+
       # calculate contributing indices
       indices <- lapply(1:get.problemInstance(pI, type='nrVars'), function(x) { calc.sdcProblem(object, type='contributingIndices', input=list(strIDs[x])) } )
       

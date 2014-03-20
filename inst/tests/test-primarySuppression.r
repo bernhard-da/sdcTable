@@ -36,3 +36,9 @@ expect_that(p4, is_a("sdcProblem"))
 expect_that(sum(p4.sdc=="u"), equals(2))
 expect_that(which(p4.sdc=="u"), equals(c(6,14)))
 
+problem@dataObj@rawData$val[5] <- -5
+expect_that(primarySuppression(problem, type="nk", n=2, k=80, numVarInd=1), throws_error())
+expect_that(primarySuppression(problem, type="p", p=70, numVarInd=1), throws_error())
+expect_that(primarySuppression(problem, type="pq", pq=c(60,80), numVarInd=1), throws_error())
+
+
