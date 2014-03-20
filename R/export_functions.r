@@ -266,7 +266,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 #' xtabs(rep(1, nrow(microData)) ~ gender + region, data=microData)
 #' 
 #' # cell with region=='A' and gender=='female' has 2 units contributing to it
-#' # this cell should be considered senstive according the the freq-rule with parameter 'maxN' equal to 2!
+#' # this cell should be considered sensitive according the the freq-rule with 'maxN' equal to 2!
 #' p1 <- primarySuppression(problem, type='freq', maxN=2)
 #'
 #' # we can also apply a p-percent rule with parameter 'p' being 30 as below.
@@ -274,7 +274,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 #' # a numeric variable.
 #' p2 <- primarySuppression(problem, type='p', p=30, numVarInd=1) 
 #'
-#' # looking at anonymization states we see, that exactly one cell is primary suppressed (sdcStatus=='u')
+#' # looking at anonymization states we see, that one cell is primary suppressed (sdcStatus=='u')
 #' # and the remaining cells are possible candidates for secondary suppression (sdcStatus=='s') given
 #' # the frequency rule with parameter 'maxN=2'. 
 #' # Applying the p-percent rule with parameter 'p=30' resulted in two primary suppressions.
