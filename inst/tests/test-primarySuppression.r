@@ -1,4 +1,4 @@
-context("test problem creation")
+context("test primarySuppression()")
 
 sp <- searchpaths()
 fn <- paste(sp[grep("sdcTable", sp)], "/data/problem.RData", sep="")

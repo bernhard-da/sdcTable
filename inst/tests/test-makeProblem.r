@@ -1,4 +1,4 @@
-context("test problem creation")
+context("test makeProblem()")
 
 sp <- searchpaths()
 fn <- paste(sp[grep("sdcTable", sp)], "/data/microData1.RData", sep="")
