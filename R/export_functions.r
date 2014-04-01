@@ -603,9 +603,8 @@ setInfo <- function(object, type, index, input) {
 #' @return a \code{\link{sdcProblem-class}} object
 #' 
 #' @examples
-#' \dontrun{ 
 #' # load primary suppressed data (as created in the example 
-#' of \code{\link{primarySuppression}})
+#' # of \code{\link{primarySuppression}})
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/problemWithSupps.RData", sep="")
 #' problem <- get(load(fn))
@@ -624,7 +623,7 @@ setInfo <- function(object, type, index, input) {
 #' 
 #' # having a second look at the anonymization states 
 #' print(table(getInfo(problem, 'sdcStatus')))
-#' }
+#'
 #' @rdname changeCellStatus
 #' @export changeCellStatus
 #' @note Important: the \code{i}-th element of argument \code{characteristics} is uses as the desired characteristic for the dimensional variable specified at the \code{i}-th position of argument \code{varNames}!
@@ -670,20 +669,18 @@ changeCellStatus <- function(object, characteristics, varNames, rule, verbose=FA
 #' }
 #' 
 #' @examples
-#' \dontrun{ 
 #' # load protected data (as created in the example 
-#' of \code{\link{protectTable}})
+#' # of \code{\link{protectTable}})
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/protectedData.RData", sep="")
 #' protectedData <- get(load(fn))
 #' characteristics <- c('male', 'D')
 #' varNames <- c('gender', 'region')
-#' verbose <- TRUE
-#' info <- cellInfo(protectedData, characteristics, varNames, verbose)
+#' info <- cellInfo(protectedData, characteristics, varNames, verbose=FALSE)
 #' 
 #' # show the info about this cell
 #' str(info)
-#' }
+#'
 #' @rdname cellInfo
 #' @export cellInfo
 #' @note Important: the \code{i}-th element of argument \code{characteristics} is uses as the desired characteristic for the dimensional variable specified at the \code{i}-th position of argument \code{varNames}!
@@ -730,7 +727,6 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' @return a list of length 2 with each list-element being an \code{\link{safeObj-class}} object
 #' 
 #' @examples
-#' \dontrun{ 
 #' # load micro data for further processing
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/microData2.RData", sep="")
@@ -808,7 +804,7 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' result.tab2 <- result[[2]]
 #' summary(result.tab1)
 #' summary(result.tab2)
-#' }
+#'
 #' @rdname protectLinkedTables
 #' @export protectLinkedTables
 #' @seealso \code{\link{protectTable}}
