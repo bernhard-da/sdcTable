@@ -846,12 +846,15 @@ int calculate_branching_variable(glp_prob *mprob, vector<double> &xi, sdcinfo *i
 
 /* delete all (row)-constraints from a problem */
 void delete_all_constraints(glp_prob *p) {
-  vector<int> xx(glp_get_num_rows(p));
+  vector<int> xx;
   int nrs = glp_get_num_rows(p);
-  for ( int i=1; i<=nrs; ++i ) {
-    xx[i] = i;
+  if ( nrs > 0 ) {
+    xx.push_back(-1);
+    for ( int i=1; i<=nrs; ++i ) {
+      xx.push_back(i);
+    }
+    glp_del_rows(p, nrs, &xx[0]);
   }
-  glp_del_rows(p, nrs, &xx[0]);
 }
 
 bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& constraint_pool, sdcinfo *info, vector<double> &xi) {
