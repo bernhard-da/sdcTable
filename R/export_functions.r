@@ -859,14 +859,14 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
     # eliminate 'subtotals' from variables that are not used!
     if ( length(varsNotUsed1) > 0 ) {
-      for ( i in varsNotUsed1 )  {
+      for ( i in seq_along(varsNotUsed1) )  {
         subTotals <- get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesOriginal')[get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesMinimal')==FALSE]
         commonInd1 <- setdiff(commonInd1, which(codesOrig1[[varsNotUsed1[i]]] %in% subTotals))              
       }   
     }
 
     if ( length(varsNotUsed2) > 0 ) {
-      for ( i in varsNotUsed2 )  {
+      for ( i in seq_along(varsNotUsed2) )  {
         subTotals <- get.dimVar(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]], type='codesOriginal')[get.dimVar(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]], type='codesMinimal')==FALSE]
         commonInd2 <- setdiff(commonInd2, which(!codesOrig2[[varsNotUsed2[i]]] %in% subTotals))             
       }   
@@ -906,6 +906,18 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
   origPrimSupp1Index <- get.problemInstance(pI.A, type='primSupps')
   origPrimSupp2Index <- get.problemInstance(pI.B, type='primSupps')
+  
+  # no primary suppressions
+  if ( length(origPrimSupp1Index) + length(origPrimSupp2Index) == 0 ) {
+    if ( paraList$verbose ) {
+      cat("\n===> no primary suppressions. All common cells have the same anonymity-status! [Finished]\n")
+    }    
+    outA <- calc.sdcProblem(outA, type='finalize', input=paraList)
+    outB <- calc.sdcProblem(outB, type='finalize', input=paraList)
+    return(list(outObj1=outA, outObj2=outB))    
+  }  
+  
+  
 
   # calculate commonCells:
   commonCellIndices <- f.calcCommonCellIndices(outA, outB, commonCells)   
