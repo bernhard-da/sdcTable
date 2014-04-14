@@ -76,7 +76,6 @@ setMethod(f='init.dataObj', signature=c('list'),
     datO <- data.table(inputData, key=colnames(inputData)[dimVarInd])
     N <- datO[, .N, by=key(datO)]$N
     
-    dimVarInd <- match(key(datO), colnames(datO))
     if ( any(N != 1)  ) {
       isMicroData <- TRUE
       rawData <- copy(datO) 
@@ -101,7 +100,7 @@ setMethod(f='init.dataObj', signature=c('list'),
       rawData[,N:=NULL]
     }     
     freqVarInd <- which(colnames(rawData)=="freq")
-    
+    dimVarInd <- match(key(rawData), colnames(rawData))
     if ( !is.null(sampWeightInd) ) {
       if ( isMicroData == TRUE ) {
         sw <- datO[,get(colnames(datO)[sampWeightInd])]
