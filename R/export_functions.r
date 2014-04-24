@@ -915,9 +915,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     outA <- calc.sdcProblem(outA, type='finalize', input=paraList)
     outB <- calc.sdcProblem(outB, type='finalize', input=paraList)
     return(list(outObj1=outA, outObj2=outB))    
-  }  
-  
-  
+  }
 
   # calculate commonCells:
   commonCellIndices <- f.calcCommonCellIndices(outA, outB, commonCells)   
@@ -927,12 +925,13 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   suppPatternB <- get.problemInstance(pI.B, type='suppPattern')
 
   indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
-  if ( indOK == FALSE ) {
-    if ( paraList$verbose)
+  counter <- 1
+  if ( !indOK ) {
+    if ( paraList$verbose ) {
       cat("we have to start the iterative procedure!\n")
+    }      
     runInd <- TRUE
-    counter <- 1
-    while ( runInd == TRUE ) {
+    while ( runInd ) {
       x <- cbind(suppPatternA[commonCellIndices[[1]]], suppPatternB[commonCellIndices[[2]]])
       index <- list()
       i1 <- which(x[,1] == 0 & x[,2]==1)
@@ -967,22 +966,19 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
       cbind(suppPatternA[commonCellIndices[[1]]], suppPatternB[commonCellIndices[[2]]])
       indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
-      if ( indOK == TRUE )
+      if ( indOK )
         runInd <- FALSE 
-      if( counter > paraList$maxIter ) {
+      if ( counter > paraList$maxIter ) {
         runInd <- FALSE
         warning("iterative procedure did not converge! --> returning NULL")
         return(NULL)
       }               
       counter <- counter + 1          
     }       
-  } else {
-    if ( paraList$verbose)
-      cat("\n===> all common cells have the same anonymity-state in both tables! [Finished]\n")
   }
-  if ( paraList$verbose)
+  if ( paraList$verbose ) {
     cat("\n===> all common cells have the same anonymity-state in both tables after",counter,"iterations! [Finished]\n")
-
+  }
   outA <- calc.sdcProblem(outA, type='finalize', input=paraList)
   outB <- calc.sdcProblem(outB, type='finalize', input=paraList)
   return(list(outObj1=outA, outObj2=outB))
