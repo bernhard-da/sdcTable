@@ -569,6 +569,12 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
 void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bool use_existing_solution) {
   int ik, nr;
   vector<int> heuristic_solution(info->nr_vars);
+  
+  /* set primary suppressions */
+  for ( int i=0; i<info->len_prim; ++i ) {
+    heuristic_solution[info->ind_prim[i]-1] = 1;
+  }
+
   /* set obj coefficients */
   double v;
   for ( int j=1; j<=info->nr_vars; ++j ) {    
