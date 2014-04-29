@@ -376,7 +376,8 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   dimInfo <- get.sdcProblem(sdcProblem, type="dimInfo")
   aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
 
-  ind_prim <- as.integer(get.problemInstance(pI, "primSupps"))
+  # already suppressed cells
+  ind_prim <- as.integer(sort(c(get.problemInstance(pI, "primSupps"), get.problemInstance(pI, "secondSupps"))))
   len_prim <- as.integer(length(ind_prim))
   bounds_min <- bounds_max <- rep(0, len_prim)
 
@@ -433,17 +434,20 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     verbose=as.integer(verbose)
   )
 
-  if ( attackonly == TRUE ) {
+  if ( attackonly ) {
     df <- data.frame(prim_supps=res$ind_prim, val=res$vals[res$ind_prim], bounds_low=res$bounds_min, bounds_up=res$bounds_max)
     return(df)
   } else {
     nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")
     status_new <- rep("s", nr_vars)
     status_new[res$final_pattern!=0] <- "x"
-    status_new[ind_prim] <- "u"	
+    status_new[ind_prim] <- "u"
+    if ( length(get.problemInstance(pI, "secondSupps")) > 0 ) {
+      status_new[get.problemInstance(pI, "secondSupps")] <- "x"
+    }
     if ( length(ind_fixed) > 0 ) {
       status_new[ind_fixed] <- "z"
-    }	
+    }
     sdcProblem@problemInstance <- set.problemInstance(sdcProblem@problemInstance, type="sdcStatus", list(index=1:nr_vars, values=status_new))
 
     time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
