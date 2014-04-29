@@ -436,6 +436,14 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
 
   if ( attackonly ) {
     df <- data.frame(prim_supps=res$ind_prim, val=res$vals[res$ind_prim], bounds_low=res$bounds_min, bounds_up=res$bounds_max)
+    df$protected <- df$bounds_low <= df$val - LPL[df$prim_supps]  & 
+    df$bounds_up >=  df$val + UPL[df$prim_supps] &   
+      df$bounds_up - df$bounds_low >= SPL[df$prim_supps]
+    
+    if ( length(get.problemInstance(pI, "secondSupps")) > 0 ) {
+      index <- get.problemInstance(pI, "primSupps")
+      df <- df[which(df$prim_supps %in% index),]
+    }
     return(df)
   } else {
     nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")

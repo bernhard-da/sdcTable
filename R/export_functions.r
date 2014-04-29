@@ -417,6 +417,7 @@ protectTable <- function(object, method, ...) {
 #' @param verbose a logical vector specifying if output should be verbose (TRUE) or not (FALSE)
 #' @return a data.frame with column 'index' holding indices of primary suppressed cells and columns 
 #' 'bounds_min' and 'bounds_max' featuring calculated lower and upper bounds for each cell.
+#' Column 'protected' shows if a given cell is accordingly protected (TRUE) or not (FALSE).
 #' 
 #' @examples
 #' # load problem (as it was created after performing primary suppression
