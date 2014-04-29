@@ -527,6 +527,15 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
       glp_set_col_bnds(incprob, i+nr_vars, GLP_DB, 0.0, info->LB[i-1]);
     }    
   }
+  
+  /* do not allow to change fixed cells */
+  if ( info->len_fixed > 0 ) {
+    for ( int i=0; i < info->len_fixed; ++i ) {
+      glp_set_col_bnds(incprob, info->ind_fixed[i], GLP_FX, 0.0, 0.0);
+      glp_set_col_bnds(incprob, nr_vars+info->ind_fixed[i], GLP_FX, 0.0, 0.0);
+    }
+  }  
+  
   int nr_constraints = (info->cells_mat - 2*nr_vars -1);
   vector<int> ia2(1+nr_constraints*2);
   vector<int> ja2(1+nr_constraints*2);
