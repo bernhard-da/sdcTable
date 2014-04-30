@@ -345,7 +345,7 @@ primarySuppression <- function(object, type, ...) {
 #' \item general parameters include:
 #' \itemize{
 #' \item \code{verbose}: logical vector of length 1 defining if verbose output should be produced. Parameter \code{verbose} defaults to 'FALSE'
-#' \item \code{save}: logical vector of length 1 defining if temporary results should be saved in the current working directory (TRUE) or not (FALSE). Parameter \code{safe} defaults to 'FALSE' }
+#' \item \code{save}: logical vector of length 1 defining if temporary results should be saved in the current working directory (TRUE) or not (FALSE). Parameter \code{save} defaults to 'FALSE' }
 #' \item parameters used for HITAS|OPT procedures:
 #' \itemize{
 #' \item \code{solver}: character vector of length 1 defining the solver to be used. Currently available choices are limited to 'glpk'.
