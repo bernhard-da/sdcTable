@@ -381,6 +381,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   double constraint_val, len;
   double zmin = 0.0;
   double zmax = 0.0;
+  double check_max, check_min = 0.0;
 
   /* initialize constraints index vector (1:nr of variables) */
   for ( int i=0; i <= nr_real_variables; ++i ) {
@@ -398,7 +399,8 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
       info->att_max[tmp_ind] = zmax;
     }
     // adding a constraint to the master problem, if necessary
-    if ( zmax < info->vals[indexvar-1] + info->UPL[indexvar-1] ) {
+    check_max = (double)info->vals[indexvar-1]+info->UPL[indexvar-1];
+    if ( zmax < check_max && fabs(zmax-check_max) > info->tol ) {
       constraint_val = (double)info->UPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
         alphas_max[j] = glp_get_col_prim(aprob, j);
@@ -425,7 +427,8 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
       info->att_min[tmp_ind] = zmin;
     }
     // adding a constraint to the master problem, if necessary
-    if ( zmin > info->vals[indexvar-1] - info->LPL[indexvar-1] ) {
+    check_min = (double)info->vals[indexvar-1]-info->LPL[indexvar-1];
+    if ( zmin > check_min && fabs(check_min-zmin) > info->tol ) {
       constraint_val = (double)info->LPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
         alphas_min[j] = glp_get_col_prim(aprob, j);
@@ -928,7 +931,6 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
     int bridgeless=0;
     for ( int k=0; k < info->len_prim; ++k ) {
       nr_additional_constraints1 += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, bridgeless, false);
-
       //Rprintf(attack_name, "attackers_problem_%d.txt", run_ind);
       //glp_write_lp(aprob, NULL, attack_name);
     }
@@ -941,15 +943,11 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
 
       bridgeless = 1;
       for ( int k=1; k <= info->nr_vars; ++k ) {
-        //double tmp = xi[k-1];
-
         if ( fabs(glp_get_col_prim(mprob, k)) > info->tol ) {
           nr_additional_constraints2 += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, bridgeless, false);
         }
       }
-      //Rprintf("----------------------\n");
     }
-    //Rprintf("add_const1=%d | add_const2=%d\n", nr_additional_constraints1,nr_additional_constraints2);
   }
   while ( nr_additional_constraints1 + nr_additional_constraints2 > 0 );
 
