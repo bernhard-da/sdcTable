@@ -2,9 +2,9 @@
 ### global methods ###
 ######################
 #' print \code{\link{dimVar-class}} objects
-#' 
+#'
 #' print \code{\link{dimVar-class}} objects in a resonable way
-#' 
+#'
 #' @aliases print,dimVar-method
 #' @rdname print-method
 #' @export
@@ -21,7 +21,7 @@ setMethod(f= "print", signature= "dimVar",
     }
     cat("--------------------------------\n")
     if ( get.dimVar(x, type='hasDuplicates') ) {
-      cat("Note: redundant levels (",get.dimVar(x, type='dups'),") have been removed!\n") 
+      cat("Note: redundant levels (",get.dimVar(x, type='dups'),") have been removed!\n")
     }
   }
 )
@@ -32,61 +32,61 @@ setMethod(f= "print", signature= "dimVar",
 #' @aliases get.dimVar,dimVar,character-method
 #' @rdname get.dimVar-method
 setMethod(f='get.dimVar', signature=c('dimVar','character'),
-  definition=function(object, type) { 
-    if ( !type %in% c('varName', 'codesOriginal', 'codesDefault', 
+  definition=function(object, type) {
+    if ( !type %in% c('varName', 'codesOriginal', 'codesDefault',
         'codesMinimal', 'levels', 'structure', 'dims', 'dups',
         'dupsUp', 'hasDuplicates', 'nrLevels', 'minimalCodesDefault') ) {
       stop("get.dimVar:: argument 'type' is not valid!\n")
     }
-    
+
     if ( type == 'varName' ) {
       return(object@vName)
     }
     if ( type == 'codesOriginal' ) {
       return(object@codesOriginal)
-    } 
+    }
     if ( type == 'codesDefault' ) {
       return(object@codesDefault)
-    } 
+    }
     if ( type == 'codesMinimal' ) {
       return(object@codesMinimal)
-    }   
+    }
     if ( type == 'levels' ) {
       return(object@levels)
-    } 
+    }
     if ( type == 'structure' ) {
       return(object@structure)
-    } 
+    }
     if ( type == 'dims' ) {
       return(object@dims)
-    } 
+    }
     if ( type == 'dups' ) {
       return(object@dups)
-    }     
+    }
     if ( type == 'dupsUp' ) {
       return(object@dupsUp)
-    }   
+    }
     if ( type == 'hasDuplicates' ) {
       return (!is.null(get.dimVar(object, type='dups')))
-    }     
+    }
     if ( type == 'nrLevels' ) {
-      return (length(get.dimVar(object, type='structure'))) 
-    } 
+      return (length(get.dimVar(object, type='structure')))
+    }
     if ( type == 'minimalCodesDefault' ) {
-      return(get.dimVar(object, type='codesDefault')[get.dimVar(object, type='codesMinimal')==TRUE])  
-    }     
+      return(get.dimVar(object, type='codesDefault')[get.dimVar(object, type='codesMinimal')==TRUE])
+    }
   }
 )
 
 #' @aliases calc.dimVar,dimVar,character,character-method
 #' @rdname calc.dimVar-method
 setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
-  definition=function(object, type, input) { 
+  definition=function(object, type, input) {
     if ( !type %in% c('hasDefaultCodes', 'matchCodeOrig', 'matchCodeDefault',
         'standardize', 'requiredMinimalCodes') ) {
       stop("calc.dimVar:: check argument 'type'!\n")
     }
-    
+
     if ( type == 'hasDefaultCodes' ) {
       out <- FALSE
       if ( !any(is.na(match(input, get.dimVar(object, type='codesDefault')))) ) {
@@ -94,29 +94,29 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
       }
       out
     }
-    
+
     if ( type == 'matchCodeOrig' ) {
       d <- get.dimVar(object, type='codesDefault')
       o <- get.dimVar(object, type='codesOriginal')
-      
+
       out <- rep(NA, length(input))
       for ( i in 1:length(d) ) {
-        out[which(input==d[i])] <- o[i]   
-      }   
-      out           
+        out[which(input==d[i])] <- o[i]
+      }
+      out
     }
-    
+
     if ( type == 'matchCodeDefault') {
       d <- get.dimVar(object, type='codesDefault')
       o <- get.dimVar(object, type='codesOriginal')
-      
+
       out <- rep(NA, length(input))
       for ( i in 1:length(d) ) {
-        out[which(input==o[i])] <- d[i]   
-      }   
-      out       
+        out[which(input==o[i])] <- d[i]
+      }
+      out
     }
-    
+
     if ( type == 'standardize' ) {
       ind <- which(is.na(match(input, get.dimVar(object, type='codesOriginal'))))
       if ( length(ind) > 0 ) {
@@ -132,7 +132,7 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
       }
       out
     }
-    
+
     if ( type == 'requiredMinimalCodes' ) {
       if ( length(input) != 1 ) {
         stop("requiredMinimalCodes:: length of argument 'code' must equal 1!\n")
@@ -152,9 +152,9 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
           dims <- get.dimVar(object, type='dims')
           out <- NULL
           out <- dims[[max(which(!is.na(sapply(dims, function(x) { match(input, x )}))))]][-1]
-          
+
           minCodes <- sapply(out, function(x) { get.dimVar(object, type='codesMinimal')[which(get.dimVar(object, type='codesDefault')==x)] })
-          
+
           if ( any(minCodes == FALSE) ) {
             runInd <- TRUE
             while(runInd) {
@@ -165,13 +165,13 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
                 out <- c(out, new)
               }
               out <- setdiff(out, removeVars)
-              
+
               out <- unique(out)
               minCodes <- sapply(out, function(x) { get.dimVar(object, type='codesMinimal')[which(get.dimVar(object, type='codesDefault')==x)] })
               if ( all(minCodes == TRUE) ) {
                 runInd <- FALSE
               }
-            }       
+            }
           }
         }
       }
@@ -185,9 +185,9 @@ setMethod(f='calc.dimVar', signature=c('dimVar', 'character', 'character'),
           out <- c(out, dups[ind])
         }
       }
-      names(out) <- NULL  
+      names(out) <- NULL
     }
-    return(out)   
+    return(out)
   }
 )
 
@@ -197,7 +197,7 @@ setMethod(f='init.dimVar', signature=c('list'),
   definition=function(input) {
     vName <- input$vName
     input <- input$input
-    
+
     calcInfo <- function(inputList) {
       genLevel <- function(level, dimStructure) {
         cums <- cumsum(dimStructure)
@@ -208,20 +208,20 @@ setMethod(f='init.dimVar', signature=c('list'),
           out <- lenStructure
         else {
           for( i in (2:(lenStructure-1)) ) {
-            if( as.integer(substr(level, cums[i-1]+1, cums[i]))!=0 & as.integer(substr(level, cums[i]+1, cums[lenStructure])) == 0 )            
+            if( as.integer(substr(level, cums[i-1]+1, cums[i]))!=0 & as.integer(substr(level, cums[i]+1, cums[lenStructure])) == 0 )
               out <- i
-          }       
+          }
         }
         out
-      } 
-      
-      
+      }
+
+
       # define variables
       removeInd <- NULL
-      
+
       ### calculate the levels and the the number of levels
-      nrLevels <- length(unique(inputList$levels)) 
-      
+      nrLevels <- length(unique(inputList$levels))
+
       ### calculate necessary digits to represent this hierarchy
       if ( nrLevels == 1 ) {
         nrDigits <- 1
@@ -231,19 +231,19 @@ setMethod(f='init.dimVar', signature=c('list'),
           for( i in 2:(nrLevels-1) ) {
             ss <- inputList$levels[which(inputList$levels %in% c(i, i+1))]
             fac <- rep(NA, length(ss))
-            ind <- which(ss==i)       
+            ind <- which(ss==i)
             for ( j in 1:(length(ind)) ) {
-              if ( j != length(ind) ) 
-                fac[ind[j]:(ind[j+1]-1)] <- j   
-              else 
-                fac[ind[j]:length(fac)] <- j  
-            }                 
+              if ( j != length(ind) )
+                fac[ind[j]:(ind[j+1]-1)] <- j
+              else
+                fac[ind[j]:length(fac)] <- j
+            }
             spl <- split(ss, fac)
             nrDigits <- c(nrDigits, nchar(as.character((max(unlist(lapply(spl, function(x) { length(x)})))-1))))
-          }       
-        }       
+          }
+        }
       }
-      
+
       ### calculate standard-codes
       # calculate position of levels in standard codec (substrInd)
       if ( nrLevels == 1 ) {
@@ -253,17 +253,17 @@ setMethod(f='init.dimVar', signature=c('list'),
         substrInd <- list()
         substrInd[[1]] <- c(1,1)
         for( j in 2:nrLevels ) {
-          whichDigits <- (cs[(j-1)]+1):cs[j]          
+          whichDigits <- (cs[(j-1)]+1):cs[j]
           if( length(whichDigits) == 1 )
             whichDigits <- c(whichDigits,whichDigits)
           substrInd[[j]] <- whichDigits
-        } 
+        }
         codes <- rep(paste(rep("0", sum(nrDigits)), collapse=""), length(inputList$levels))
         # calc the standard codes
         for( i in 2:length(inputList$levels) ) {
           actLevel <- inputList$levels[i]
-          charsActLevel <- nrDigits[actLevel]   
-          
+          charsActLevel <- nrDigits[actLevel]
+
           if( inputList$levels[i] >= inputList$levels[i-1] ) {
             oldInd <- i-1
             codes[i] <- codes[i-1]
@@ -282,16 +282,16 @@ setMethod(f='init.dimVar', signature=c('list'),
         for( i in 1:(length(inputList$levels)-1) ) {
           if( inputList$levels[i+1] > inputList$levels[i] )
             removeInd <- c(removeInd, i)
-        }     
-      } 
-      
+        }
+      }
+
       codesMinimal <- rep(TRUE, length(inputList$levels))
       if( length(removeInd) > 0 )
         codesMinimal[removeInd] <- FALSE
-      
+
       ### calculate additional information
       minInd <- codes[codesMinimal==TRUE]
-      
+
       # calculate all possible characteristics (=sub|totals) for each dimensional variable
       newDims <- NULL
       for ( j in (length(nrDigits)-1):1 ) {
@@ -303,15 +303,15 @@ setMethod(f='init.dimVar', signature=c('list'),
           from <- sum(nrDigits[1:j]) + 1
           to <- nchar(upperHier)
           substr(upperHier, from, to) <- paste(rep("0", (to - from + 1)), collapse="")
-          if( !upperHier %in% as.character(codes) )           
-            newDims <- append(newDims, upperHier)     
+          if( !upperHier %in% as.character(codes) )
+            newDims <- append(newDims, upperHier)
         }
-      } 
-      
+      }
+
       # combine existing and possible new characteristics
       allDims <- unique(unlist(c(codes, newDims)))
       levels <- as.integer(sapply(allDims, genLevel, nrDigits))
-      
+
       dimensions <- list()
       if ( nrLevels == 1 ) {
         dimensions[[1]] <- codes
@@ -330,102 +330,102 @@ setMethod(f='init.dimVar', signature=c('list'),
             for( j in 1:nrow(tmp) ) {
               aktDim <- as.character(tmp[j,"dims"])
               aktLev <- tmp[j,"lev"]
-              erg <- c(aktDim, as.character(dat[which(dat$lev==(aktLev+1) & substr(dat$dims,1,sum(nrDigits[1:aktLev])) == substr(aktDim,1,sum(nrDigits[1:aktLev]))), "dims"]))  
+              erg <- c(aktDim, as.character(dat[which(dat$lev==(aktLev+1) & substr(dat$dims,1,sum(nrDigits[1:aktLev])) == substr(aktDim,1,sum(nrDigits[1:aktLev]))), "dims"]))
               if( length(erg) > 1 ) {
-                dimensions[[z]] <- erg  
+                dimensions[[z]] <- erg
                 z <- z + 1
               }
             }
           }
         }
-        dimensions <- lapply(dimensions, sort)      
+        dimensions <- lapply(dimensions, sort)
       }
-      
+
       # recalculate the neccessary (TRUE) and non-neccessary levels based on all possible levels (out$allDims)
       notUsed <- sort(unique(unlist(lapply(dimensions, function(x) x[1]))))
       codesMinimal <- rep(TRUE, length(allDims))
-      codesMinimal[allDims %in% notUsed] <- FALSE   
-      
+      codesMinimal[allDims %in% notUsed] <- FALSE
+
       out <- list(
           codesOrig=inputList$codes,
           codesDefault=codes,
           levelsOrig=inputList$levels,
           levelStructure=nrDigits,
           dimensions=dimensions,
-          codesMinimal=codesMinimal)    
-      out   
-    }   
-    
+          codesMinimal=codesMinimal)
+      out
+    }
+
     if ( is.data.frame(input) || is.matrix(input) ) {
       if ( ncol(input) > 2 ) {
-        stop('input must only have 2 columns!\n') 
+        stop('input must only have 2 columns!\n')
       }
       if ( nchar(as.character(input[1,1])) != 1 ) {
-        stop('"@" must be listed in first row and first column in input!\n')  
-      }     
+        stop('"@" must be listed in first row and first column in input!\n')
+      }
     } else {
       if ( !file.exists(input) ) {
-        stop('check the path of input!\n')  
-      }     
+        stop('check the path of input!\n')
+      }
       input <- read.table(input, sep=";", dec=".", colClasses="character")
       if ( ncol(input) > 2 ) {
-        stop('input must only have 2 columns!\n') 
+        stop('input must only have 2 columns!\n')
       }
       if ( nchar(as.character(input[1,1])) != 1 ) {
-        stop('"@" must be listed in first row and first column in input!\n')  
-      }       
-    } 
-    
+        stop('"@" must be listed in first row and first column in input!\n')
+      }
+    }
+
     inputList <- list()
     inputList$levels <- nchar(as.character(input[,1]))
     inputList$codes <- as.character(input[,2])
-    
+
     # get complete level-structure
     infoComplete <- calcInfo(inputList)
-    
+
     # search for duplicates
     dimLen <- sapply(infoComplete$dimensions, length)
     dups <- dupsUp <- NULL
     removeInd <- NULL
     if ( any(dimLen == 2) ) {
-      index <- which(dimLen==2) 
+      index <- which(dimLen==2)
       for ( i in 1:length(index)) {
         indexInOrig1 <- match(infoComplete$dimensions[[index[i]]][2], infoComplete$codesDefault)
         levDiff <- setdiff(which(infoComplete$levels < infoComplete$levels[indexInOrig1]), 1:indexInOrig1)
-        if ( length(levDiff) > 0 ) 
-          indexInOrig2 <- min(levDiff)        
-        else 
+        if ( length(levDiff) > 0 )
+          indexInOrig2 <- min(levDiff)
+        else
           indexInOrig2 <- length(inputList$levels)+1
-        
+
         # move one level up
         if ( indexInOrig2 - indexInOrig1 > 1 ) {
           ind <- (indexInOrig1+1):(indexInOrig2-1)
           inputList$levels[ind] <- inputList$levels[ind]-1
-        }         
+        }
         # add info
         dups <- c(dups, infoComplete$codesOrig[indexInOrig1])
         dupsUp <- c(dupsUp, infoComplete$codesOrig[indexInOrig1-1])
         removeInd <- c(removeInd, indexInOrig1)
       }
-      inputList$levels <- inputList$levels[-removeInd] 
-      inputList$codes <- inputList$codes[-removeInd]    
+      inputList$levels <- inputList$levels[-removeInd]
+      inputList$codes <- inputList$codes[-removeInd]
     }
-    
+
     info <- calcInfo(inputList)
     info$dups <- dups
     info$dupsUp <- dupsUp
-    
-    dimVar <- new("dimVar", 
+
+    dimVar <- new("dimVar",
       codesOriginal=info$codesOrig,
       codesDefault=info$codesDefault,
       codesMinimal=info$codesMinimal,
       vName=vName,
       levels=info$levelsOrig,
-      structure=info$levelStructure, 
+      structure=info$levelStructure,
       dims=info$dimensions,
       dups=dups,
       dupsUp=dupsUp
     )
-    return(dimVar)        
+    return(dimVar)
   }
 )

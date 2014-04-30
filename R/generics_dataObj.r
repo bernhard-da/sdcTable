@@ -7,17 +7,17 @@
 #' \item dimVarInd: indices of dimensional variables
 #' \item freqVarInd: index of frequency variable
 #' \item numVarInd: indices of numerical variables
-#' \item weightVarInd index of weight variable 
+#' \item weightVarInd index of weight variable
 #' \item sampWeightInd index of variable holding sampling weights
 #' \item isMicroData does \code{object} consist of microdata?
 #' \item numVarNames variable names of numerical variables
 #' \item freqVarName variable name of frequency variable
 #' \item varName variable names of dimensional variables
-#' 
+#'
 #' @return information from objects of class \code{dataObj} depending on argument \code{type}
 #' \itemize{
 #' \item a list if argument \code{type} matches 'rawData'
-#' \item numeric vector if argument \code{type} matches 'dimVarInd', 'freqVarInd', 'numVarInd', 'weightVarInd' or 'sampWeightInd' 
+#' \item numeric vector if argument \code{type} matches 'dimVarInd', 'freqVarInd', 'numVarInd', 'weightVarInd' or 'sampWeightInd'
 #' \item character vector if argument \code{type} matches 'numVarNames', 'freqVarName' or 'varName'
 #' \item logical vector of length 1 if argument \code{type} matches 'isMicroData'}
 #'
@@ -38,7 +38,7 @@ setGeneric('get.dataObj', function(object, type) {standardGeneric('get.dataObj')
 #' @param input a list depending on argument \code{type}.}
 #' \itemize{
 #' \item type==rawData: a list containing raw data
-#' 
+#'
 #' @return an object of class \code{dataObj}
 #'
 #' @export
@@ -52,7 +52,7 @@ setGeneric('set.dataObj', function(object, type, input) { standardGeneric('set.d
 #' initialize \code{dataObj}-objects
 #'
 #' @param input a list with element described below:}
-#' 
+#'
 #' \itemize{
 #' \item element 'inputData': a list object holding data
 #' \item element 'dimVarInd': index (within \code{inputData}) of variables that define the table to protect
@@ -61,7 +61,7 @@ setGeneric('set.dataObj', function(object, type, input) { standardGeneric('set.d
 #' \item element 'weightInd': index (within \code{inputData}) of variable holding weights (or NULL)
 #' \item element 'sampWeightInd': index (within \code{inputData}) of variable holding sampling weights (or NULL)
 #' \item element 'isMicroData': logical vector of length 1
-#' 
+#'
 #' @return an object of class \code{dataObj}
 #'
 #' @export

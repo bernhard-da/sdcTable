@@ -36,10 +36,10 @@ setGeneric('get.cutList', function(object, type) {standardGeneric('get.cutList')
 #' \item type==addCompleteConstraint: a list of length 1
 #' \itemize{
 #' \item first element: an object of class \code{cutList} with exactly one constraint }
-#' \item type==removeCompleteConstraint: a list of length 1 
+#' \item type==removeCompleteConstraint: a list of length 1
 #' \itemize{
 #' \item first element: numeric vector of length 1 specifying the index of the constraint that should be removed }
-#' 
+#'
 #' @return an object of class \code{cutList}
 #'
 #' @export
@@ -59,12 +59,12 @@ setGeneric('set.cutList', function(object, type, input) {standardGeneric('set.cu
 #' \item checkViolation: check if a given solution violates any in argument \code{object}
 #' \item bindTogether: combine two \code{cutList}-objects
 #' @param input a list depending on argument \code{type}.}
-#' 
+#'
 #' \itemize{
 #' \item type==strengthen: input is not used (empty list)
-#' \item type==checkViolation: input is a list of length 2 
+#' \item type==checkViolation: input is a list of length 2
 #' \itemize{
-#' \item first element: numeric vector specifying a solution to a linear problem 
+#' \item first element: numeric vector specifying a solution to a linear problem
 #' \item second element: numeric vector specifying weights}
 #' \item type==bindTogether: input is a list of length 1
 #' \itemize{
@@ -92,17 +92,17 @@ setGeneric('calc.cutList', function(object, type, input) {standardGeneric('calc.
 #' \item singleCut: create a \code{cutList}-object with exactly one constraint
 #' \item multipleCuts: create a \code{cutList}-object with more than one constraint
 #' @param input a list depending on argument \code{type}.}
-#' 
+#'
 #' \itemize{
 #' \item type==empty: input is not used (empty list)
-#' \item type==singleCut: input is a list of length 3 
+#' \item type==singleCut: input is a list of length 3
 #' \itemize{
-#' \item first element: numeric vector specifying a values for the row of the constraint matrix that must be created 
+#' \item first element: numeric vector specifying a values for the row of the constraint matrix that must be created
 #' \item second element: character vector of length 1 specifying the direction
 #' \item third element: numeric vector of length 1 specifying the right hand side of the constraint}
 #' \item type==multipleCuts: input is a list of length 3
 #' \itemize{
-#' \item first element: object of class \code{matrix} 
+#' \item first element: object of class \code{matrix}
 #' \item second element: character vector specifying the direction of the constraints
 #' \item third element: numeric vector specifying the right hand side of the constraints}
 #'

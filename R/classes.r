@@ -15,11 +15,11 @@ setClassUnion('listOrNULL', c('list', 'NULL'))
 
 #' S4 class describing a dataObj-object
 #'
-#' This class models a data object containing the 'raw' data for a given problem 
+#' This class models a data object containing the 'raw' data for a given problem
 #' as well as information on the position of the dimensional variables, the count
-#' variable, additional numerical variables, weights or sampling weights within the 
+#' variable, additional numerical variables, weights or sampling weights within the
 #' raw data. Also slot 'isMicroData' shows if slow 'rawData' consists of microdata
-#' (multiple observations for each cell are possible, isMicroData==TRUE) or if data 
+#' (multiple observations for each cell are possible, isMicroData==TRUE) or if data
 #' have already been aggregated (isMicroData==FALSE)
 #'
 #' \describe{
@@ -37,8 +37,8 @@ setClassUnion('listOrNULL', c('list', 'NULL'))
 #' @note objects of class \code{dataObj} are input for slot \code{dataObj} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dataObj', 
-  representation=representation(      
+  Class='dataObj',
+  representation=representation(
     rawData='listOrNULL',
     dimVarInd='numericOrNULL',
     freqVarInd='numericOrNULL',
@@ -62,20 +62,20 @@ setClass(
     }
     if ( !all(get.dataObj(object, type='numVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
       stop("dataObj:: check input parameter 'numVarInd'!\n")
-    } 
+    }
     if ( length(get.dataObj(object, type='weightVarInd')) > 1 ) {
       stop("dataObj:: length of parameter 'weightVarInd' must not be greater than 1!\n")
-    }     
+    }
     if ( length(get.dataObj(object, type='sampWeightInd')) > 1 ) {
       stop("dataObj:: length of parameter 'sampWeightInd' must not be greater than 1!\n")
-    } 
+    }
     return(TRUE)
   }
-) 
+)
 
 #' S4 class describing a dimInfo-object
 #'
-#' An object of class \code{dimInfo} holds all necessary information about the 
+#' An object of class \code{dimInfo} holds all necessary information about the
 #' dimensional variables defining a hierarchical table that needs to be protected.
 #'
 #' \describe{
@@ -88,11 +88,11 @@ setClass(
 #' @name dimInfo-class
 #' @rdname dimInfo-class
 #' @exportClass dimInfo
-#' @note objects of class \code{dimInfo} are input for slots in classes \code{sdcProblem} and \code{safeObj} 
+#' @note objects of class \code{dimInfo} are input for slots in classes \code{sdcProblem} and \code{safeObj}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dimInfo', 
-    representation=representation(      
+  Class='dimInfo',
+    representation=representation(
     dimInfo='listOrNULL',
     strID='characterOrNULL',
     strInfo='listOrNULL',
@@ -102,7 +102,7 @@ setClass(
   prototype=prototype(
     dimInfo=NULL,
     strID=NULL,
-    strInfo=NULL,   
+    strInfo=NULL,
     vNames=NULL,
     posIndex=NULL
   ),
@@ -112,22 +112,22 @@ setClass(
     }
     if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='dimInfo')) ) {
       stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
-    } 
+    }
     if ( length(get.dimInfo(object, type='strInfo')) != length(get.dimInfo(object, type='varName')) ) {
       stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
-    }   
+    }
     if ( any(sapply(get.dimInfo(object, type='dimInfo'), "class") != "dimVar" ) ) {
       stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
-    }   
+    }
     return(TRUE)
   }
 )
 
 #' S4 class describing a dimVar-object
 #'
-#' An object of class \code{dimVar} holds all necessary information about a single 
+#' An object of class \code{dimVar} holds all necessary information about a single
 #' dimensional variable such as original and standardized codes, the level-structure,
-#' the hierarchical structure, codes that may be (temporarily) removed from 
+#' the hierarchical structure, codes that may be (temporarily) removed from
 #' building the complete hierarchy (dups) and their corresponding codes that correspond
 #' to these duplicated codes.
 #'
@@ -145,17 +145,17 @@ setClass(
 #' @name dimVar-class
 #' @rdname dimVar-class
 #' @exportClass dimVar
-#' @note objects of class \code{dimVar} form the base for elements in slot \code{dimInfo} of class \code{dimInfo}. 
+#' @note objects of class \code{dimVar} form the base for elements in slot \code{dimInfo} of class \code{dimInfo}.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dimVar', 
-  representation=representation(      
+  Class='dimVar',
+  representation=representation(
     codesOriginal='characterOrNULL',
     codesDefault='characterOrNULL',
     codesMinimal='logicalOrNULL',
     vName='characterOrNULL',
     levels='numericOrNULL',
-    structure='numericOrNULL', 
+    structure='numericOrNULL',
     dims='listOrNULL',
     dups='characterOrNULL',
     dupsUp='characterOrNULL'
@@ -166,7 +166,7 @@ setClass(
     codesMinimal=NULL,
     vName=NULL,
     levels=NULL,
-    structure=NULL, 
+    structure=NULL,
     dims=NULL,
     dups=NULL,
     dupsUp=NULL
@@ -185,7 +185,7 @@ setClass(
 #' S4 class describing a problemInstance-object
 #'
 #' An object of class \code{problemInstance} holds the main information that is
-#' required to solve the secondary cell suppression problem. 
+#' required to solve the secondary cell suppression problem.
 #'
 #' \describe{
 #' \item{slot \code{strID}:}{a character vector (or NULL) of ID's identifying table cells}
@@ -210,8 +210,8 @@ setClass(
 #' @note objects of class \code{problemInstance} are used as input for slot \code{problemInstance} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='problemInstance', 
-  representation=representation(      
+  Class='problemInstance',
+  representation=representation(
     strID='characterOrNULL',
     Freq='numericOrNULL',
     w='numericOrNULL',
@@ -220,7 +220,7 @@ setClass(
     ub='numericOrNULL',
     LPL='numericOrNULL',
     UPL='numericOrNULL',
-    SPL='numericOrNULL', 
+    SPL='numericOrNULL',
     sdcStatus='characterOrNULL'
   ),
   prototype=prototype(
@@ -238,9 +238,9 @@ setClass(
   validity=function(object) {
     if ( !all.equal(
       length(get.problemInstance(object, type='strID')),
-      length(get.problemInstance(object, type='freq')), 
-      length(get.problemInstance(object, type='lb')), 
-      length(get.problemInstance(object, type='ub')), 
+      length(get.problemInstance(object, type='freq')),
+      length(get.problemInstance(object, type='lb')),
+      length(get.problemInstance(object, type='ub')),
       length(get.problemInstance(object, type='SPL')),
       length(get.problemInstance(object, type='LPL')),
       length(get.problemInstance(object, type='UPL')),
@@ -251,13 +251,13 @@ setClass(
       if ( !all(sapply(get.problemInstance(object, type='numVars'), length) == length(get.problemInstance(object, type='numVars')[[1]])) ) {
         stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
       }
-    } 
+    }
     if ( !is.null(get.problemInstance(object, type='numVars')[[1]]) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='numVars')[[1]]) ) {
       stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
-    } 
+    }
     if ( !is.null(get.problemInstance(object, type='w')) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='w')) ) {
       stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
-    } 
+    }
     if ( any(get.problemInstance(object, type='lb') <= get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL')) == FALSE ) {
       stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
     }
@@ -269,7 +269,7 @@ setClass(
     }
     if ( any(get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL') <= get.problemInstance(object, type='ub')) == FALSE) {
       stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
-    } 
+    }
     if ( any(get.problemInstance(object, type='ub') - get.problemInstance(object, type='lb') >= get.problemInstance(object, type='SPL')) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
     }
@@ -286,17 +286,17 @@ setClassUnion('problemInstanceOrNULL', c('problemInstance', 'NULL'))
 
 #' S4 class describing a sdcProblem-object
 #'
-#' An object of class \code{sdcProblem} contains the entire information that is 
-#' required to protect the complete table that is given by the dimensional 
-#' variables. Such an object holds the data itself  (slot \code{dataObj}), the 
-#' entire information about the dimensional variables (slot \code{dimInfo}), 
-#' information on all table cells (ID's, bounds, values, anonymization state in 
-#' slot \code{problemInstance}), the indices on the subtables that need to be 
-#' considered if one wants to protect primary sensitive cells using a heuristic 
-#' approach (slot \code{partition}, information on which groups or rather 
-#' subtables have already been protected while performing a heuristic method 
-#' (slots \code{startI} and \code{startJ}) and the time that has been elapsed 
-#' (slot \code{elapsedTime}). 
+#' An object of class \code{sdcProblem} contains the entire information that is
+#' required to protect the complete table that is given by the dimensional
+#' variables. Such an object holds the data itself  (slot \code{dataObj}), the
+#' entire information about the dimensional variables (slot \code{dimInfo}),
+#' information on all table cells (ID's, bounds, values, anonymization state in
+#' slot \code{problemInstance}), the indices on the subtables that need to be
+#' considered if one wants to protect primary sensitive cells using a heuristic
+#' approach (slot \code{partition}, information on which groups or rather
+#' subtables have already been protected while performing a heuristic method
+#' (slots \code{startI} and \code{startJ}) and the time that has been elapsed
+#' (slot \code{elapsedTime}).
 #'
 #' \describe{
 #' \item{slot \code{dataObj}:}{an object of class \code{dataObj} (or NULL) holding information on the underlying data}
@@ -311,11 +311,11 @@ setClassUnion('problemInstanceOrNULL', c('problemInstance', 'NULL'))
 #' @name sdcProblem-class
 #' @rdname sdcProblem-class
 #' @exportClass sdcProblem
-#' @note objects of class \code{sdcProblem} are typically generated by function \code{\link{makeProblem}} and are the input of functions \code{\link{primarySuppression}} and \code{\link{protectTable}} 
+#' @note objects of class \code{sdcProblem} are typically generated by function \code{\link{makeProblem}} and are the input of functions \code{\link{primarySuppression}} and \code{\link{protectTable}}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='sdcProblem', 
-  representation=representation(      
+  Class='sdcProblem',
+  representation=representation(
     dataObj='dataObjOrNULL',
     dimInfo='dimInfoOrNULL',
     problemInstance='problemInstanceOrNULL',
@@ -341,13 +341,13 @@ setClass(
     }
     if ( get.sdcProblem(object, type='startJ') > length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]) ) {
       stop("argument 'startJ' must be <=",length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]),"!\n")
-    } 
+    }
     if ( length(get.sdcProblem(object, type='startI')) != 1 ) {
       stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
     }
     if ( length(get.sdcProblem(object, type='startJ')) != 1 ) {
       stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
-    }     
+    }
     if ( get.sdcProblem(object, type='startI') < 1 ) {
       stop("sdcProblem:: argument 'startI' must be >= 1!\n")
     }
@@ -356,7 +356,7 @@ setClass(
     }
     if ( length(get.sdcProblem(object, type='elapsedTime')) != 1 ) {
       stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
-    } 
+    }
     return(TRUE)
   }
 )
@@ -381,8 +381,8 @@ setClass(
 #' @note objects of class \code{simpleTriplet} are input of slot \code{constraints} in class \code{\link{linProb-class}} and slot slot \code{con} in class \code{\link{cutList-class}}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='simpleTriplet', 
-  representation=representation(      
+  Class='simpleTriplet',
+  representation=representation(
     i='numericOrNULL',
     j='numericOrNULL',
     v='numericOrNULL',
@@ -394,17 +394,17 @@ setClass(
     j=numeric(0),
     v=numeric(0),
     nrRows=numeric(0),
-    nrCols=numeric(0)     
+    nrCols=numeric(0)
   ),
   validity=function(object) {
     if ( length(object@i) != length(object@j) ) {
       stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
-    }     
+    }
     if ( length(object@i) != length(object@v) ) {
-      stop("simpleTriplet:: length of 'i' and 'v' differ!\n") 
-    }     
+      stop("simpleTriplet:: length of 'i' and 'v' differ!\n")
+    }
     if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
-      stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n") 
+      stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n")
     }
     return(TRUE)
   }
@@ -413,11 +413,11 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 
 #' S4 class describing a linProb-object
 #'
-#' An object of class \code{linProb} defines a linear problem given by the 
-#' objective coefficients (slot \code{objective}), a constraint matrix (slot 
+#' An object of class \code{linProb} defines a linear problem given by the
+#' objective coefficients (slot \code{objective}), a constraint matrix (slot
 #' \code{constraints}), the direction (slot \code{direction}) and the right
-#' hand side (slot \code{rhs}) of the constraints. Also, allowed lower (slot 
-#' \code{boundsLower}) and upper (slot \code{boundsUpper}) bounds of the 
+#' hand side (slot \code{rhs}) of the constraints. Also, allowed lower (slot
+#' \code{boundsLower}) and upper (slot \code{boundsUpper}) bounds of the
 #' variables as well as its types (slot \code{types}) are specified.
 #'
 #' \describe{
@@ -426,7 +426,7 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 #' \item{slot \code{direction}:}{a character vector holding the directions of the constraints, allowed values are:
 #' \itemize{
 #' \item \code{==}: equal
-#' \item \code{<}: less 
+#' \item \code{<}: less
 #' \item \code{>}: greater
 #' \item \code{<=}: less or equal
 #' \item \code{>=}: greater or equal}
@@ -437,7 +437,7 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 #' \item{slot \code{types}:}{a character vector specifying types of the objective variables, allowed types are:
 #' \itemize{
 #' \item \code{C}: binary
-#' \item \code{B}: continuous 
+#' \item \code{B}: continuous
 #' \item \code{I}: integer}
 #' }
 #' }
@@ -447,8 +447,8 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 #' @note when solving the problems in the procedure, minimization of the objective is performed.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='linProb', 
-  representation=representation(      
+  Class='linProb',
+  representation=representation(
     objective='numericOrNULL',
     constraints='simpleTripletOrNULL',
     direction='characterOrNULL',
@@ -464,38 +464,38 @@ setClass(
     rhs=NULL,
     boundsLower=NULL,
     boundsUpper=NULL,
-    types=NULL    
+    types=NULL
   ),
   validity=function(object) {
     if ( length(object@rhs) != length(object@direction) ) {
       stop("linProb:: length of 'rhs' and 'direction' differ!\n")
     }
-    nrRows.constraints <- get.simpleTriplet(object@constraints, type='nrRows', input=list()) 
+    nrRows.constraints <- get.simpleTriplet(object@constraints, type='nrRows', input=list())
     if ( length(object@direction) != nrRows.constraints ) {
-      stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n") 
+      stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n")
     }
-    nrCols.constraints <- get.simpleTriplet(object@constraints, type='nrCols', input=list()) 
+    nrCols.constraints <- get.simpleTriplet(object@constraints, type='nrCols', input=list())
     if ( length(object@objective) != nrCols.constraints ) {
-      stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")  
+      stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")
     }
     if ( length(object@objective) != length(object@types) ) {
       stop("linProb:: Length of 'objective' and 'types' differ!\n")
-    }     
+    }
     if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
       stop("linProb:: wrong indices of 'boundsLower!'\n")
-    }     
+    }
     if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
       stop("linProb:: wrong indices of 'boundsUpper!'\n")
-    }         
+    }
     if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
       stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
     }
     if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
       stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
-    }     
+    }
     if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
       stop("linProb:: illegal symbols in 'direction' differ!\n")
-    }       
+    }
     return(TRUE)
   }
 )
@@ -503,9 +503,9 @@ setClass(
 #' S4 class describing a cutList-object
 #'
 #' An object of class \code{cutList} holds constraints that can be extracted and
-#' used as for objects of class \code{\link{linProb-class}}. An object of class 
+#' used as for objects of class \code{\link{linProb-class}}. An object of class
 #' \code{cutList} consists of a constraint matrix (slot \code{con}), a vector
-#' of directions (slot \code{direction}) and a vector specifying the right hand 
+#' of directions (slot \code{direction}) and a vector specifying the right hand
 #' sides of the constraints (slot \code{rhs}).
 #'
 #' \describe{
@@ -513,7 +513,7 @@ setClass(
 #' \item{slot \code{direction}:}{a character vector holding the directions of the constraints, allowed values are:
 #' \itemize{
 #' \item \code{==}: equal
-#' \item \code{<}: less 
+#' \item \code{<}: less
 #' \item \code{>}: greater
 #' \item \code{<=}: less or equal
 #' \item \code{>=}: greater or equal}
@@ -526,8 +526,8 @@ setClass(
 #' @note objects of class \code{cutList} are dynamically generated (and removed) during the cut and branch algorithm when solving the secondary cell suppression problem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='cutList', 
-  representation=representation(      
+  Class='cutList',
+  representation=representation(
     con='simpleTriplet',
     direction='character',
     rhs='numeric'
@@ -535,7 +535,7 @@ setClass(
   prototype=prototype(
     con=new("simpleTriplet"),
     direction=character(0),
-    rhs=numeric(0)  
+    rhs=numeric(0)
   ),
   validity=function(object) {
     if ( get.simpleTriplet(get.cutList(object, type='constraints'), type='nrRows', input=list()) != length(get.cutList(object, type='direction')) ) {
@@ -553,23 +553,23 @@ setClass(
 
 #' S4 class describing a safeObj-object
 #'
-#' Objects of class \code{safeObj} are the final result after protection a 
-#' tabular structure. After a successful run of \code{\link{protectTable}} 
-#' an object of this class is generated and returned. Objects of class 
-#' \code{safeObj} contain a final, complete data set (slot \code{finalData}) 
-#' that has a column showing the anonymization state of each cell and the 
-#' complete information on the dimensional variables that have defined the table 
-#' that has been protected (slot \code{dimInfo}). Also, the number of 
-#' non-duplicated table cells (slot \code{nrNonDuplicatedCells}) is returned 
+#' Objects of class \code{safeObj} are the final result after protection a
+#' tabular structure. After a successful run of \code{\link{protectTable}}
+#' an object of this class is generated and returned. Objects of class
+#' \code{safeObj} contain a final, complete data set (slot \code{finalData})
+#' that has a column showing the anonymization state of each cell and the
+#' complete information on the dimensional variables that have defined the table
+#' that has been protected (slot \code{dimInfo}). Also, the number of
+#' non-duplicated table cells (slot \code{nrNonDuplicatedCells}) is returned
 #' along with the number of primary (slot \code{nrPrimSupps}) and secondary
-#' (slot \code{nrSecondSupps}) suppressions. Furthermore, the number of cells 
-#' that can be published (slot \code{nrPublishableCells}), the algorithm that 
+#' (slot \code{nrSecondSupps}) suppressions. Furthermore, the number of cells
+#' that can be published (slot \code{nrPublishableCells}), the algorithm that
 #' has  been used to protect the data (slot \code{suppMethod}) and the time that
-#' was needed to protect the data structure (slot \code{elapsedTime}) is 
+#' was needed to protect the data structure (slot \code{elapsedTime}) is
 #' returned.
 #'
 #' \describe{
-#' \item{slot \code{finalData}:}{a data.frame (or NULL) featuring columns for each variable defining the table (with their original codes), the cell counts and values of any numerical variables and the anonymization status for each cell with 
+#' \item{slot \code{finalData}:}{a data.frame (or NULL) featuring columns for each variable defining the table (with their original codes), the cell counts and values of any numerical variables and the anonymization status for each cell with
 #' \itemize{
 #' \item \code{s, z}: cell can be published
 #' \item \code{u}: cell is a primary sensitive cell
@@ -589,8 +589,8 @@ setClass(
 #' @note objects of class \code{safeObj} are returned after the function \code{\link{protectTable}} has finished.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='safeObj', 
-  representation=representation(      
+  Class='safeObj',
+  representation=representation(
     finalData='dataframeOrNULL',
     dimInfo='dimInfoOrNULL',
     nrNonDuplicatedCells='numericOrNULL',
@@ -613,13 +613,13 @@ setClass(
   validity=function(object) {
     if ( length(get.safeObj(object, type='nrPrimSupps', input=list())) != 1 ) {
       stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
-    } 
+    }
     if ( length(get.safeObj(object, type='nrNonDuplicatedCells', input=list())) != 1 ) {
       stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
-    }     
+    }
     if ( length(get.safeObj(object, type='nrSecondSupps', input=list())) != 1 ) {
       stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
-    } 
+    }
     if ( length(get.safeObj(object, type='nrPublishableCells', input=list())) != 1 ) {
       stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
     }
@@ -628,10 +628,10 @@ setClass(
     }
     if ( !get.safeObj(object, type='suppMethod', input=list()) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
       stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
-    } 
+    }
     if ( length(get.safeObj(object, type='elapsedTime', input=list())) != 1 ) {
       stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
-    }   
+    }
     return(TRUE)
   }
 )

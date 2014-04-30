@@ -17,46 +17,46 @@ expand <- function(inputList, vector=TRUE) {
   if ( vector == TRUE ) {
     out <- NULL
     for ( i in 1:length(inputList) ) {
-      if ( i == 1 ) 
+      if ( i == 1 )
         out <- rep(inputList[[i]], nrPoss/length(inputList[[i]]))
-      else 
+      else
         out <- c(out, rep(inputList[[i]], each=prod(uniques[1:(i-1)]), nrPoss/length(rep(inputList[[i]], each=prod(uniques[1:(i-1)])))))
-    }		
+    }
   }
   else {
     out <- list()
     for ( i in 1:length(inputList) ) {
-      if ( i == 1 ) 
+      if ( i == 1 )
         out[[i]] <- rep(inputList[[i]], nrPoss/length(inputList[[i]]))
-      else 
+      else
         out[[i]] <- rep(inputList[[i]], each=prod(uniques[1:(i-1)]), nrPoss/length(rep(inputList[[i]], each=prod(uniques[1:(i-1)]))))
-    }		
+    }
   }
   out
-}	
+}
 
 # returns a vector original size or str
 mySplit <- function(strVec, keepIndices) {
   if ( min(keepIndices) < 1 | max(keepIndices) > nchar(strVec[1]) ) {
-    stop("indices must be in 1:",nchar(strVec[1]),"!\n")	
-  }	
+    stop("indices must be in 1:",nchar(strVec[1]),"!\n")
+  }
   keepIndices <- unique(keepIndices)-1 # required because of indexing in c++
   return(.Call( "mySplitFn", as.character(strVec), as.numeric(keepIndices), PACKAGE = "sdcTable"))
 }
 
 #strs <- rep(paste(LETTERS[1:6],collapse=""), 10000)
 #system.time({
-#	sapply(strs, mySplit, c(1,6))			
+#	sapply(strs, mySplit, c(1,6))
 #})
 
 mySplitIndicesList <- function(strVec, keepList, coll="-") {
   u <- unlist(keepList)
   if ( min(u) < 1 | max(u) > nchar(strVec[1]) ) {
-    stop("indices must be in 1:",nchar(strVec[1]),"!\n")	
-  }		
+    stop("indices must be in 1:",nchar(strVec[1]),"!\n")
+  }
   out <- list()
   for ( i in 1:length(keepList) ) {
-    out[[i]] <- mySplit(strVec, keepList[[i]])		
+    out[[i]] <- mySplit(strVec, keepList[[i]])
   }
   out <- .Call( "myPasteWithSep", as.character(unlist(out)), length(out), coll, PACKAGE = "sdcTable")
 }
@@ -77,16 +77,16 @@ is.one <- function(x, tol = .Machine$double.eps^0.5) {
 
 # welche Variable soll als Branching_Variable verwendet werden?
 getBranchingVariable <- function(sol, alreadyBranched, primSupps) {
-  ind <- setdiff(1:length(sol), c(alreadyBranched, primSupps))	
+  ind <- setdiff(1:length(sol), c(alreadyBranched, primSupps))
   branchVar <- ind[which.min(0.5 - sol[ind])]
   branchVar
 }
 
 my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bounds = NULL, verbose = FALSE) {
-  if (!identical(max, TRUE) && !identical(max, FALSE)) 
+  if (!identical(max, TRUE) && !identical(max, FALSE))
     stop("'Argument 'max' must be either TRUE or FALSE.")
   direction_of_optimization <- as.integer(max)
-  if (!identical(verbose, TRUE) && !identical(verbose, FALSE)) 
+  if (!identical(verbose, TRUE) && !identical(verbose, FALSE))
     stop("'Argument 'verbose' must be either TRUE or FALSE.")
   if ( !class(mat) == "simpleTriplet" ) {
     stop("mat must be of class 'simpleTriplet'")
@@ -95,12 +95,12 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
   verb <- as.integer(verbose)
   n_of_constraints <- length(dir)
   direction_of_constraints <- match(dir, c("<", "<=", ">", ">=", "=="))
-  if (any(is.na(direction_of_constraints))) 
+  if (any(is.na(direction_of_constraints)))
     stop("Argument 'dir' must be either '<', '<=', '>', '>=' or '=='.")
   n_of_objective_vars <- length(obj)
-  if (is.null(types)) 
+  if (is.null(types))
     types <- "C"
-  if (any(is.na(match(types, c("I", "B", "C"), nomatch = NA)))) 
+  if (any(is.na(match(types, c("I", "B", "C"), nomatch = NA))))
     stop("'types' must be either 'B', 'C' or 'I'.")
   types <- rep(types, length.out = n_of_objective_vars)
   integers <- types == "I"
@@ -108,19 +108,19 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
   is_integer <- any(binaries | integers)
   bounds <- as.glp_bounds(as.list(bounds), n_of_objective_vars)
   x <- glp_call_interface(
-    obj, 
-    n_of_objective_vars, 
-    get.simpleTriplet(mat, type='rowInd', input=list()), 			
-    get.simpleTriplet(mat, type='colInd', input=list()), 
-    get.simpleTriplet(mat, type='values', input=list()), 
-    length(get.simpleTriplet(mat, type='values', input=list())), 		
+    obj,
+    n_of_objective_vars,
+    get.simpleTriplet(mat, type='rowInd', input=list()),
+    get.simpleTriplet(mat, type='colInd', input=list()),
+    get.simpleTriplet(mat, type='values', input=list()),
+    length(get.simpleTriplet(mat, type='values', input=list())),
 
-    rhs, direction_of_constraints, n_of_constraints, is_integer, 
-    integers, binaries, 
-    direction_of_optimization, 
-    bounds[,1L], 
+    rhs, direction_of_constraints, n_of_constraints, is_integer,
+    integers, binaries,
+    direction_of_optimization,
+    bounds[,1L],
     bounds[,2L],
-    bounds[,3L], 
+    bounds[,3L],
     verb
   )
   solution <- x$lp_objective_vars_values
@@ -128,9 +128,9 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
   status <- as.integer(x$lp_status != 5L)
   list(optimum = sum(solution * obj), solution = solution, status = status)
 }
-environment(my.Rglpk_solve_LP) <- environment(Rglpk_solve_LP) 
+environment(my.Rglpk_solve_LP) <- environment(Rglpk_solve_LP)
 
-# calculates years, weeks, days, hours, minutes and seconds from integer number 
+# calculates years, weeks, days, hours, minutes and seconds from integer number
 # secs: count of elapsed seconds (proc.time()[3])
 # returns also a formatted string
 formatTime <- function(secs){
@@ -144,10 +144,10 @@ formatTime <- function(secs){
     secs <- secs - (time.vec['years'] * (60*60*24*7*52))
   }
 
-  time.vec['weeks'] <- floor(secs / (60*60*24*7))	
+  time.vec['weeks'] <- floor(secs / (60*60*24*7))
   if ( time.vec['weeks'] > 0 ) {
     secs <- secs - (time.vec['weeks'] * (60*60*24*7))
-  }	
+  }
 
   time.vec['days'] <- floor(secs / (60*60*24))
   if ( time.vec['days'] > 0 ) {
@@ -156,7 +156,7 @@ formatTime <- function(secs){
 
   time.vec['hours'] <- floor(secs / (60*60))
   if ( time.vec['hours'] > 0 ) {
-    secs <- secs - time.vec['hours']*(60*60)	
+    secs <- secs - time.vec['hours']*(60*60)
   }
 
   time.vec['minutes'] <- floor(secs / (60))
@@ -176,31 +176,31 @@ formatTime <- function(secs){
 
     if ( length(x) == 1 ) {
       if ( x[i] > 1 ) {
-        time.str <- paste(time.str, x[i], " ", names(x[i]), sep="")	
+        time.str <- paste(time.str, x[i], " ", names(x[i]), sep="")
       } else {
-        time.str <- paste(time.str, x[i], " ", shortNames[i], sep="")	
-      }			
-    } 
+        time.str <- paste(time.str, x[i], " ", shortNames[i], sep="")
+      }
+    }
     else {
 
       if ( names(x)[i]=="seconds") {
         if ( x[i] > 1 ) {
-          time.str <- paste(time.str, "and", x[i], names(x[i]), sep=" ")	
+          time.str <- paste(time.str, "and", x[i], names(x[i]), sep=" ")
         } else {
-          time.str <- paste(time.str, "and", x[i], shortNames[i], sep=" ")	
+          time.str <- paste(time.str, "and", x[i], shortNames[i], sep=" ")
         }
 
       } else {
         if ( x[i] > 1 ) {
-          time.str <- paste(time.str, x[i], " ", names(x[i]), sep="")	
+          time.str <- paste(time.str, x[i], " ", names(x[i]), sep="")
         } else {
-          time.str <- paste(time.str, x[i], " ", shortNames[i], sep="")	
+          time.str <- paste(time.str, x[i], " ", shortNames[i], sep="")
         }
 
         if ( i != length(x)-1 ) {
-          time.str <- paste(time.str,", ", sep="")	
+          time.str <- paste(time.str,", ", sep="")
         }
-      }			
+      }
     }
   }
   return(list(time.vec=time.vec, time.str=time.str))
@@ -210,7 +210,7 @@ formatTime <- function(secs){
 # if selection == 'control.primary': set arguments suitable for primary suppression
 # if selection == 'control.secondary': set arguments suitable for secondary suppression
 genParaObj <- function(selection, ...) {
-  controlPrimary <- function(...) {		
+  controlPrimary <- function(...) {
     ### setDefaults ###
     paraObj <- list()
 
@@ -219,14 +219,14 @@ genParaObj <- function(selection, ...) {
     paraObj$allowZeros <- FALSE
 
     # p-percent rule
-    paraObj$p <- 80		
+    paraObj$p <- 80
 
     # n,k rule
     paraObj$n <- 2
     paraObj$k <- 85
 
     # pq-rule
-    paraObj$pq <- c(25, 50)    
+    paraObj$pq <- c(25, 50)
 
     paraObj$numVarInd <- NA
 
@@ -236,7 +236,7 @@ genParaObj <- function(selection, ...) {
     if ( length(indexNumVarIndices) == 0 ) {
       stop("genPara (type=='control.primary'): parameter 'numVarIndices' must be specified\n")
     } else {
-      numVarIndices <- newPara[[indexNumVarIndices]]	
+      numVarIndices <- newPara[[indexNumVarIndices]]
     }
 
     for ( i in seq_along(newPara) ) {
@@ -251,32 +251,32 @@ genParaObj <- function(selection, ...) {
     #}
     if ( !is.logical(paraObj$allowZeros) ) {
       stop("genPara (type=='control.primary'): argument 'allowZeros' must be logical!\n")
-    }		
+    }
     if ( !all(c(is.numeric(paraObj$maxN), is.numeric(paraObj$p), is.numeric(paraObj$n), is.numeric(paraObj$k))) ) {
       stop("genPara (type=='control.primary'): arguments 'maxN', 'p', 'n' and 'k' must be numeric!\n")
     }
     if ( length(paraObj$pq) != 2 ) {
       stop("genPara (type=='control.primary'): length of argument 'pq' must equal 2!\n")
-    }    
+    }
     if ( paraObj$k < 1 | paraObj$k >= 100) {
       stop("genPara (type=='control.primary'): argument 'k' must be >= 1 and < 100!\n")
-    }			
+    }
     if ( paraObj$p < 1 | paraObj$p >= 100) {
       stop("genPara (type=='control.primary'): argument p must be >= 1 and < 100!\n")
-    }	
+    }
     if ( paraObj$pq[1] < 1 | paraObj$pq[1] >= 100) {
       stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be >= 1 and < 100!\n")
-    }			
+    }
     if ( paraObj$pq[2] < 1 | paraObj$pq[2] >= 100) {
       stop("genPara (type=='control.primary'): argument 'q' of 'pq' must be >= 1 and < 100!\n")
-    }					
+    }
     if ( paraObj$pq[1] >= paraObj$pq[2] ) {
       stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be < argument 'q' of 'pq'\n")
-    }		    
+    }
     if ( !is.na(paraObj$numVarInd) ) {
       if ( !paraObj$numVarInd %in% 1:length(numVarIndices) ) {
         stop("genPara (type=='control.primary'): argument 'numVarInd' must be >= 1 and <=",length(numVarIndices),"!\n")
-      }				
+      }
     }
     return(paraObj)
   }
@@ -289,21 +289,21 @@ genParaObj <- function(selection, ...) {
     # general parameter
     paraObj$method <- NA
     paraObj$verbose <- FALSE
-    paraObj$save <- FALSE		
+    paraObj$save <- FALSE
     paraObj$solver <- "glpk"
 
     # HITAS|OPT - parameter
     paraObj$maxIter <- 10
-    paraObj$timeLimit <- NULL 
-    paraObj$maxVars <- NULL 
-    paraObj$fastSolution <- FALSE 
-    paraObj$fixVariables <- TRUE 
+    paraObj$timeLimit <- NULL
+    paraObj$maxVars <- NULL
+    paraObj$fastSolution <- FALSE
+    paraObj$fixVariables <- TRUE
     paraObj$approxPerc <- 10
     paraObj$useC <- FALSE
 
     # HYPERCUBE - parameter
-    paraObj$protectionLevel <- 80 
-    paraObj$suppMethod <- "minSupps" 
+    paraObj$protectionLevel <- 80
+    paraObj$suppMethod <- "minSupps"
     paraObj$suppAdditionalQuader <- FALSE
 
     # protectLinkedTables
@@ -320,13 +320,13 @@ genParaObj <- function(selection, ...) {
     ### checks
     if ( any(sapply(paraObj, length)!=1) ) {
       stop("genPara (type=='control.secondary'): arguments controlObj for sdc-procedure are not valid!\n")
-    }	
+    }
     if ( !all(c(is.numeric(paraObj$maxIter), is.numeric(paraObj$approxPerc), is.numeric(paraObj$protectionLevel), is.numeric(paraObj$maxIter))) ) {
       stop("genPara (type=='control.secondary'): arguments 'maxIter', 'maxIter', 'protectionLevel' and 'maxIter' must be numeric!\n")
     }
     if ( !all(c(is.logical(paraObj$verbose), is.logical(paraObj$save), is.logical(paraObj$fastSolution), is.logical(paraObj$fixVariables), is.logical(paraObj$suppAdditionalQuader))) ) {
       stop("genPara (type=='control.secondary'): arguments 'verbose', 'save', 'fastSolution' 'fixVariables' and 'suppAdditionalQuader' must be numeric!\n")
-    }	
+    }
     if ( !is.null(paraObj$timeLimit) && !paraObj$timeLimit %in% 1:3000 ) {
       stop("genPara (type=='control.secondary'): argument 'timeLimit' must be >= 1 and <= 3000 minutes!\n")
     }
@@ -347,16 +347,16 @@ genParaObj <- function(selection, ...) {
   }
 
   if ( selection == 'control.primary' ) {
-    paraObj <- controlPrimary(...)	
+    paraObj <- controlPrimary(...)
   }
   if ( selection == 'control.secondary' ) {
-    paraObj <- controlSecondary(...)	
-  }		
+    paraObj <- controlSecondary(...)
+  }
   return(paraObj)
 }
 
 # convert simple triplet to matrix
-st_to_mat <- function(x) { 		
+st_to_mat <- function(x) {
   n.rows <- get.simpleTriplet(x, type='nrRows', input=list())
   n.cols <- get.simpleTriplet(x, type='nrCols', input=list())
   M <- matrix(0, nrow=n.rows, ncol=n.cols)
@@ -371,7 +371,7 @@ st_to_mat <- function(x) {
   return(t(M))
 }
 
-csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {	
+csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   pI <- get.sdcProblem(sdcProblem, type="problemInstance")
   dimInfo <- get.sdcProblem(sdcProblem, type="dimInfo")
   aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
@@ -398,7 +398,7 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   vals <- as.integer(get.problemInstance(pI, type="freq"))
 
   lb <- as.double(get.problemInstance(pI, type="lb"))
-  ub <- as.double(get.problemInstance(pI, type="ub"))	
+  ub <- as.double(get.problemInstance(pI, type="ub"))
 
   LPL <- as.integer(get.problemInstance(pI, type="LPL"))
   UPL <- as.integer(get.problemInstance(pI, type="UPL"))
@@ -411,16 +411,16 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   }
   final_pattern <- as.integer(rep(0, length(vals)))
   time.start <- proc.time()
-  res <- .C("csp", 
-    ind_prim=ind_prim, 
-    len_prim=len_prim, 
+  res <- .C("csp",
+    ind_prim=ind_prim,
+    len_prim=len_prim,
     bounds_min=bounds_min,
     bounds_max=bounds_max,
     ind_fixed=ind_fixed,
     len_fixed=len_fixed,
-    ia=ia, 
-    ja=ja, 
-    ar=ar, 
+    ia=ia,
+    ja=ja,
+    ar=ar,
     cells_mat=cells_mat,
     nr_vars=nr_vars,
     nr_rows=nr_rows,
@@ -436,10 +436,10 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
 
   if ( attackonly ) {
     df <- data.frame(prim_supps=res$ind_prim, val=res$vals[res$ind_prim], bounds_low=res$bounds_min, bounds_up=res$bounds_max)
-    df$protected <- df$bounds_low <= df$val - LPL[df$prim_supps]  & 
-    df$bounds_up >=  df$val + UPL[df$prim_supps] &   
+    df$protected <- df$bounds_low <= df$val - LPL[df$prim_supps]  &
+    df$bounds_up >=  df$val + UPL[df$prim_supps] &
       df$bounds_up - df$bounds_low >= SPL[df$prim_supps]
-    
+
     if ( length(get.problemInstance(pI, "secondSupps")) > 0 ) {
       index <- get.problemInstance(pI, "primSupps")
       df <- df[which(df$prim_supps %in% index),]
@@ -461,8 +461,8 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
     sdcProblem <- set.sdcProblem(sdcProblem, type="elapsedTime", input=list(time.el))
 
-    sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))	
-    return(sdcProblem)    
+    sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))
+    return(sdcProblem)
   }
 }
 
@@ -493,7 +493,7 @@ performQuickSuppression <- function(object, input) {
               cat("Problem bei i=",i,"\n")
               ind.x <- which(splList[[i]]$sdcStatus %in% c('s','z') & splList[[i]]$freq!=0)
               f <- splList[[i]][,freqInd]
-              toSupp <- ind.x[order(f[ind.x], decreasing=FALSE)[1]]	
+              toSupp <- ind.x[order(f[ind.x], decreasing=FALSE)[1]]
               override <- TRUE
 
               if ( splList[[i]]$freq[toSupp]==0) {
@@ -525,7 +525,7 @@ performQuickSuppression <- function(object, input) {
       counter <- counter + 1
       suppsAdded <- rep(NA, ncol(combs))
       for ( i in 1:ncol(combs)) {
-        f <- apply(dat, 1, function(x) { paste(x[combs[,i]], collapse="-") } )	
+        f <- apply(dat, 1, function(x) { paste(x[combs[,i]], collapse="-") } )
         spl <- split(dat, f)
         res <- simpleSupp(spl, freqInd)
 
@@ -539,8 +539,8 @@ performQuickSuppression <- function(object, input) {
       #cat("suppsAdded:\n"); print(suppsAdded)
       if ( all(suppsAdded == FALSE) ) {
         #cat("finished! (counter=",counter,")\n")
-        runInd <- FALSE	
-      } 
+        runInd <- FALSE
+      }
     }
     pattern <- dat$sdcStatus
     pattern[which(dat$sdcStatus =="s")] <- "z"
@@ -553,9 +553,9 @@ performQuickSuppression <- function(object, input) {
   strIDs <- get.problemInstance(pI, type="strID")
 
   dat <- data.frame(
-    id=1:length(strIDs), 
-    strID=strIDs, 
-    freq=get.problemInstance(pI, type="freq"), 
+    id=1:length(strIDs),
+    strID=strIDs,
+    freq=get.problemInstance(pI, type="freq"),
     sdcStatus=get.problemInstance(pI, type="sdcStatus"), stringsAsFactors=F
   )
 
@@ -571,7 +571,7 @@ performQuickSuppression <- function(object, input) {
   dimVars <- 1:length(vNames)
   dat <- cbind(dat[,5:ncol(dat)], dat[,1:4])
   #freqInd <- length(vNames)+3
-  freqInd <- match("freq", colnames(dat))	
+  freqInd <- match("freq", colnames(dat))
 
   runInd <- TRUE
   while( runInd ) {
@@ -614,7 +614,7 @@ performQuickSuppression <- function(object, input) {
       dat$sdcStatus[dat$freq==0] <- "z"
     } else {
       if ( verbose ) {
-        cat("finished!\n")	
+        cat("finished!\n")
       }
       runInd <- FALSE
     }
@@ -624,7 +624,7 @@ performQuickSuppression <- function(object, input) {
   pI <- set.problemInstance(pI, type="sdcStatus", input=list(index=matchID, values=dat$sdcStatus))
 
   object <- set.sdcProblem(object, type="problemInstance", list(pI))
-  object	
+  object
 }
 
 

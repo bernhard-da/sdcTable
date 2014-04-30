@@ -12,7 +12,7 @@
 #' \item startI: current level at which subtables need to be protected (useful when restarting HITAS|HYPERCUBE)
 #' \item startJ: current number of the subtable within a given level that needs to be protected (useful when restarting HITAS|HYPERCUBE)
 #' \item innerAndMarginalCellInfo: for a given problem, get indices of inner- and marginal table cells
-#' 
+#'
 #' @return information from objects of class \code{sdcProblem} depending on argument \code{type}
 #' \itemize{
 #' \item an object of class \code{dataObj} (or NULL) if \code{type} matches 'dataObj'
@@ -55,13 +55,13 @@ setGeneric('get.sdcProblem', function(object, type) {standardGeneric('get.sdcPro
 #' \item indicesDealtWith: set|modify slot 'indicesDealtWith' of argument \code{object}
 #' \item elapsedTime: set|modify slot 'elapsedTime' of argument \code{object}
 #' @param input a list with elements depending on argument \code{type}.}
-#' 
+#'
 #' \itemize{
 #' \item an object of class \code{problemInstance} if argument \code{type} matches 'problemInstance'
 #' \item a list (derived from calc.multiple(type='makePartition', ...) if argument \code{type} matches 'partition'
 #' \item a numeric vector of length 1 if argument \code{type} matches 'startI', 'startJ' or 'elapsedTime'
 #' \item a numeric vector if argument \code{type} matches 'indicesDealtWith'
-#' 
+#'
 #' @return an object of class \code{sdcProblem}
 #'
 #' @export
@@ -102,14 +102,14 @@ setGeneric('set.sdcProblem', function(object, type, input) {standardGeneric('set
 #' \item a list if argument \code{type} matches 'heuristicSolution' having the following elements:
 #' \itemize{
 #' \item element 'aProb': an object of class \code{linProb} defining the attacker's problem
-#' \item element 'validCuts': an object of class \code{cutList} representing a list of constraints 
+#' \item element 'validCuts': an object of class \code{cutList} representing a list of constraints
 #' \item element 'solver': a character vector of length 1 specifying a solver to use
 #' \item element 'verbose': a logical vector of length 1 setting if verbose output is desired }
 #' \item a list (typically generated using genParaObj()) specifying parameters for the secondary cell suppression problem if argument \code{type} matches 'cutAndBranch', 'anonWorker', 'ghmiter', 'preprocess'
 #' \item a list of length 3 if argument \code{type} matches 'cellID' having following elements
 #' \itemize{
-#' \item first element: character vector specifying variable names that need to exist in slot 'dimInfo' of \code{object} 
-#' \item second element: character vector specifying codes for each variable that define a specific table cell 
+#' \item first element: character vector specifying variable names that need to exist in slot 'dimInfo' of \code{object}
+#' \item second element: character vector specifying codes for each variable that define a specific table cell
 #' \item third element: logical vector of length 1 with TRUE setting verbosity and FALSE to turn verbose output off}
 #' \item a list of length 3 if argument \code{type} matches 'ghmiter.diagObj' having following elements
 #' \itemize{
@@ -127,14 +127,14 @@ setGeneric('set.sdcProblem', function(object, type, input) {standardGeneric('set
 #' \item first element: numeric vector of indices that should be suppressed }
 #' \item a list of length 2 if argument \code{type} matches 'ghmiter.selectQuader' having following elements
 #' \itemize{
-#' \item first element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.calcInformation'  
+#' \item first element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.calcInformation'
 #' \item second element: a list (typically generated using genParaObj())}
 #' \item a list of length 4 if argument \code{type} matches 'ghmiter.suppressAdditionalQuader' having following elements
 #' \itemize{
-#' \item first element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.diagObj'  
-#' \item second element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.calcInformation'  
-#' \item third element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.selectQuader'  
-#' \item fourth element: a list (typically generated using genParaObj()) } 
+#' \item first element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.diagObj'
+#' \item second element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.calcInformation'
+#' \item third element: a list object typically generated with method \code{calc.sdcProblem} and type=='ghmiter.selectQuader'
+#' \item fourth element: a list (typically generated using genParaObj()) }
 #' \item a list of length 1 if argument \code{type} matches 'contributingIndices' having following element
 #' \itemize{
 #' \item first element: character vector of length 1 being an ID for which contributing indices should be calculated }
@@ -161,7 +161,7 @@ setGeneric('set.sdcProblem', function(object, type, input) {standardGeneric('set
 #' \item a list containing information about each quader that could possibly be suppressed if argument \code{type} matches 'ghmiter.calcInformation'
 #' \item a list containing information about a single quader that should be suppressed if argument \code{type} matches 'ghmiter.selectQuader'
 #' \item a numeric vector with indices that contribute to the desired table cell if argument \code{type} matches 'contributingIndices'
-#' \item an object of class \code{cutList} if argument \code{type} matches 'genStructuralCuts' 
+#' \item an object of class \code{cutList} if argument \code{type} matches 'genStructuralCuts'
 #' }
 #' @export
 #' @docType methods

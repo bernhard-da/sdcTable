@@ -16,26 +16,26 @@ setMethod(f='get.dimInfo', signature=c('dimInfo', 'character'),
     }
     if ( type == 'varName' ) {
       return(object@vNames)
-    }   
+    }
     if ( type == 'strID' ) {
       return(object@strID)
     }
     if ( type == 'posIndex' ) {
       return(object@posIndex)
-    }               
+    }
   }
 )
 
 #' @aliases set.dimInfo,dimInfo,character,character-method
 #' @rdname set.dimInfo-method
 setMethod(f='set.dimInfo', signature=c('dimInfo', 'character', 'character'),
-  definition=function(object, type, input) { 
+  definition=function(object, type, input) {
     if ( !type %in% c('strID') ) {
       stop("set.dimInfo:: check argument 'type'!\n")
     }
-    
+
     if ( type == 'strID' ) {
-      object@strID <- input 
+      object@strID <- input
     }
     validObject(object)
     return(object)

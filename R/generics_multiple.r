@@ -10,13 +10,13 @@
 #' \itemize{
 #' \item if type matches 'makePartitions', 'genMatMFull' or 'makeAttackerProblem': a list of length 2 with elements 'objectA' and 'objectB'
 #' \itemize{
-#' \item element 'object A': an object of class \code{problemInstance}  
+#' \item element 'object A': an object of class \code{problemInstance}
 #' \item element 'object B': an object of class \code{dimInfo} }
 #' \item type matches 'calcFullProblem': a list of length 1
 #' \itemize{
-#' \item element 'object A': an object of class \code{dataObj}  
+#' \item element 'object A': an object of class \code{dataObj}
 #' \item element 'object B': an object of class \code{dimInfo} }
-#' 
+#'
 #' @return manipulated data based on argument \code{type}
 #' \itemize{
 #' \item list with elements 'groups', 'indices', 'strIDs', 'nrGroups' and 'nrTables' if argument \code{type} matches 'makePartitions'

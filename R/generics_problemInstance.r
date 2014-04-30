@@ -22,7 +22,7 @@
 #' \item hasForcedCells: shows if \code{object} has cells that must not be suppressed
 #' \item weight: gives weight that is used the suppression procedures
 #' \item suppPattern: gives the current suppression pattern
-#' 
+#'
 #' @return information from objects of class \code{dataObj} depending on argument \code{type}
 #' \itemize{
 #' \item a list (or NULL) if argument \code{type} matches 'numVars'
@@ -53,10 +53,10 @@ setGeneric('get.problemInstance', function(object, type) {standardGeneric('get.p
 #' \item SPL: set sliding protection levels
 #' \item sdcStatus: change anonymization status
 #' @param input a list with elements 'indices' and 'values'.}
-#' 
+#'
 #' \itemize{
 #' \item element 'indices': numeric vector defining the indices of the cells that should be modified
-#' \item element 'values': numeric vector whose values are going to replace current values for cells defined by 'indices' depending on argument \code{type}  
+#' \item element 'values': numeric vector whose values are going to replace current values for cells defined by 'indices' depending on argument \code{type}
 #'
 #' @return an object of class \code{problemInstance}
 #'
@@ -76,12 +76,12 @@ setGeneric('set.problemInstance', function(object, type, input) {standardGeneric
 #' \item makeMasterProblem: create the master problem that is the core of the secondary cell suppression problem
 #' \item isProtectedSolution: check if a solution violates any required (upper|lower|sliding) protection levels
 #' @param input a list depending on argument \code{type}.}
-#' 
+#'
 #' \itemize{
 #' \item type==makeMasterProblem: input is not used (empty list)
 #' \item type==isProtectedSolution: input is a list of length 2 with elements 'input1' and 'input2'
 #' \itemize{
-#' \item element 'input1': numeric vector of calculated known lower cell bounds (from attacker's problem) 
+#' \item element 'input1': numeric vector of calculated known lower cell bounds (from attacker's problem)
 #' \item element 'input2': numeric vector of known upper cell bounds (from attacker's problem) }
 #'
 #' @return information from objects of class \code{problemInstance} depending on argument \code{type}

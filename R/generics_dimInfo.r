@@ -8,11 +8,11 @@
 #' \item varName: variable names
 #' \item strID: character vector of ID's defining table cells
 #' \item posIndex vector showing the index of the elements of \code{dimInfo} in the underlying data
-#' 
+#'
 #' @return information from objects of class \code{dimInfo} depending on argument \code{type}
 #' \itemize{
 #' \item a list (or NULL) if argument \code{type} matches 'strInfo', 'dimInfo'
-#' \item numeric vector (or NULL) if argument \code{type} matches 'posIndex' 
+#' \item numeric vector (or NULL) if argument \code{type} matches 'posIndex'
 #' \item character vector (or NULL) if argument \code{type} matches 'varName' or 'strID'}
 #'
 #' @export
@@ -32,7 +32,7 @@ setGeneric('get.dimInfo', function(object, type) {standardGeneric('get.dimInfo')
 #' @param input a list depending on argument \code{type}.}
 #' \itemize{
 #' \item type==strID: a character vector containing ID's
-#' 
+#'
 #' @return an object of class \code{dimInfo}
 #'
 #' @export

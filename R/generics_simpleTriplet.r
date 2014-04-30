@@ -9,7 +9,7 @@
 #' \item nrRows: return the number of rows of the input object
 #' \item nrCols: return the number of columns of the input object
 #' \item nrCells: return the number of cells (different from 0!)
-#' \item duplicatedRows: return a numeric vector showing indices of duplicated rows 
+#' \item duplicatedRows: return a numeric vector showing indices of duplicated rows
 #' \item transpose: transpose input \code{object} and return the transposed matrix
 #' \item getRow: return a specific row of input \code{object}
 #' \item getCol: return a specific column of input \code{object}
@@ -50,33 +50,33 @@ setGeneric('get.simpleTriplet', function(object, type, input) {standardGeneric('
 #' \item modifyCell: change specified cell of \code{object}
 #' \item bind: bind two objects of class \code{simpleTriplet} together
 #' @param input a list depending on argument \code{type}.}
-#' 
+#'
 #' \itemize{
 #' \item type==removeRow: input is a list of length 1
 #' \itemize{
 #' \item first element: numeric vector of length 1 defining the index of the row that should be removed }
-#' \item type==removeCol: input is a list of length 1 
+#' \item type==removeCol: input is a list of length 1
 #' \itemize{
 #' \item first element: numeric vector of length 1 defining the index of the column that should be removed }
 #' \item type==addRow: input is a list of length 2
 #' \itemize{
 #' \item first element: numeric vector of column-indices
 #' \item second element: numeric vector defining the cell-values of the row that will be added }
-#' \item type==addCol: input is a list of length 2 
+#' \item type==addCol: input is a list of length 2
 #' \itemize{
 #' \item first element: numeric vector of row-indices
 #' \item second element: numeric vector defining the cell-values of the column that will be added }
-#' \item type==modifyRow: input is a list of length 3 
+#' \item type==modifyRow: input is a list of length 3
 #' \itemize{
 #' \item first element: numeric vector of length 1 specifying the the row-index of the row that will be modified
 #' \item second element: numeric vector specifying the column-indices that should be modified
 #' \item third element: numeric vector defining values that should be set in the given row }
-#' \item type==modifyCol: input is a list of length 3 
+#' \item type==modifyCol: input is a list of length 3
 #' \itemize{
 #' \item first element: numeric vector specifying the row-indices that should be modified
 #' \item second element: numeric vector of length 1 specifying the the column-index of the column that will be modified
 #' \item third element: numeric vector defining values that should be set in the given column }
-#' \item type==modifyCell: input is a list of length 3 
+#' \item type==modifyCell: input is a list of length 3
 #' \itemize{
 #' \item first element: numeric vector of length 1 defining the column-index
 #' \item second element: numeric vector of length 1 defining the row-index
@@ -98,8 +98,8 @@ setGeneric('calc.simpleTriplet', function(object, type, input) {standardGeneric(
 
 #' initialize \code{simpleTriplet}-objects depending on argument \code{type}
 #'
-#' init.simpleTriplet should be used to create objects of class \code{simpleTriplet}. 
-#' It is possible to create an object from class \code{simpleTriplet} from an existing matrix (using type=='simpleTriplet'). 
+#' init.simpleTriplet should be used to create objects of class \code{simpleTriplet}.
+#' It is possible to create an object from class \code{simpleTriplet} from an existing matrix (using type=='simpleTriplet').
 #' A positive (or negative) identity matrix stored as an object of class \code{simpleTriplet} can be created by specifying type=='simpleTripletDiag'.
 #'
 #' @param type a character vector of length 1 defining what|how to initialize. Allowed types are:}
