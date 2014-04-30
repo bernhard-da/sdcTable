@@ -693,7 +693,7 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
   if ( use_existing_solution == true ) {
     if ( bound < info->upper_bound ) {
       if ( info->verbose == true ) {
-        Rprintf("improved heuristic solution was found: bound=%f!\n", bound);
+        Rprintf("improved heuristic solution was found: bound=%g!\n", bound);
         R_FlushConsole();
       }
       for ( int i=0; i < info->nr_vars; ++i ) {
