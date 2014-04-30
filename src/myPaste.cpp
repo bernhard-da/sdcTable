@@ -13,7 +13,7 @@ RcppExport SEXP myPaste(SEXP stringvec, SEXP nrKeyVars) {
     for (int i=0; i < by; i++) {
       str.clear() ;
       for(int j=0; j < keyVars; j++) {
-        str.append(stringVec[i+by*j]);			
+        str.append(stringVec[i+by*j]);
       }
       outVec[i] = str;
     }

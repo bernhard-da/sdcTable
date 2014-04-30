@@ -4,7 +4,7 @@ PKG_LIBS = @GLPK_LIB_PATH@ @GLPK_LIBS@
 .PHONY: all @GLPK_TS@
 
 all: $(SHLIB)
-$(OBJECTS): @GLPK_TS@ 
+$(OBJECTS): @GLPK_TS@
 
 GLPK.ts:
 	@(cd GLPK && make)

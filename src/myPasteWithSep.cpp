@@ -7,7 +7,7 @@ RcppExport SEXP myPasteWithSep(SEXP stringvec, SEXP nrKeyVars, SEXP seperator) {
     int keyVars = as<int>( nrKeyVars ) ;
     int nrRows = stringVec.size();
     int by = nrRows / keyVars;
-    Rcpp::CharacterVector sepOrig(seperator);   
+    Rcpp::CharacterVector sepOrig(seperator);
 
     CharacterVector outVec( by ) ;
     std::string str;
@@ -16,10 +16,10 @@ RcppExport SEXP myPasteWithSep(SEXP stringvec, SEXP nrKeyVars, SEXP seperator) {
     for (int i=0; i < by; i++) {
       str.clear() ;
       for(int j=0; j < keyVars; j++) {
-        str.append(stringVec[i+by*j]);	
+        str.append(stringVec[i+by*j]);
         if ( j < (keyVars-1) ) {
           str.append(sep);
-        }	
+        }
       }
       outVec[i] = str;
     }
