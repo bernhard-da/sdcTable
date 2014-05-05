@@ -146,6 +146,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     ss <- list()
     for ( i in seq_along(dimVarInd) ) {
       remove.vals <- FALSE
+      remove_ind <- NULL
       if ( !calc.dimVar(inputDims[[i]], type='hasDefaultCodes', input=rawData[[dimVarInd[i]]]) ) {
         dups <- get.dimVar(inputDims[[i]], type='dups')
         if ( length(dups) > 0 ) {
@@ -153,11 +154,12 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
           for ( k in length(dups):1 ) {
             ind <- which(rawData[[dimVarInd[i]]]==dups[k])
             if ( length(ind) > 0 ) {
-              if ( i > 1 ) {
-                remove.vals <- TRUE
-              }
               if ( length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0 ) {
                 rawData <- rawData[-ind,]
+                if ( i > 1 ) {
+                  remove.vals <- TRUE
+                  remove_ind <- c(remove_ind, ind)
+                }                
               } else {
                 rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
               }
@@ -172,7 +174,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
       # remove entries in ss[[1]...ss[[i-1]]
       if ( remove.vals ) {
         for ( z in 1:(i-1)) {
-          ss[[z]] <- ss[[z]][-ind]
+          ss[[z]] <- ss[[z]][-remove_inds]
         }
       }
     }
