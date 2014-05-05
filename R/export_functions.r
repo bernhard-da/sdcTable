@@ -174,7 +174,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
       # remove entries in ss[[1]...ss[[i-1]]
       if ( remove.vals ) {
         for ( z in 1:(i-1)) {
-          ss[[z]] <- ss[[z]][-remove_inds]
+          ss[[z]] <- ss[[z]][-remove_ind]
         }
       }
     }
