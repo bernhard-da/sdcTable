@@ -1022,9 +1022,6 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
           } else {
             indexPool <- sort(unique(unlist(partition$indices[1:(i-1)])))
           }
-          if ( verbose ) {
-            cat("dealing with Group",i,"|",length(partition$groups),"\n")
-          }
           ind <- partition$indices[[i]]
 
           beginJ <- ifelse(i==startI, startJ, 1)
@@ -1036,7 +1033,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
             pI <- get.sdcProblem(object, type='problemInstance')
             if ( any(get.problemInstance(pI, type='sdcStatus')[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
               if ( verbose ) {
-                cat("starting to solve problem",j,"/",length(ind),"in this group!\n")
+                cat("starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
               }
               ### if we have cells with "u" or "x" we need to protect
               ### the corresponding subtable
@@ -1126,7 +1123,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
         runInd <- TRUE
         nrRuns <- 1
         while ( runInd == TRUE ) {
-          cat("run=",nrRuns,"\n")
+          cat("The algorithm is now starting run",nrRuns,"\n")
 
           tmpSupps <- c(get.problemInstance(get.sdcProblem(object, 'problemInstance'), 'primSupps'),
               get.problemInstance(get.sdcProblem(object, 'problemInstance'), 'secondSupps'))
@@ -1135,9 +1132,6 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
           for ( i in startI:(partition$nrGroups) ) {
             object <- set.sdcProblem(object, type='startJ', input=list(1)) # reset j before updating i
             object <- set.sdcProblem(object, type='startI', input=list(i))
-            if ( verbose ) {
-              cat("dealing with Group",i,"|",length(partition$groups),"\n")
-            }
             ind <- partition$indices[[i]]
 
             beginJ <- ifelse(i==startI, startJ, 1)
@@ -1151,7 +1145,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
               # temporarily set secondary suppressions to "u"
               if ( any(get.problemInstance(pI, type='sdcStatus')[currentIndices] == "u") & length(currentIndices) > 1 ) {
                 if ( verbose ) {
-                  cat("starting to solve problem",j,"(total=",length(ind),") in this group!\n")
+                  cat("starting to solve problem",j,"/",length(ind),"in group",j,"/",partition$nrGroups,"!\n")
                 }
 
                 ### if we have cells with "u",  we need to protect
@@ -1282,7 +1276,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
           }
         }
         if ( verbose ) {
-          cat("[DONE]\n")
+          cat("[done]\n")
         }
       }
       object <- set.sdcProblem(object, type='elapsedTime', input=list(get.sdcProblem(object, type='elapsedTime')+(proc.time()-time.start)[3]))
