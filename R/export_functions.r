@@ -159,7 +159,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
                 if ( i > 1 ) {
                   remove.vals <- TRUE
                   remove_ind <- c(remove_ind, ind)
-                }                
+                }
               } else {
                 rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
               }
@@ -765,9 +765,9 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' # creating input objects for further processing. For details have a look at
 #' # \code{\link{makeProblem}}.
 #' problem1 <- makeProblem(data=microData1, dimList=dimList1, dimVarInd=c(1,2),
-#'          numVarInd=3, isMicroData=TRUE)
+#'          numVarInd=3)
 #' problem2 <- makeProblem(data=microData2, dimList=dimList2, dimVarInd=c(1,2,3),
-#'          numVarInd=4, isMicroData=TRUE)
+#'          numVarInd=4)
 #'
 #' # the cell specified by gender=='Tot' and ecoOld=='A'
 #' # is one of the common cells! -> we mark it as primary suppression
@@ -864,7 +864,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     if ( length(varsNotUsed1) > 0 ) {
       for ( i in seq_along(varsNotUsed1) )  {
         subTotals <- get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesOriginal')[get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesMinimal')==FALSE]
-        commonInd1 <- setdiff(commonInd1, which(codesOrig1[[varsNotUsed1[i]]] %in% subTotals))
+        commonInd1 <- setdiff(commonInd1, which(!codesOrig1[[varsNotUsed1[i]]] %in% subTotals))
       }
     }
 
