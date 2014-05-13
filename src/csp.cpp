@@ -400,6 +400,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     }
     // adding a constraint to the master problem, if necessary
     check_max = (double)info->vals[indexvar-1]+info->UPL[indexvar-1];
+    //Rprintf("up: cell=%d | zmax=%g | check_max=%g, val=%d | UPL=%d\n", indexvar, zmax, check_max, info->vals[indexvar-1], info->UPL[indexvar-1]);
     if ( zmax < check_max && fabs(zmax-check_max) > info->tol ) {
       constraint_val = (double)info->UPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
@@ -428,6 +429,8 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     }
     // adding a constraint to the master problem, if necessary
     check_min = (double)info->vals[indexvar-1]-info->LPL[indexvar-1];
+    //Rprintf("down: cell=%d | zmin=%g | check_min=%g, val=%d | LPL=%d\n", indexvar, zmin, check_min, info->vals[indexvar-1], info->LPL[indexvar-1]);
+
     if ( zmin > check_min && fabs(check_min-zmin) > info->tol ) {
       constraint_val = (double)info->LPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
@@ -539,11 +542,12 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
     }
   }
 
-  int nr_constraints = (info->cells_mat - 2*nr_vars -1);
+  int nr_constraints = (info->cells_mat - 2*nr_vars - 1);
   vector<int> ia2(1+nr_constraints*2);
   vector<int> ja2(1+nr_constraints*2);
   vector<double> ar2(1+nr_constraints*2);
 
+  /* we need initialisation at element 0*/
   ia2[0] = 0;
   ja2[0] = 0;
   ar2[0] = 0;
@@ -552,7 +556,7 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   int ind, j;
   int nr_rows = 0;
 
-  for (int i=1; i<=nr_constraints; ++i) {
+  for ( int i=1; i<=nr_constraints; ++i ) {
     j = 2*nr_vars + i;
     ind = nr_constraints+i;
     ia2[i] = info->ia[j]-2*nr_vars;
@@ -594,13 +598,12 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
       v = (double)info->vals[j-1] * (1-xi[j-1]);
       glp_set_obj_coef(incprob, j, v);
       glp_set_obj_coef(incprob, info->nr_vars+j, v);
-    }
-    if ( use_existing_solution == false ) {
+    } else {
       v = (double)info->vals[j-1];
       glp_set_obj_coef(incprob, j, v);
       glp_set_obj_coef(incprob, j+info->nr_vars, v);
     }
-    if ( xi[j-1] == 1 ) {
+    if ( heuristic_solution[j-1] == 1 ) {
       glp_set_obj_coef(incprob, j, 0.0);
       glp_set_obj_coef(incprob, j+info->nr_vars, 0.0);
     }
@@ -611,28 +614,47 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
 
   for ( int z=1; z<=info->len_prim; ++z ) {
     ik = info->ind_prim[z-1];
+    Rprintf("we are now dealing with cell %d that has a value of %d!\n", ik, info->vals[ik-1]);
     if ( info->UPL[ik-1] > 0 || info->SPL[ik-1] > 0 ) {
-      glp_set_col_bnds(incprob, ik, GLP_FX, info->UPL[ik-1], info->UPL[ik-1]);
+      glp_set_col_bnds(incprob, ik, GLP_FX, (double)info->UPL[ik-1], (double)info->UPL[ik-1]);
       glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_FX, 0.0, 0.0);
       glp_simplex(incprob, NULL);
+      //if ( glp_get_status(incprob) != GLP_OPT ) {
+      //  Rprintf("writing prob_up at cell %d!\n", ik);
+      //  glp_write_lp(incprob, NULL, "prob_up.txt");
+      //} else {
+      //  Rprintf("the solution of the attacker problem has an obj-val of %g\n", glp_get_obj_val(incprob));
+      //}
       for ( int j=1; j<=info->nr_vars; ++j ) {
         if ( glp_get_col_prim(incprob, j) + glp_get_col_prim(incprob, info->nr_vars+j) > 0 ) {
-          heuristic_solution[j-1] = 1;
+          if ( heuristic_solution[j-1] != 1 ) {
+            //Rprintf("adding cell %d to heuristic solution (UPL)!\n", j);
+            heuristic_solution[j-1] = 1;
+            glp_set_obj_coef(incprob, j, 0.0);
+            glp_set_obj_coef(incprob, j+info->nr_vars, 0.0);
+          }
         }
       }
     }
-
     if ( info->LPL[ik-1] > 0 || info->SPL[ik-1] > 0 ) {
       glp_set_col_bnds(incprob, ik, GLP_FX, 0.0, 0.0);
-      glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_FX, info->LPL[ik-1], info->LPL[ik-1]);
+      glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_FX, (double)info->LPL[ik-1], (double)info->LPL[ik-1]);
       glp_simplex(incprob, NULL);
+      //if ( glp_get_status(incprob) != GLP_OPT ) {
+      //  Rprintf("writing prob_lo at cell %d\n", ik);
+      //  glp_write_lp(incprob, NULL, "prob_lo.txt");
+      //}
       for ( int j=1; j<=info->nr_vars; ++j ) {
         if ( glp_get_col_prim(incprob, j) + glp_get_col_prim(incprob, info->nr_vars+j) > 0 ) {
-          heuristic_solution[j-1] = 1;
+          if ( heuristic_solution[j-1] != 1 ) {
+            //Rprintf("adding cell %d to heuristic solution (LPL)!\n", j);
+            heuristic_solution[j-1] = 1;
+            glp_set_obj_coef(incprob, j, 0.0);
+            glp_set_obj_coef(incprob, j+info->nr_vars, 0.0);
+          }
         }
       }
     }
-
     if ( info->SPL[ik-1] > 0 ) {
       glp_set_col_bnds(incprob, ik, GLP_DB, 0, info->UB[ik-1]);
       glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_DB, 0, info->LB[ik-1]);
@@ -642,20 +664,20 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
       ind[2] = ik + info->nr_vars;
 
       glp_set_mat_row(incprob, nr, 2, ind, val);
-      glp_set_row_bnds(incprob, nr, GLP_FX, info->SPL[ik-1], info->SPL[ik-1]);
+      glp_set_row_bnds(incprob, nr, GLP_FX, (double)info->SPL[ik-1], (double)info->SPL[ik-1]);
       glp_simplex(incprob, NULL);
+      //if ( glp_get_status(incprob) != GLP_OPT ) {
+      //  glp_write_lp(incprob, NULL, "prob_slide.txt");
+      //}
       for ( int j=1; j<=info->nr_vars; ++j ) {
         if ( glp_get_col_prim(incprob, j) + glp_get_col_prim(incprob, info->nr_vars+j) > 0 ) {
-          heuristic_solution[j-1] = 1;
+          if ( heuristic_solution[j-1] != 1 ) {
+            //Rprintf("adding cell %d to heuristic solution (SPL)\n", j);
+            heuristic_solution[j-1] = 1;
+            glp_set_obj_coef(incprob, j, 0.0);
+            glp_set_obj_coef(incprob, j+info->nr_vars, 0.0);
+          }
         }
-      }
-    }
-
-    /* set coefficients to zero for supressed cells */
-    for ( int i=1; i<=info->nr_vars; ++i ) {
-      if ( heuristic_solution[i-1] == 1 ) {
-        glp_set_obj_coef(incprob, i, 0);
-        glp_set_obj_coef(incprob, i+info->nr_vars, 0);
       }
     }
 
@@ -688,6 +710,7 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
     info->upper_bound = bound;
     for ( int i=0; i < info->nr_vars; ++i ) {
       info->current_best_solution[i] = heuristic_solution[i];
+      xi[i] = heuristic_solution[i];
     }
   }
   if ( use_existing_solution == true ) {
@@ -698,6 +721,7 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
       }
       for ( int i=0; i < info->nr_vars; ++i ) {
         info->current_best_solution[i] = heuristic_solution[i];
+        xi[i] = heuristic_solution[i];
       }
       info->upper_bound = bound;
     }
@@ -735,6 +759,7 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
 
   for ( int j=1; j <= nr_real_variables; ++j ) {
     obj_up = info->vals[j-1] + xi[j-1]*info->UB[j-1];
+    //Rprintf("cell=%d | obj_up=%g | vals=%d | xi=%g | UB=%g\n", j, obj_up, info->vals[j-1], xi[j-1], info->UB[j-1]);
     obj_low = (-1)*(info->vals[j-1] - xi[j-1]*info->LB[j-1]);
     glp_set_obj_coef(aprob, j, obj_up);
     glp_set_obj_coef(aprob, j+nr_real_variables, obj_low);
@@ -746,6 +771,7 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
   vector<int> constraint_indices(nr_real_variables+1);
 
   double constraint_val, zmin, zmax;
+  double check_max, check_min;
 
   /* initialize constraints index vector (1:nr of variables) */
   for ( int i=0; i <= nr_real_variables; ++i ) {
@@ -761,16 +787,19 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
     arrval = indexvar-1;
 
     /* 1) maximize the problem */
-    if ( HIGH[sortvar] < info->vals[arrval] + info->UPL[arrval] || HIGH[sortvar] - LOW[sortvar] < info->SPL[arrval] ) {
+    if ( HIGH[sortvar] < (double)info->vals[arrval] + (double)info->UPL[arrval] || HIGH[sortvar] - LOW[sortvar] < (double)info->SPL[arrval] ) {
       glp_set_row_bnds(aprob, indexvar, GLP_FX, 1, 1);
       glp_simplex(aprob, NULL);
       zmax = glp_get_obj_val(aprob);
       // adding a constraint to the master problem, if necessary
-      if ( zmax < info->vals[indexvar-1] + info->UPL[indexvar-1] ) {
+      check_max = (double)info->vals[indexvar-1] + (double)info->UPL[indexvar-1];
+      if ( zmax < check_max && fabs(zmax-check_max) > info->tol ) {
         constraint_val = (double)info->UPL[indexvar-1];
         for ( int j=1; j<=nr_real_variables; ++j) {
           v = glp_get_col_prim(aprob, j)*info->UB[j-1] + glp_get_col_prim(aprob,j+nr_real_variables)*info->LB[j-1];
-          if ( fabs(v) < 1e-9 ) { v = 0.0; }
+          if ( fabs(v) < info->tol ) {
+            v = 0.0;
+          }
           constraint_values_max[j] = fmin(v, constraint_val);
         }
         update_master_problem(mprob, constraint_indices, constraint_values_max, constraint_val);
@@ -781,16 +810,19 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
     }
 
     /* 2) minimize the problem */
-    if ( LOW[sortvar] > info->vals[arrval] - info->LPL[arrval] || HIGH[sortvar] - LOW[sortvar] < info->SPL[arrval] ) {
+    if ( LOW[sortvar] > (double)info->vals[arrval] - (double)info->LPL[arrval] || HIGH[sortvar] - LOW[sortvar] < (double)info->SPL[arrval] ) {
       glp_set_row_bnds(aprob, indexvar, GLP_FX, -1, -1);
       glp_simplex(aprob, NULL);
       zmin = (-1)*glp_get_obj_val(aprob);
       // adding a constraint to the master problem, if necessary
-      if ( zmin > info->vals[indexvar-1] - info->LPL[indexvar-1] ) {
+      check_min = (double)info->vals[indexvar-1] - (double)info->LPL[indexvar-1];
+      if ( zmin > check_min && fabs(check_min-zmin) > info->tol ) {
         constraint_val = (double)info->LPL[indexvar-1];
         for ( int j=1; j<=nr_real_variables; ++j) {
           v = glp_get_col_prim(aprob, j)*info->UB[j-1] + glp_get_col_prim(aprob,j+nr_real_variables)*info->LB[j-1];
-          if ( fabs(v) < 1e-9 ) { v = 0.0; }
+          if ( fabs(v) < info->tol ) {
+            v = 0.0;
+          }
           constraint_values_min[j] = fmin(v, constraint_val);
         }
         update_master_problem(mprob, constraint_indices, constraint_values_min, constraint_val);
@@ -807,14 +839,17 @@ void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> 
   int index;
   for ( int i=0; i < info->len_prim; ++i ) {
     index = info->ind_prim[i]-1;
-    if ( HIGH[i] > info->vals[index] + info->UPL[index] ) {
+    if ( info->UPL[index] > 0 && HIGH[i] > (double)info->vals[index] + (double)info->UPL[index] ) {
       info->UPL[index] = 0;
+      //Rprintf("setting UPL for cell %d to 0!\n", index+1);
     }
-    if ( LOW[i] < info->vals[index] - info->LPL[index] ) {
+    if ( info->LPL[index] > 0 && LOW[i] < (double)info->vals[index] - (double)info->LPL[index] ) {
       info->LPL[index] = 0;
+      //Rprintf("setting LPL for cell %d to 0!\n", index+1);
     }
-    if ( HIGH[i] - LOW[i] >= info->SPL[index] ) {
+    if ( info->SPL[index] > 0 && HIGH[i] - LOW[i] >= (double)info->SPL[index] ) {
       info->SPL[index] = 0;
+      //Rprintf("setting SPL for cell %d to 0!\n",index+1);
     }
   }
 }
@@ -924,7 +959,7 @@ bool solve_relaxation(glp_prob *mprob, glp_prob *aprob, list<mprob_constraint>& 
       Rprintf("%d variables were removed due to reduced costs!\n", nr_removed_vars);
     }
     */
-    //sRprintf(mprob_name, "master_problem_%d.txt", run_ind);
+    //Rprintf(mprob_name, "master_problem_%d.txt", run_ind);
     //glp_write_lp(mprob, NULL, mprob_name);
 
     /* solve attacker problems for all primary sensitive cells */
@@ -972,25 +1007,15 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
   vector<double> cur_vals;
   bool is_int;
 
-  if ( info->verbose == true ) {
-    Rprintf("\nbranch and bound algorithm is starting!\n");
-    Rprintf("--> starting to calculate branching variable.\n");
-    R_FlushConsole();
-  }
-
   /* calculate first branching variable (with index startig from 1!) */
   int bvar = calculate_branching_variable(mprob, xi, info);
+  if ( info->verbose == true ) {
+    Rprintf("----> we are branching on variable %d\n", bvar);
+    R_FlushConsole();
+  }
 
   /* define a queue to my branch_objects */
-  if ( info->verbose == true ) {
-    Rprintf("--> initializing pool with first branchvar=%d...", bvar);
-    R_FlushConsole();
-  }
   list<branchnode> pool;
-  if ( info->verbose == true ) {
-    Rprintf("[done]\n");
-    R_FlushConsole();
-  }
   branchnode n1, n2;
   cur_indices.push_back(bvar);
   cur_vals.push_back(0);
@@ -1012,22 +1037,17 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 
     //remove_invalid_constraints(mprob);
 
-    //Rprintf("... current indices that will be fixed ... \n");
-    //for ( int i=0; i<cur_node.indices.size(); ++i ) {
-    //  Rprintf("fixing variable %d to %g!\n", cur_node.indices[i], cur_node.values[i]);
+    //if ( info->verbose == true ) {
+    //  Rprintf("----> current node has %d elements!\n", (int)cur_node.indices.size());
+    //  R_FlushConsole();
     //}
-
-    if ( info->verbose == true ) {
-      Rprintf("current node has %d elements!\n", (int)cur_node.indices.size());
-      R_FlushConsole();
-    }
     for ( int i=1; i<=info->nr_vars; ++i ) {
       glp_set_col_bnds(mprob, i, GLP_DB, 0, 1);
     }
 
     /* reset bounds */
     if ( info->verbose == true ) {
-      Rprintf("fixing %d variables in the master problem with %d constraints ...\n", (int)cur_node.indices.size(), glp_get_num_rows(mprob));
+      Rprintf("----> fixing %d variables in the master problem with %d constraints ...\n", (int)cur_node.indices.size(), glp_get_num_rows(mprob));
       R_FlushConsole();
     }
     for ( unsigned int i=0; i<cur_node.indices.size(); ++i ) {
@@ -1054,21 +1074,21 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
     /* constraint added is not valid -> we have to remove the node from the pool */
     if ( glp_get_status(mprob) == GLP_NOFEAS ) {
       if ( info->verbose == true ) {
-        Rprintf("current node is not solvable. we are removing it!\n");
+        Rprintf("----> current node is not solvable. we are removing it!\n");
         R_FlushConsole();
       }
       pool.pop_back();
     } else {
-      if ( glp_get_obj_val(mprob) > info->upper_bound ) {
+      if ( glp_get_obj_val(mprob) >= info->upper_bound ) {
         if ( info->verbose == true ) {
-          Rprintf("current node has obj > current best solution! --> pruning!\n");
+          Rprintf("----> after solving, the current node has an obj >= current best solution! --> pruning!\n");
           R_FlushConsole();
         }
         pool.pop_back();
       } else {
         if ( is_int == true ) {
           if ( info->verbose == true ) {
-            Rprintf("we are finished and have a new valid best solution!\n");
+            Rprintf("----> after solving, we found a new valid best solution with obj_val=%g!\n", glp_get_obj_val(mprob));
             R_FlushConsole();
           }
           // info->upper_bound and info->current_best_solution are updated in solve_relaxation()
@@ -1078,19 +1098,18 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
           bvar = calculate_branching_variable(mprob, xi, info);
           if ( bvar == 0 ) {
             if ( info->verbose == true ) {
-              Rprintf("no more branching possible!\n");
+              Rprintf("----> no more branching possible!\n");
               R_FlushConsole();
             }
           } else {
             if ( info->verbose == true ) {
-              Rprintf("we got another non-integer solution and ");
-              Rprintf("are branching again on variable %d!\n", bvar);
+              Rprintf("----> we got another fractal solution and branch now on variable %d!\n", bvar);
               R_FlushConsole();
             }
 
             /* trying to improve current best solution using our heuristics */
             if ( info->verbose == true ) {
-              Rprintf("trying to improve solution with our heuristic approach ...");
+              Rprintf("----> we try to improve the current solution using a heuristic approach ...");
               R_FlushConsole();
             }
             heuristic_solution(incprob, info, xi, true);
@@ -1123,7 +1142,7 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
       }
       /* removing current node from pool */
       if ( info->verbose == true ) {
-        Rprintf("poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", (int)pool.size(), info->upper_bound, (int)constraint_pool.size());
+        Rprintf("----> current stats: poolsize=%d | upper_bound=%g | nr_constraints in pool=%d\n", (int)pool.size(), info->upper_bound, (int)constraint_pool.size());
         R_FlushConsole();
       }
       //if ( pool.size() >= 200 ) {
@@ -1135,11 +1154,6 @@ void branch_and_bound(glp_prob *mprob, glp_prob *aprob, glp_prob *incprob, list<
 }
 
 bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& constraint_pool, sdcinfo *info, vector<double> &xi) {
-  /*
-  if ( info->verbose == true ) {
-    Rprintf("checking if current best solution is valid! --> ");
-  }
-  */
   bool ok = false;
   int nr_additional_constraints = 0;
 
@@ -1156,9 +1170,12 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
   for ( int k=0; k < info->len_prim; ++k ) {
     nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, 0, false);
   }
+  //Rprintf("nr_con (prim_supps): %d\n", nr_additional_constraints);
+
   for ( int k=1; k <= info->nr_vars; ++k ) {
     double tmp = xi[k-1];
-    if ( glp_get_col_type(mprob, k) != GLP_FX && fabs(tmp) > 1e-9 ) {
+    if ( glp_get_col_type(mprob, k) != GLP_FX && fabs(tmp) > info->tol ) {
+      //Rprintf("secondary suppression at cell %d, xi=%g\n", k, xi[k-1]);
       nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, k, info, xi, 1, false);
     }
   }
@@ -1264,36 +1281,22 @@ extern "C" {
     /* pointer to this object */
     sdcinfo * pinfo; pinfo = &info;
 
+    if ( info.verbose == true ) {
+      Rprintf("--> starting to do some preparations...");
+      R_FlushConsole();
+    }
     /* set up attackers problem with given solution of master problem */
-    if ( info.verbose == true ) {
-      Rprintf("setting up attacker's problem...");
-      R_FlushConsole();
-    }
     glp_prob *aprob = setup_attacker_problem(pinfo, xi);
-    if ( info.verbose == true ) {
-      Rprintf("[done]\n");
-      R_FlushConsole();
-    }
 
     /* perform pre-processing and initialize constraint-pool */
     if ( attackonly[0] == 0 ) {
-      if ( info.verbose == true ) {
-        Rprintf("performing preprocessing phase...");
-        R_FlushConsole();
-      }
       preprocess(aprob, mprob, pinfo, xi);
-      if ( info.verbose == true ) {
-        Rprintf("[done]\n");
-        R_FlushConsole();
-      }
     }
 
     /* set up incremental attacker problem */
-    if ( info.verbose == true ) {
-      Rprintf("setup incremental attacker's problem...");
-      R_FlushConsole();
-    }
     glp_prob *incprob = setup_incprob(pinfo, xi);
+
+    /* we are finished with preprocessing */
     if ( info.verbose == true ) {
       Rprintf("[done]\n");
       R_FlushConsole();
@@ -1310,31 +1313,41 @@ extern "C" {
     }
 
     /* calculate a heuristic solution and return an upper_bound */
-    if ( info.verbose == true ) {
-      Rprintf("calculate a heuristic solution...");
-      R_FlushConsole();
-    }
     heuristic_solution(incprob, pinfo, xi, false);
     if ( info.verbose == true ) {
-      Rprintf("[done] (upper_bound=%g)\n", info.upper_bound);
+      Rprintf("--> calculated a heuristic solution with obj_val=%g! [done]\n", info.upper_bound);
+      R_FlushConsole();
+    }
+
+    //for ( int i=0; i<info.len_prim; ++i ) {
+    //  int x = info.ind_prim[i];
+    //  Rprintf("### cell=%d | LPL=%d | UPL=%d | SPL=%d ###\n", x, info.LPL[x], info.UPL[x], info.SPL[x]);
+    //}
+
+    bool test_heursol= is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
+    if ( info.verbose == true ) {
+      Rprintf("testing heuristic solution ...");
+      if ( test_heursol == true ) {
+        Rprintf("ok [done]\n");
+      } else {
+        Rprintf("problem [done]\n");
+      }
       R_FlushConsole();
     }
 
     /* solve relaxation of master problem */
-    if ( info.verbose == true ) {
-      Rprintf("solve the relaxation of the master problem (%d constraints)...", glp_get_num_rows(mprob));
-      R_FlushConsole();
-    }
     is_int = solve_relaxation(mprob, aprob, constraint_pool, pinfo, xi);
     if ( info.verbose == true ) {
-      Rprintf("[done]\n");
+      Rprintf("--> solved the relaxed master problem (%d constraints) and got a ");
+      if ( is_int ) {
+        Rprintf("valid ");
+      } else {
+        Rprintf("fractional ");
+      }
+      Rprintf("solution. [done]\n");
       R_FlushConsole();
     }
     if ( is_int == true ) {
-      if ( info.verbose == true ) {
-        Rprintf("we are finished and have a valid integer solution!\n");
-        R_FlushConsole();
-      }
       if ( glp_get_obj_val(mprob) < info.upper_bound ) {
         info.upper_bound = glp_get_obj_val(mprob);
         /* updating current best solution */
@@ -1345,14 +1358,13 @@ extern "C" {
     } else {
       /* we have to do branch and bound to get an integer solution */
       if ( info.verbose == true ) {
-        Rprintf("we are not finished and have to enforce integrality on current solution using branch/bound!\n");
+        Rprintf("--> enforcing integrality on current solution using branch/bound!\n");
         R_FlushConsole();
       }
       branch_and_bound(mprob, aprob, incprob, constraint_pool, pinfo, xi);
     }
     if ( info.verbose == true ) {
-      Rprintf("algorithm has terminated!\n");
-      Rprintf("best solution has an objective val of %g.\n", info.upper_bound);
+      Rprintf("Finished! The algorithm has terminated with an obj_val of %g!\n\n", info.upper_bound);
       R_FlushConsole();
     }
     /* update final solution */
