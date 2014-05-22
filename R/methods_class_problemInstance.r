@@ -115,7 +115,7 @@ setMethod(f='calc.problemInstance', signature=c('problemInstance', 'character','
       stop("calc.problemInstance:: check argument 'type'!\n" )
     }
     if ( type == 'makeMasterProblem' ) {
-      return(c_make_masterproblem(object, input)) 
+      return(c_make_masterproblem(object, input))
     }
 
     if ( type == 'isProtectedSolution' ) {
@@ -236,7 +236,7 @@ setReplaceMethod("s_sdcStatus", signature=c("problemInstance", "list"), definiti
       stop("s_sdcStatus:: elements of 'index' must be in 1:",length(sdcStatus),"!\n")
     }
     object@sdcStatus[index] <- values
-  }  
+  }
   validObject(object)
   object
 })
@@ -245,7 +245,7 @@ setReplaceMethod("s_lb", signature=c("problemInstance", "list"), definition=func
   object@lb[value$index] <- value$vals
   validObject(object)
   object
-}) 
+})
 
 setReplaceMethod("s_ub", signature=c("problemInstance", "list"), definition=function(object, value) {
   object@ub[value$index] <- value$vals
@@ -263,7 +263,7 @@ setReplaceMethod("s_UPL", signature=c("problemInstance", "list"), definition=fun
   object@UPL[value$index] <- value$vals
   validObject(object)
   object
-}) 
+})
 
 setReplaceMethod("s_SPL", signature=c("problemInstance", "list"), definition=function(object, value) {
   object@SPL[value$index] <- value$vals
@@ -278,11 +278,11 @@ setMethod("c_make_masterproblem", signature=c("problemInstance", "list"), defini
     objective <- g_weight(object)
     primSupps <- g_primSupps(object)
     nrVars <- g_nrVars(object)
-    
+
     M <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrVars)))
     direction <- rep("==", get.simpleTriplet(M, type='nrRows', input=list()))
     rhs <- rep(1, get.simpleTriplet(M, type='nrRows', input=list()))
-    
+
     # cells with sdcStatus=="z" must be published
     if ( g_hasForcedCells(object) ) {
       forcedCells <- g_forcedCells(object)
@@ -297,7 +297,7 @@ setMethod("c_make_masterproblem", signature=c("problemInstance", "list"), defini
     types <- rep("C", nrVars)
     boundsLower <- list(ind=1:nrVars, val=rep(0, nrVars))
     boundsUpper <- list(ind=1:nrVars, val=rep(1, nrVars))
-    
+
     if ( length(primSupps) > 0 ) {
       boundsLower$val[primSupps] <- 1
     }
@@ -323,26 +323,26 @@ setMethod("c_is_protected_solution", signature=c("problemInstance", "list"), def
   if ( length(input1) != length(primSupps) ) {
     stop("c_is_protected_solution:: parameter 'limits.x' and length of primary suppressed cells differ!\n")
   }
-  
+
   protected <- TRUE
   weights <- g_weight(object)[primSupps]
-  
+
   limits <- list()
   limits$LPL <- g_LPL(object)[primSupps]
   limits$UPL <- g_UPL(object)[primSupps]
   limits$SPL <- g_SPL(object)[primSupps]
-  
+
   if ( any(weights - input1 < limits[[1]]) == TRUE ) {
     protected <- FALSE
   }
-  
+
   if ( any(input2 - weights  < limits[[2]]) == TRUE ) {
     protected <- FALSE
   }
-  
+
   if ( any(input2 - input1  < limits[[3]]) == TRUE ) {
     protected <- FALSE
   }
-  return(protected)  
+  return(protected)
 })
 

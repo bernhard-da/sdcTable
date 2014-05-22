@@ -461,7 +461,7 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
       if ( length(ind_fixed) > 0 ) {
         status_new[ind_fixed] <- "z"
       }
-      
+
       pI <- g_problemInstance(sdcProblem)
       s_sdcStatus(pI) <- list(index=1:nr_vars, vals=status_new)
       s_problemInstance(sdcProblem) <- pI
@@ -726,7 +726,7 @@ hitas_cpp <- function(object, input) {
 
             s_LPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
             s_UPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
-            s_SPL(pI.new) <- list(index=introducedSupps, vals=rep(0.1, length(introducedSupps)))            
+            s_SPL(pI.new) <- list(index=introducedSupps, vals=rep(0.1, length(introducedSupps)))
           }
 
           ### force non-suppression of cells that have already been dealt with
@@ -735,7 +735,7 @@ hitas_cpp <- function(object, input) {
             s_sdcStatus(pI.new) <- list(index=indForced, vals=rep("z", length(indForced)))
           }
           s_problemInstance(probNew) <- pI.new
-          
+
           # solve the problem using c++ implementation
           res <- csp_cpp(sdcProblem=probNew, attackonly=FALSE, verbose=input$verbose)
           if ( is.null(res) ) {
@@ -767,7 +767,7 @@ hitas_cpp <- function(object, input) {
             s_LPL(pI) <- list(index=currentIndices[ii], vals=rep(0, length(ii)))
             s_UPL(pI) <- list(index=currentIndices[ii], vals=rep(0, length(ii)))
             s_SPL(pI) <- list(index=currentIndices[ii], vals=rep(0.1, length(ii)))
-            
+
             s_sdcStatus(pI) <- list(index=1:length(xx), vals=xx)
             s_problemInstance(object) <- pI
             is_ok <- FALSE
@@ -790,7 +790,7 @@ hitas_cpp <- function(object, input) {
             status[introducedSupps] <- "x"
             s_LPL(pI) <- list(index=currentIndices[introducedSupps], vals=LPL.current)
             s_UPL(pI) <- list(index=currentIndices[introducedSupps], vals=UPL.current)
-            s_SPL(pI) <- list(index=currentIndices[introducedSupps], vals=SPL.current)        
+            s_SPL(pI) <- list(index=currentIndices[introducedSupps], vals=SPL.current)
           }
           s_sdcStatus(pI) <- list(index=currentIndices, vals=status)
           s_problemInstance(object) <- pI

@@ -97,10 +97,10 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
       return(c_rule_pq(object, input))
     }
     if ( type == 'heuristicSolution' ) {
-      return(c_heuristic_solution(object, input))  
+      return(c_heuristic_solution(object, input))
     }
     if ( type == 'cutAndBranch' ) {
-      return(c_cut_and_branch(object, input)) 
+      return(c_cut_and_branch(object, input))
     }
     if ( type == 'anonWorker' ) {
       return(c_anon_worker(object, input))
@@ -304,43 +304,43 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
   dataObj <- g_dataObj(object)
   strIDs <- g_strID(pI)
   numVarInds <- get.dataObj(dataObj, type='numVarInd')
-  
+
   numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
-  
+
   # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) { 
+  indices <- lapply(1:g_nrVars(pI), function(x) {
     c_contributing_indices(object, input=list(strIDs[x]))
   })
-  
-  minContributingUnits <- min(setdiff(unique(sapply(indices, length)), 0))  
+
+  minContributingUnits <- min(setdiff(unique(sapply(indices, length)), 0))
   if ( input$n < 1 | input$n > minContributingUnits ) {
     stop("set.sdcProblem:: parameter 'n' must be >= 1 and <",minContributingUnits,"!\n")
   }
-  
+
   # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) { 
-    sum(rev(tail(sort(numVal[indices[[x]]]), input$n))) 
+  valueList <- lapply(1:g_nrVars(pI), function(x) {
+    sum(rev(tail(sort(numVal[indices[[x]]]), input$n)))
   })
-  
+
   cellTotals <- g_numVars(pI)[[input$numVarInd]]
   # suppStatus: TRUE:unsafe, FALSE: safe
-  nkState <- sapply(1:g_nrVars(pI), function(x) {  
-    nkRule(cellTotals[x], valueList[[x]], input$k) 
+  nkState <- sapply(1:g_nrVars(pI), function(x) {
+    nkRule(cellTotals[x], valueList[[x]], input$k)
   })
-  
+
   addSupps <- which(sapply(indices, length) %in% 1:input$n)
   if ( length(addSupps) > 0 ) {
     nkState[addSupps] <- TRUE
   }
-  
+
   suppIndex <- which(nkState==TRUE)
   if ( length(suppIndex) > 0 ) {
     s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
   }
-  
+
   if ( input$allowZeros == FALSE ) {
     indZero <- which(g_freq(pI)==0)
     if ( length(indZero) > 0 ) {
@@ -357,42 +357,42 @@ setMethod("c_rule_p", signature=c("sdcProblem", "list"), definition=function(obj
     # if TRUE, cell needs to be suppressed
     (celltot - cont1 - cont2) < (p/100*cont1)
   }
-  
+
   if ( !get.dataObj(g_dataObj(object), type='isMicroData') ) {
     stop("p-percent rule can only be applied if micro-data are available!\n")
   }
-  
+
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
   numVarInds <- get.dataObj(dataObj, type='numVarInd')
   strIDs <- g_strID(pI)
-  
+
   numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
-  
+
   # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) { 
+  indices <- lapply(1:g_nrVars(pI), function(x) {
     c_contributing_indices(object, input=list(strIDs[x]))
   })
-  
+
   # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) { 
-    rev(tail(sort(numVal[indices[[x]]]),2)) 
+  valueList <- lapply(1:g_nrVars(pI), function(x) {
+    rev(tail(sort(numVal[indices[[x]]]),2))
   })
   cellTotals <- g_numVars(pI)[[input$numVarInd]]
-  
+
   # suppStatus: TRUE:unsafe, FALSE: safe
-  pState <- sapply(1:g_nrVars(pI), function(x) { 
-    pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p) 
+  pState <- sapply(1:g_nrVars(pI), function(x) {
+    pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p)
   })
-  
+
   suppIndex <- which(pState==TRUE)
   if ( length(suppIndex) > 0 ) {
     s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
   }
-  
+
   if ( input$allowZeros == FALSE ) {
     indZero <- which(g_freq(pI)==0)
     if ( length(indZero) > 0 ) {
@@ -412,38 +412,38 @@ setMethod("c_rule_pq", signature=c("sdcProblem", "list"), definition=function(ob
   if ( !get.dataObj(g_dataObj(object), type='isMicroData') ) {
     stop("p-percent rule can only be applied if micro-data are available!\n")
   }
-  
+
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
   numVarInds <- get.dataObj(dataObj, type='numVarInd')
   strIDs <- g_strID(pI)
-  
+
   numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
-  
+
   # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) { 
+  indices <- lapply(1:g_nrVars(pI), function(x) {
     c_contributing_indices(object, input=list(strIDs[x]))
   })
-  
+
   # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) { 
-    rev(tail(sort(numVal[indices[[x]]]),2)) 
+  valueList <- lapply(1:g_nrVars(pI), function(x) {
+    rev(tail(sort(numVal[indices[[x]]]),2))
   })
   cellTotals <- g_numVars(pI)[[input$numVarInd]]
-  
+
   # suppStatus: TRUE:unsafe, FALSE: safe
-  pState <- sapply(1:g_nrVars(pI), function(x) { 
-    pqRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$pq[1], input$pq[2]) 
+  pState <- sapply(1:g_nrVars(pI), function(x) {
+    pqRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$pq[1], input$pq[2])
   })
-  
+
   suppIndex <- which(pState==TRUE)
   if ( length(suppIndex) > 0 ) {
     s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
   }
-  
+
   if ( input$allowZeros == FALSE ) {
     indZero <- which(g_freq(pI)==0)
     if ( length(indZero) > 0 ) {
@@ -452,7 +452,7 @@ setMethod("c_rule_pq", signature=c("sdcProblem", "list"), definition=function(ob
   }
   s_problemInstance(object) <- pI
   validObject(object)
-  return(object)  
+  return(object)
 })
 
 setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -460,7 +460,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   validCuts <- input[[2]]
   solver <- input[[3]]$solver
   verbose <- input[[3]]$verbose
-  
+
   ### create incremental attacker problem
   pI <- g_problemInstance(object)
   dimInfoObj <- g_dimInfo(object)
@@ -471,29 +471,29 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   weights <- ci <- g_weight(pI)
   ci[primSupps] <- 0
   ci[secondSupps] <- 0
-  
+
   lb <- g_lb(pI)
   ub <- g_ub(pI)
-  
+
   # required later in the cleanup-procedure
   LB <- LBdefault <- weights - lb
   UB <- UBdefault <- ub - weights
-  
+
   m1 <- c_gen_mat_m(input=list(objectA=pI, objectB=dimInfoObj))
   m2 <- m1
   m2@v <- -1* m2@v
   AInc <- calc.simpleTriplet(object=m1, type='bind', input=list(m2, bindRow=FALSE))
-  
+
   nrConstraints <- nrow(AInc)
   objective <- rep(ci, 2)
-  
+
   direction <- rep("==", get.simpleTriplet(AInc, type='nrRows', input=list()))
   rhs <- rep(0, get.simpleTriplet(AInc, type='nrRows', input=list()))
-  
+
   types <- rep("C", get.simpleTriplet(AInc, type='nrCols', input=list()))
   boundsLower <- list(ind=1:get.simpleTriplet(AInc, type='nrCols', input=list()), val=rep(0,get.simpleTriplet(AInc, type='nrCols', input=list())))
   boundsUpper <- list(ind=1:get.simpleTriplet(AInc, type='nrCols', input=list()), val=c(UB, LB))
-  
+
   aProbInc <- new("linProb",
     objective=objective,
     constraints=AInc,
@@ -502,7 +502,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
     boundsLower=boundsLower,
     boundsUpper=boundsUpper,
     types=types)
-  
+
   # make sure that cells that must be published
   # are not part of the heuristic solution
   if ( length(forcedCells) > 0 ) {
@@ -513,14 +513,14 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       aProbInc <- set.linProb(aProbInc, type='addCompleteConstraint', input=list(aCon))
     }
   }
-  
+
   x <- rep(0, get.simpleTriplet(AInc, type='nrCols', input=list()))
   UPL <- g_UPL(pI)
   LPL <- g_LPL(pI)
   SPL <- g_SPL(pI)
-  
+
   SUP <- primSupps
-  
+
   for ( i in seq_along(primSupps) ) {
     cellInd <- primSupps[i]
     if ( verbose ) {
@@ -533,7 +533,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
     if ( UPL[cellInd] > 0 ) {
       # update and solve: y_ik_minus <- 0 and y_ik_plus <- UPL_ik
       aCon <- init.cutList(type='multipleCuts', input=list(mat=init.simpleTriplet(type='simpleTriplet', input=list(mat=rbind(con1, con2))), dir=rep("==", 2), rhs=c(UPL[cellInd], 0)))
-      
+
       prob <- set.linProb(aProbInc, type='addCompleteConstraint', input=list(aCon))
       sol <- calc.linProb(prob, type='solveProblem', input=list(solver))$solution
       v <- sol[1:nrVars]+sol[(nrVars+1):length(sol)]
@@ -583,7 +583,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   if ( verbose ) {
     cat(length(SUP) - length(primSupps),"additional cells have been suppressed in the heuristic solution!\n")
   }
-  
+
   ### cleanup: remove redundant suppressions....
   # FIXME: use constraint pool to search for violations in the constraint pool
   # aProb has already been calculated and is an input parameter of this method!
@@ -593,14 +593,14 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   orderAddedSupps <- order(weights[addedSupps], decreasing=TRUE)
   xi <- rep(0, length(UPL))
   xi[SUP] <- 1 # we need to check xi
-  
+
   counter <- 0
   for ( i in orderAddedSupps ) {
     counter <- counter + 1
     if ( verbose ) {
       cat("checking if removing cell",counter,"|",length(addedSupps),"still yields a valid suppression pattern...\n")
     }
-    
+
     cellInd <- addedSupps[i]
     limits <- c(LPL[cellInd], UPL[cellInd], SPL[cellInd])
     xiWorking <- xi
@@ -609,7 +609,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
     LBWorking <- LB
     UBWorking[cellInd] <- UBdefault[cellInd]
     LBWorking[cellInd] <- LBdefault[cellInd]
-    
+
     ######################
     # check if any validCuts are not valid with xiWorking!
     # validCuts needs to be supplemented in function call
@@ -624,7 +624,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
     } else {
       result <- TRUE
     }
-    
+
     if ( any(result==FALSE) ) {
       #cat("additionally suppressed cell cannot be removed (violated constraint in the pool found)!\n")
     } else {
@@ -637,11 +637,11 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
         aProb <- set.linProb(aProb, type='rhs', input=list(rhs))
         aProb <- set.linProb(aProb, type='objective', input=list(c(weights + UBWorking*xiWorking, -(weights-xiWorking*LBWorking), rep(0, nrConstraints))))
         up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         # solveAttackerProblem (lower bound)
         aProb <- set.linProb(aProb, type='rhs', input=list(-1*rhs))
         down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         calcDown <- -down$optimum
         calcUp <- up$optimum
       } else {
@@ -664,7 +664,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
           calcUp <- up$optimum
         }
       }
-      
+
       # check for feasibility
       valid <- TRUE
       if ( limits[3] > 0 & calcUp - calcDown < SPL[i] ) {
@@ -687,48 +687,48 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       # else: additionally suppressed cell cannot be removed!
     }
   }
-  return(xi)  
+  return(xi)
 })
 
 setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=function(object, input) {
   timeLimit <- input$timeLimit
   verbose <- input$verbose
   save <- input$save
-  
+
   if ( save == TRUE ) {
     files <- NULL
   }
-  
+
   start.time <- proc.time()
   pI <- g_problemInstance(object)
   sdcStatusBegin <- g_sdcStatus(pI)
   primSupps <- primSuppsOrig <- g_primSupps(pI)
-  
+
   indexPool <- numeric()
   allStrIDs <- g_strID(pI)
-  
+
   if ( input$method == 'OPT' ) {
     s_elapsedTime(object) <- g_elapsedTime(object) + (proc.time()-start.time)[3]
-    
+
     if ( input$useC == TRUE ) {
       result <- csp_cpp(sdcProblem=object, attackonly=FALSE, verbose=input$verbose)
     } else {
       result <- c_cut_and_branch(object, input)
     }
-    
+
     if ( save==TRUE ) {
       fn <- paste(input$method,"_Object-Final.RData", sep="")
       save(object, file=fn)
     }
     return(result)
   }
-  
+
   # HITAS or HYPERCUBE
   # check where we should start (saved file)
   partition <- g_partition(object)
   startI <- g_startI(object)
   startJ <- g_startJ(object)
-  
+
   if ( startI !=1 | startJ != 1 ) {
     maxI <- partition$nrGroups
     if ( startJ < length(partition$indices[[startI]]) ) {
@@ -738,12 +738,12 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
       startI <- startI+1
     }
   }
-  
+
   if ( input$method == 'HITAS' ) {
     for ( i in startI:(partition$nrGroups) ) {
       s_startJ(object) <- 1 # reset j before updating i
       s_startI(object) <- i
-      
+
       #indexPool <- g_indicesDealtWith(object)
       if ( i == 1 ) {
         indexPool <- c()
@@ -751,12 +751,12 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
         indexPool <- sort(unique(unlist(partition$indices[1:(i-1)])))
       }
       ind <- partition$indices[[i]]
-      
+
       beginJ <- ifelse(i==startI, startJ, 1)
       for ( j in beginJ:(length(ind)) ) {
         s_startJ(object) <- j
         currentIndices <- ind[[j]] # within complete table
-        
+
         ### cells with status 'u' or 'x' exist
         pI <- g_problemInstance(object)
         if ( any(g_sdcStatus(pI)[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
@@ -768,51 +768,51 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
           ### reduce problemInstance
           probNew <- c_reduce_problem(object, input=list(currentIndices))
           pI.new <- g_problemInstance(probNew)
-          
+
           ### is it necessary to protect the table??
           currentPrimSupps <- primSupps[!is.na(match(primSupps, currentIndices ))]
-          
+
           ### indices that have already been inner cells in
           ### tables dealt earlier
           # FIXME: save indexpool somehow
           indicesDealtWith <- which(currentIndices %in% indexPool) #in current current subproblem
-          
+
           ### fix marginal-cells
           ### --> its-suppression state must not change!
           currentPattern <- g_sdcStatus(g_problemInstance(probNew))
-          
+
           introducedSupps <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "x")]
           if ( length(introducedSupps) > 0 ) {
             ### secondary suppressions from upper tables
             s_sdcStatus(pI.new) <- list(index=introducedSupps,vals=rep("u", length(introducedSupps)))
-            
+
             ### temporarily change LPL, UPL, SPL for these cells
             LPL.current <- g_LPL(pI.new)[introducedSupps]
             UPL.current <- g_UPL(pI.new)[introducedSupps]
             SPL.current <- g_SPL(pI.new)[introducedSupps]
-            
+
             s_LPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
             s_UPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
             s_SPL(pI.new) <- list(index=introducedSupps, vals=rep(0.1, length(introducedSupps)))
           }
-          
+
           ### force non-suppression of cells that have already been dealt with
           indForced <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "s")]
           if ( length(indForced) > 0 ) {
             s_sdcStatus(pI.new) <- list(index=indForced,vals=rep("z", length(indForced)))
           }
           s_problemInstance(probNew) <- pI.new
-          
+
           ### solving the problem
           if ( input$useC == TRUE ) {
             probNew <- csp_cpp(sdcProblem=probNew, attackonly=FALSE, verbose=input$verbose)
           } else {
             probNew <- c_cut_and_branch(object=probNew, input=input)
           }
-          
+
           ### update sdcStatus
           status <- g_sdcStatus(g_problemInstance(probNew))
-          
+
           pI <- g_problemInstance(object)
           if ( length(indForced) > 0 ) {
             status[indForced] <- "s"
@@ -821,7 +821,7 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
             status[introducedSupps] <- "x"
             s_LPL(pI) <- list(index=currentIndices[introducedSupps], vals=LPL.current)
             s_UPL(pI) <- list(index=currentIndices[introducedSupps], vals=UPL.current)
-            s_SPL(pI) <- list(index=currentIndices[introducedSupps], vals=SPL.current)                
+            s_SPL(pI) <- list(index=currentIndices[introducedSupps], vals=SPL.current)
           }
           s_sdcStatus(pI) <- list(index=currentIndices, vals=status)
           s_problemInstance(object) <- pI
@@ -833,7 +833,7 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
           fn <- paste(input$method,"_Object_",i,"-",j,".RData", sep="")
           files <- c(files, fn)
           save(object, file=fn)
-          
+
           # removing old files
           if ( length(files) > 1 ) {
             sapply(rev(files)[-1], file.remove)
@@ -845,28 +845,28 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
       s_indicesDealtWith(object) <- unique(c(indexPool, currentIndices))
     }
   }
-  
+
   if ( input$method == 'HYPERCUBE' ) {
     runInd <- TRUE
     nrRuns <- 1
     while ( runInd == TRUE ) {
       cat("The algorithm is now starting run",nrRuns,"\n")
-      
+
       tmpSupps <- c(g_primSupps(g_problemInstance(object)), g_secondSupps(g_problemInstance(object)))
       forcedCells <- g_forcedCells(g_problemInstance(object))
-      
+
       for ( i in startI:(partition$nrGroups) ) {
         s_startJ(object) <- 1 # reset j before updating i
         s_startI(object) <- i
-        
+
         ind <- partition$indices[[i]]
-        
+
         beginJ <- ifelse(i==startI, startJ, 1)
         for ( j in beginJ:(length(ind)) ) {
           s_startJ(object) <- j
-          
+
           currentIndices <- ind[[j]] # within complete table
-          
+
           ### cells with status 'u' or 'x' exist
           pI <- g_problemInstance(object)
           # when using HYPERCUBE: we only check primary suppressions because we
@@ -875,21 +875,21 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
             if ( verbose ) {
               cat("starting to solve problem",j,"/",length(ind),"in group",j,"/",partition$nrGroups,"!\n")
             }
-            
+
             ### if we have cells with "u",  we need to protect
             ### the corresponding subtable
             ### reduce problemInstance
             probNew <- c_reduce_problem(object, input=list(currentIndices))
             pI.new <- g_problemInstance(probNew)
-            
+
             ### is it necessary to protect the table??
             currentPrimSupps <- primSupps[!is.na(match(primSupps, currentIndices ))]
-            
+
             s_problemInstance(probNew) <- pI.new
-            
+
             ### solving the problem
             probNew <- c_ghmiter(object=probNew, input=input)
-            
+
             ### update sdcStatus
             status <- g_sdcStatus(g_problemInstance(probNew))
             pI <- g_problemInstance(object)
@@ -903,7 +903,7 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
             fn <- paste(input$method,"_Object_",i,"-",j,".RData", sep="")
             files <- c(files, fn)
             save(object, file=fn)
-            
+
             # removing old files
             if ( length(files) > 1 ) {
               sapply(rev(files)[-1], file.remove)
@@ -912,14 +912,14 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
           }
         }
       }
-      
+
       ### protect secondary suppressions ###
       pI <- g_problemInstance(object)
       allSupps <- c(g_primSupps(pI), g_secondSupps(pI))
       newSupps <- setdiff(allSupps, tmpSupps)
-      
+
       pI <- g_problemInstance(object)
-      
+
       nrVars <- length(g_freq(pI))
       if ( length(newSupps) == 0 ) {
         runInd <- FALSE
@@ -940,12 +940,12 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
       }
     } # while loop
   }
-  return(object)  
+  return(object)
 })
 
 setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=function(object, input) {
   time.start <- proc.time()
-  
+
   timeLimit <- input$timeLimit
   fixVariables <- input$fixVariables
   maxVars <- input$maxVars
@@ -953,7 +953,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   approxPerc <- input$approxPerc
   verbose <- input$verbose
   solver <- input$solver
-  
+
   problemInstance <- g_problemInstance(object)
   dimInfo <- g_dimInfo(object)
   nrVars <- g_nrVars(problemInstance)
@@ -961,12 +961,12 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   primSupps <- g_primSupps(problemInstance)
   publishVars <- which(g_sdcStatus(problemInstance)=="z")
   noBranchVars <- unique(c(primSupps, publishVars))
-  
+
   # Nothing to protect here
   if ( !g_hasPrimSupps(problemInstance) ) {
     return(object)
   }
-  
+
   # returning heuristic solution
   # only if problem size is too large
   if ( is.null(maxVars) ) {
@@ -975,16 +975,16 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   if ( fastSolution ) {
     maxVars <- 0
   }
-  
+
   approx <- ifelse(is.null(approxPerc), FALSE, TRUE)
-  
+
   if ( nrVars >= maxVars ) {
     res <- c_make_att_prob(input=list(objectA=problemInstance, objectB=dimInfo))
     aProb <- res$aProb
     validCuts <- res$newCutsMaster
-    
+
     heuristicSolution <- c_heuristic_solution(object, input=list(aProb, validCuts, input))
-    
+
     secondSupps <- setdiff(which(heuristicSolution==1), primSupps)
     if (verbose) {
       cat("Result: we are returning a possibly non-optimal solution with",length(secondSupps),"secondary suppressions because of parameter 'fastSolution' or 'maxVars'!\n")
@@ -1004,45 +1004,45 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     )
     return(out)
   }
-  
+
   if ( verbose ) {
     cat("running pre-process procedure...\n")
   }
-  
+
   resultPreProcess <- c_preprocess(object, input=input)
-  
+
   object <- resultPreProcess$sdcProblem
   validCuts <- resultPreProcess$validCuts
   aProb <- resultPreProcess$aProb
-  
+
   # no valid cuts have been generated in preprocessing!
   if ( get.simpleTriplet(get.cutList(validCuts, type='constraints'), type='nrRows', input=list()) == 0 ) {
     return(object)
   }
-  
+
   if ( verbose ) {
     cat("calculating a heuristic solution...\n")
   }
-  
+
   heuristicSolution <- c_heuristic_solution(object, input=list(aProb, validCuts, input))
   ### all solutions found and current best solution
   solutions <- list(); bestSolution <- heuristicSolution
   solutions[[1]] <- heuristicSolution
-  
+
   startTime <- Sys.time()
   timeStop <- FALSE
-  
+
   ### cuts due to hierarchical structure
   if ( verbose ) {
     cat("calculating structural cuts...\n")
   }
-  
+
   structureCuts <- c_gen_structcuts(object, input=list())
   # does heuristicSolution violates any cuts from structure-cuts??
   #calc.cutList(structureCuts, type='checkViolation', input=list(heuristicSolution, g_weight(problemInstance)))
   validCuts <- calc.cutList(validCuts, type='bindTogether', input=list(structureCuts))
   #######
-  
+
   ### create master problem and add constraints derived in pre-processing
   mProb <- c_make_masterproblem(probleminstance, input=list()
   mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(validCuts))
@@ -1054,12 +1054,12 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   xi <- masterSolution$solution
   xi[is.zero(xi)] <- 0
   xi[is.one(xi)] <- 1
-  
+
   ### initialize bounds
   currentBestBoundDown <- masterObj
   currentBestBoundUp <- sum(get.linProb(mProb, type='objective') * heuristicSolution)
   branchedVars <- NULL
-  
+
   ### check if we have already the optimum solution (without rounding errors)
   runInd <- TRUE
   if ( abs(masterObj-currentBestBoundUp) < 0.1 ) {
@@ -1080,29 +1080,29 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         mProb <- set.linProb(mProb, type='bounds', input=bounds)
       }
     }
-    
+
     ### constraint pool initialization
     problemPool <- list()
     problemPool[[1]] <- init.cutList(type='empty', input=list(nrCols=nrVars))
-    
+
     ### solving
     selectFirst <- TRUE
     LPL <- g_LPL(problemInstance)
     UPL <- g_UPL(problemInstance)
     SPL <- g_SPL(problemInstance)
-    
+
     weights <- g_weight(problemInstance)
     LB <- weights - g_lb(problemInstance)
     UB <- g_ub(problemInstance) - weights
     nrConstraints <- length(get.linProb(aProb, type='objective')) - 2*length(weights)
-    
+
     ### initialize constants (probably function-parameters later)
     selectFirst <- FALSE
-    
+
     ### TODO: stop procedure after given time or nr or solutions..
     iter <- 0
   }
-  
+
   while( runInd ) {
     iter <- iter + 1
     selectInd <- ifelse(selectFirst==TRUE, 1, length(problemPool))
@@ -1112,7 +1112,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     for ( i in 1:length(primSupps) ) {
       cellInd <- primSupps[i]
       limits <- c(LPL[cellInd], UPL[cellInd], SPL[cellInd])
-      
+
       # we need to solve the attackers problem for each sensitive cell twice
       if ( limits[3] != 0 ) {
         # solveAttackerProblem (upper bound)
@@ -1121,19 +1121,19 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         aProb <- set.linProb(aProb, type='rhs', list(rhs))
         aProb <- set.linProb(aProb, type='objective', input=list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints))))
         up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         ### solveAttackerProblem (lower bound)
         aProb <- set.linProb(aProb, type='rhs', input=list(-1*rhs))
         down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         AttProbDown[i] <- -down$optimum
         AttProbUp[i] <- up$optimum
         status <- c(status, down$status, up$status)
         #cat('limits ( origValue=',weights[cellInd],') : [',AttProbDown[i],':',AttProbUp[i],']\n')
-        
+
         alpha.down <- down$solution[1:nrVars]
         alpha.up <- up$solution[1:nrVars]
-        
+
         beta.down <- down$solution[(nrVars+1):(2*nrVars)]
         beta.up <- up$solution[(nrVars+1):(2*nrVars)]
       } else {
@@ -1162,7 +1162,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         alpha.up <- up$solution[1:nrVars]
         beta.down <- down$solution[(nrVars+1):(2*nrVars)]
         beta.up <- up$solution[(nrVars+1):(2*nrVars)]
-        
+
         v <- (alpha.down+alpha.up)*UB + (beta.down+beta.up)*LB
         v[which(is.zero(v))] <- 0
         if ( any(v != 0) )
@@ -1172,7 +1172,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           status <- c(status, down$status)
           alpha.down <- down$solution[1:nrVars]
           beta.down <- down$solution[(nrVars+1):(2*nrVars)]
-          
+
           v <- alpha.down*UB + beta.down*LB
           v[which(is.zero(v))] <- 0
           if ( any(v != 0) )
@@ -1182,7 +1182,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           status <- c(status, up$status)
           alpha.up <- up$solution[1:nrVars]
           beta.up <- up$solution[(nrVars+1):(2*nrVars)]
-          
+
           v <- alpha.up*UB + beta.up*LB
           v[which(is.zero(v))] <- 0
           if ( any(v != 0) )
@@ -1191,7 +1191,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       }
       #cat('limits ( origValue=',weights[cellInd],') : [',AttProbDown[i],':',AttProbUp[i],']\n')
     }
-    
+
     if ( get.cutList(newCuts, type='nrConstraints') > 0 ) {
       # strengthen cuts
       if ( verbose ) {
@@ -1223,17 +1223,17 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         aProb <- set.linProb(aProb, type='rhs', input=list(rhs))
         aProb <- set.linProb(aProb, type='objective', input=list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints))))
         up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         ### solveAttackerProblem (lower bound)
         aProb <- set.linProb(aProb, type='rhs', input=list(-1*rhs))
         down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
-        
+
         alpha.down <- down$solution[1:nrVars]
         alpha.up <- up$solution[1:nrVars]
-        
+
         beta.down <- down$solution[(nrVars+1):(2*nrVars)]
         beta.up <- up$solution[(nrVars+1):(2*nrVars)]
-        
+
         brIneq <- (alpha.down+alpha.up)*UB + (beta.down+beta.up)*LB
         brIneq[is.zero(brIneq)] <- 0
         brIneq[brIneq > 0] <- 1
@@ -1244,7 +1244,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(brCuts))
       }
     }
-    
+
     mProbWorking <- mProb
     # eventually update the lower bound...
     tmpSolution <- calc.linProb(mProbWorking, type='solveProblem', input=list(solver))
@@ -1256,14 +1256,14 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       # optimal solution found!
       break
     }
-    
+
     if ( get.cutList(problemPool[[selectInd]], type='nrConstraints') > 0 ) {
       if ( verbose ) {
         cat("adding",get.cutList(problemPool[[selectInd]], type='nrConstraints'),"constraints to the master problem...\n")
       }
       mProbWorking <- set.linProb(mProb, type='addCompleteConstraint', input=list(problemPool[[selectInd]]))
     }
-    
+
     if ( verbose ) {
       cat("solving the master problem with",length(get.linProb(mProbWorking, type='rhs')),"constraints...\n")
     }
@@ -1272,12 +1272,12 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     xi <- masterSolution$solution
     xi[is.zero(xi)] <- 0
     xi[is.one(xi)] <- 1
-    
+
     if ( verbose ) {
       cat("best-bounds: [",currentBestBoundDown,":",currentBestBoundUp,"] and objVal =",masterObj,"with sum(xi)=",sum(xi),"\n")
     }
     #cat("current boundUp =",currentBestBoundUp,"and objVal =",masterObj,"with sum(xi)=",sum(xi),"\n")
-    
+
     ### again fixing variables
     #if ( fixVariables == TRUE ) {
     # newFixedVars <- calc.linProb(mProb, type='fixVariables', input=list(currentBestBoundDown, currentBestBoundUp, primSupps))
@@ -1288,11 +1288,11 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     #   mProb <- set.linProb(mProb, type='bounds', input=bounds)
     # }
     #}
-    
+
     ### checking if we can prune the current node
     prune <- FALSE
     pruneReason <- NULL
-    # a) valid (protected) integer solution    
+    # a) valid (protected) integer solution
     if ( all(is.wholenumber(xi)) && c_is_protected_solution(problemInstance, input=list(input1=AttProbDown, input2=AttProbUp)) ) {
       prune <- TRUE
       pruneReason <- c(pruneReason, "V") # valid
@@ -1312,7 +1312,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         prune <- TRUE
         pruneReason <- c(pruneReason, "B") # bounds
       }
-      
+
     } else {
       if ( abs(masterObj - currentBestBoundUp) <= 0.01 ) {
         prune <- TRUE
@@ -1323,7 +1323,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         pruneReason <- c(pruneReason, "B") # bounds
       }
     }
-    
+
     if ( prune == TRUE ) {
       pruneReason <- unique(pruneReason) # remove eventually 2-'Bs'
       if ( length(pruneReason) == 2 ) {
@@ -1363,7 +1363,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       ## 2) Branching: wir erweitern den ProblemPool und löschen dann den aktuellen Node
       branchedVars <- get.simpleTriplet(get.cutList(problemPool[[selectInd]], type='constraints'), type='colInd', input=list())
       branchVar <- getBranchingVariable(xi, branchedVars, noBranchVars)
-      
+
       if ( length(branchVar) == 1 ) {
         cl <- problemPool[[selectInd]]
         v <- rep(0, nrVars)
@@ -1372,7 +1372,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         c2 <- set.cutList(cl, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="==", rhs=1))))
         problemPool[[length(problemPool)+1]] <- c1
         problemPool[[length(problemPool)+1]] <- c2; rm(cl)
-        
+
         # now we can prune the current node
         problemPool[[selectInd]] <- NULL
         rm(c1,c2)
@@ -1386,10 +1386,10 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         problemPool[[selectInd]] <- NULL
       }
     }
-    
+
     timeSpent <- as.numeric(floor(difftime(Sys.time(), startTime, units="mins")))
     #cat("timeSpent:"); print(timeSpent)
-    
+
     if ( length(problemPool)==0 ) {
       runInd <- FALSE
     } else {
@@ -1405,7 +1405,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       }
     }
   }
-  
+
   secondSupps <- setdiff(which(bestSolution==1), primSupps)
   objVarHeuristic <- sum(get.linProb(mProb, type='objective') * heuristicSolution)
   if ( timeStop==FALSE ) {
@@ -1437,7 +1437,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     indicesDealtWith=g_indicesDealtWith(object),
     elapsedTime=g_elapsedTime(object)+(proc.time()-time.start)[3]
   )
-  return(out)  
+  return(out)
 })
 
 setMethod("c_ghmiter", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -1446,48 +1446,48 @@ setMethod("c_ghmiter", signature=c("sdcProblem", "list"), definition=function(ob
   suppMethod <- input$suppMethod
   suppAdditionalQuader <- input$suppAdditionalQuader
   verbose <- input$verbose
-  
+
   pI <- g_problemInstance(object)
   strIDs <- g_strID(pI)
   strInfo <- get.dimInfo(g_dimInfo(object), type='strInfo')
-  
+
   sdcStatus <- g_sdcStatus(pI)
   cellsToProtect <- g_primSupps(pI)
-  
+
   freqs <- g_freq(pI)
-  
+
   # calc infomation on inner|marginal cells
   cellInfo <- g_innerAndMarginalCellInfo(object)
-  
+
   # replaces f.recodeIndexVars
   indexList <- lapply(1:length(strInfo), function(x) { mySplit(strIDs, strInfo[[x]][1]:strInfo[[x]][2]) } )
-  
+
   for ( i in 1:length(cellsToProtect) ) {
     if ( verbose ) {
       cat("--> Cell",i,"|",length(cellsToProtect)," (ID:",strIDs[cellsToProtect[i]],")...")
     }
-    
+
     diagObj <- c_ghmiter_diag_obj(object, input=list(cellsToProtect[i], indexList, FALSE))
     # calculate required information using diagObj
     infoObj <- c_ghmiter_calc_info(object, input=list(diagObj, indexList, protectionLevel, FALSE))
-    
+
     if ( !is.null(infoObj) & length(infoObj) == 0 ) {
       diagObj <- c_ghmiter_diag_obj(object, input=list(cellsToProtect[i], indexList, TRUE))
-      
+
       infoObj <- c_ghmiter_calc_info(object, list(diagObj, indexList, protectionLevel, TRUE))
-      
+
       if ( !is.null(infoObj) & length(infoObj) == 0 ) {
         stop("ghmiter::: error - could not find sensible cube!\n")
       }
       warning("Cell with Freq=0 has been selected as partner in suppression pattern!\n")
     }
-    
+
     # cellToProtect used from diagObj$cellToProtect
     suppObj <- c_ghmiter_select_quader(object, input=list(infoObj, input))
-    
+
     if ( !is.null(suppObj) ) {
       object <- c_ghmiter_suppress_quader(object, input=suppObj)
-      
+
       # additional quader needs to be found
       # only if it is not a single value in the margins
       # and the cube includes cells with frequency=1
@@ -1514,26 +1514,26 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
   nrVars <- g_nrVars(problemInstance)
   freqs <- g_freq(problemInstance)
   primSupps <- g_primSupps(problemInstance)
-  
+
   LPL <- g_LPL(problemInstance)[primSupps]
   UPL <- g_UPL(problemInstance)[primSupps]
   SPL <- g_SPL(problemInstance)[primSupps]
-  
+
   weights <- g_weight(problemInstance)
   HIGH <- LOW <- weights[primSupps]
-  
+
   # order of calculations
   myOrder <- order(sapply(1:length(primSupps), function(x) { max(SPL[x], (LPL+UPL)[x]) }), decreasing=TRUE)
   LB <- weights - g_lb(problemInstance)
   UB <- g_ub(problemInstance) - weights
-  
+
   xi <- g_suppPattern(problemInstance)
   res <- c_make_att_prob(input=list(objectA=problemInstance, objectB=dimInfo))
   aProb <- res$aProb
   validCuts <- res$newCutsMaster
-  
+
   nrConstraints <- length(get.linProb(aProb, type='objective')) - 2*length(weights)
-  
+
   #validCuts <- init.cutList(type='empty', input=list(nrCols=nrVars))
   for ( i in myOrder ) {
     if ( i %% 10 == 1 && input$verbose ) {
@@ -1541,7 +1541,7 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     }
     cellInd <- primSupps[i]
     limits <- c(LPL[i], UPL[i], SPL[i])
-    
+
     # solveAttackerProblem (upper bound)
     rhs <- rep(0, length(get.linProb(aProb, type='rhs')))
     rhs[cellInd] <- 1
@@ -1554,7 +1554,7 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     calcUp <- up$optimum
     HIGH[i] <- max(HIGH[i], calcUp)
     LOW[i] <- min(LOW[i], calcUp)
-    
+
     # solveAttackerProblem (lower bound)
     aProb <- set.linProb(aProb, type='rhs', input=list(-1*rhs))
     down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
@@ -1564,13 +1564,13 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     calcDown <- -down$optimum
     HIGH[i] <- max(HIGH[i], calcDown)
     LOW[i] <- min(LOW[i], calcDown)
-    
+
     alpha.down <- down$solution[1:nrVars]
     alpha.up <- up$solution[1:nrVars]
-    
+
     beta.down <- down$solution[(nrVars+1):(2*nrVars)]
     beta.up <- up$solution[(nrVars+1):(2*nrVars)]
-    
+
     if ( limits[1] != 0 ) { # LPL
       v <- alpha.down*UB + beta.down*LB
       v[which(is.zero(v))] <- 0
@@ -1590,14 +1590,14 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
         validCuts <- set.cutList(validCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[3]))))
     }
   }
-  
+
   if ( get.cutList(validCuts, type='nrConstraints') > 0 ) {
     validCuts <- calc.cutList(validCuts, type='strengthen', input=list())
-    
+
     setZeroUPL <- which(freqs[primSupps]+UPL <= HIGH) # -> set UPL = 0
     setZeroLPL <- which(freqs[primSupps]-LPL >= LOW) # -> set LPL = 0
     setZeroSPL <- which(HIGH-LOW >= SPL ) # -> set SPL = 0
-    
+
     if ( length(setZeroUPL) > 0 ) {
       UPL[setZeroUPL] <- 0
       s_UPL(problemInstance) <- list(index=primSupps, vals=UPL)
@@ -1612,33 +1612,33 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     }
   }
   s_problemInstance(object) <- problemInstance
-  return(list(sdcProblem=object, aProb=aProb, validCuts=validCuts))    
+  return(list(sdcProblem=object, aProb=aProb, validCuts=validCuts))
 })
 
 setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(object, input) {
   para.names <- input[[1]]
   para.codes <- input[[2]]
   para.verbose <- input[[3]]
-  
+
   pI <- g_problemInstance(object)
   dimInfoObj <- g_dimInfo(object)
-  
+
   vNames <- get.dimInfo(dimInfoObj, type='varName')
   vIndex <- get.dimInfo(dimInfoObj, type='posIndex')
-  
+
   indexVar <- match(para.names, vNames)
   strInfo <- get.dimInfo(dimInfoObj, type='strInfo')
   dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
-  
+
   # calculate original codes
-  codesDefault <- lapply(1:length(strInfo), function(x) { 
-    mySplit(g_strID(pI), strInfo[[x]][1]:strInfo[[x]][2]) 
+  codesDefault <- lapply(1:length(strInfo), function(x) {
+    mySplit(g_strID(pI), strInfo[[x]][1]:strInfo[[x]][2])
   })
   codesOrig <- list()
   for ( i in 1:length(codesDefault) ) {
     codesOrig[[i]] <- calc.dimVar(object=dimInfo[[i]], type="matchCodeOrig", input=codesDefault[[i]])
   }
-  
+
   if ( length(input) != 3 ) {
     stop("c_cellID:: length of argument 'input' must equal 3!\n")
   }
@@ -1651,7 +1651,7 @@ setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(obj
   if ( !is.logical(para.verbose) ) {
     stop("c_cellID:: argument in 'input[[3]]' must be logical!\n")
   }
-  
+
   cellID <- 1:g_nrVars(pI)
   for ( i in seq_along(para.names) ) {
     cellID <- intersect(cellID, which(!is.na(match(as.character(codesOrig[[indexVar[i]]]), para.codes[i]))))
@@ -1659,24 +1659,24 @@ setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(obj
   if ( length(cellID) != 1) {
     stop("c_cellID:: check argument 'input' -> 0 or > 1 cells identified!\n")
   }
-  return(cellID)  
+  return(cellID)
 })
 
 setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(object, input) {
   time.start <- proc.time()
-  
+
   pI <- g_problemInstance(object)
   dI <- g_dimInfo(object)
   levelObj <- get.dimInfo(dI, type='dimInfo')
   strInfo <- get.dimInfo(dI, type='strInfo')
-  
+
   sdcStatus <- g_sdcStatus(pI)
-  
+
   nrNonDuplicatedCells <- g_nrVars(pI)
   nrPrimSupps <- length(which(sdcStatus == 'u'))
   nrSecondSupps <- length(which(sdcStatus == 'x'))
   nrPublishableCells <- length(which(sdcStatus %in% c('z','s')))
-  
+
   # merge codes and labels
   codesOriginal <- list()
   strIDs <- g_strID(pI)
@@ -1687,7 +1687,7 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
   out <- data.frame(codesOriginal);
   colnames(out) <- get.dimInfo(dI, type='varName')
   out$Freq <- g_freq(pI)
-  
+
   numVars <- g_numVars(pI)
   if ( !is.null(numVars) ) {
     data.obj <- g_dataObj(object)
@@ -1696,14 +1696,14 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
     out <- cbind(out, nV)
   }
   out$sdcStatus <- g_sdcStatus(pI)
-  
+
   # add duplicates
   hasDups <- sapply(1:length(levelObj), function(x) { get.dimVar(levelObj[[x]], type='hasDuplicates') })
   if ( any(hasDups == TRUE) ) {
     for ( i in which(hasDups==TRUE) ) {
       dups <- get.dimVar(levelObj[[i]], type='dups')
       dupsUp <- get.dimVar(levelObj[[i]], type='dupsUp')
-      
+
       runInd <- TRUE
       while ( runInd ) {
         for ( j in 1:length(dups) ) {
@@ -1731,14 +1731,14 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
     suppMethod=input$method,
     elapsedTime=g_elapsedTime(object) + (proc.time()-time.start)[3]
   )
-  return(safeObj)  
+  return(safeObj)
 })
 
 setMethod("c_ghmiter_diag_obj", signature=c("sdcProblem", "list"), definition=function(object, input) {
   cellToProtect <- input[[1]]
   indexList <- input[[2]]
   allowZeros <- input[[3]]
-  
+
   if ( length(cellToProtect) != 1 ) {
     stop("makeDiagObj:: length of 'cellToProtect' must equal 1!\n")
   }
@@ -1751,14 +1751,14 @@ setMethod("c_ghmiter_diag_obj", signature=c("sdcProblem", "list"), definition=fu
     stop("makeDiagObj:: 'cellToProtect' must be >= 1 and <= ",nrVars,"!\n")
   }
   sdcStatus <- g_sdcStatus(pI)
-  
+
   if ( allowZeros == TRUE ) {
     indZeros <- which(sdcStatus=="z" & g_freq(pI)==0)
     if ( length(indZeros ) > 0 ) {
       sdcStatus[indZeros] <- "s"
     }
   }
-  
+
   indToProtect <- sapply(indexList, function(x) { x[cellToProtect] } )
   diagIndices <- NULL
   for ( i in seq_along(indexList) ) {
@@ -1771,15 +1771,15 @@ setMethod("c_ghmiter_diag_obj", signature=c("sdcProblem", "list"), definition=fu
     }
   }
   diagIndices <- diagIndices[which(sdcStatus[diagIndices]!="z")]
-  
+
   if ( length(diagIndices) == 0 )
     diagIndices <- NULL
-  
+
   supp <- list()
   supp$cellToProtect <- cellToProtect
   supp$indToProtect <- indToProtect
   supp$diagIndices <- diagIndices
-  return(supp)  
+  return(supp)
 })
 
 setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -1789,46 +1789,46 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
       stop("calcQInfo: 'g' and 'd' must have equal length!\n")
     }
     numberIndexVars <- length(g)
-    
+
     quader <- expand(lapply(1:numberIndexVars, function(x) { c(g[x],d[x]) }  ), vector=FALSE)
-    
+
     quader <- matrix(unlist(quader), length(quader[[1]]), length(quader))
     quader <- quader[!duplicated(quader),,drop=FALSE]
     quader <- lapply(1:ncol(quader), function(x) quader[,x])
-    
+
     ### normquader
     normQ <- list()
     for ( i in seq_along(quader) ) {
       normQ[[i]] <- rep(0, length(quader[[1]]))
       normQ[[i]][which(quader[[i]]==g[i])] <- 1
     }
-    
+
     ### g|u indication?
     indexing <- rep("g", length(quader[[1]]))
     indexing[which(apply(matrix(unlist(normQ),length(quader[[1]]),numberIndexVars),1,sum) %%2 != 0)] <- "u"
     return(list(quader=quader, normQ=normQ, indexing=indexing))
   }
-  
+
   diagObj <- input[[1]]
   indexList <- input[[2]]
   protectionLevel <- input[[3]]
   allowZeros <- input[[4]]
-  
+
   # TODO: error checking
   pI <- g_problemInstance(object)
   freqs <- g_freq(pI)
   sdcStatus <- g_sdcStatus(pI)
-  
+
   if ( allowZeros == TRUE ) {
     indZeros <- which(sdcStatus=="z" & g_freq(pI)==0)
     if ( length(indZeros ) > 0 ) {
       sdcStatus[indZeros] <- "s"
     }
   }
-  
+
   ### relevant Indices ### TODO FIXME CHECK!!!!
   relevantIndices <- which(sapply(indexList, function(x) { length(unique(x)) } ) > 1)
-  
+
   resultObj <- list()
   # FIXME: What is with 1-dimensional data?
   limit <- length(diagObj$diagIndices)
@@ -1836,7 +1836,7 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
     g <- diagObj$indToProtect
     d <- sapply(indexList, function(x) { x[diagObj$diagIndices[z]] } )
     qInfo <- calcQInfo(g, d)
-    
+
     # 2) position (indices==qPosition) of current quader in subTabObj
     valsQ <- pasteStrVec(unlist(qInfo$quader), length(qInfo$quader), coll=NULL)
     qPosition <- match(valsQ, g_strID(pI))
@@ -1846,10 +1846,10 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
       # 3.1) how many values would need to be suppressed for this quader
       indNonSupp <- which(sdcStatus[qPosition] == "s" & sdcStatus[qPosition] != "u")
       nrAdditionalSupps <- length(indNonSupp)
-      
+
       # 3.2) whats the amount of information which needs to be suppressed?
       sumAdditionalSuppsFreq <- sum(freqs[qPosition[indNonSupp]])
-      
+
       # 3.3) does the quader contains other single cells except for
       # the primary suppressed value (diaObj$cellToPretect) to check?
       # subIndices = current quader without primary suppressed cell to check
@@ -1860,7 +1860,7 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
         indikatorSingleItems <- TRUE
         singleItems <- indSingleItems
       }
-      
+
       # 3.5) is the quader protected enough? (protectionLevel)
       # we need to check for interval-protection only if protectionLevel > 0
       schutzInd <- TRUE
@@ -1872,7 +1872,7 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
           X <- freqs[diagObj$cellToProtect]
           if( X == 0 ) {
             tmpInd <- which(sdcStatus[qPosition] != "u" & freqs[qPosition] != 0)
-            
+
             if( length(tmpInd) > 0 ) {
               # TODO: this needs testing !!! (page 60, repsilber)
               if( range <= min(freqs[tmpInd]) ) {
@@ -1888,10 +1888,10 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
           }
         }
       }
-      
+
       # 4) return results
       # in this case, the cell is already protected, so we can stop!
-      
+
       # allowZeros==TRUE: we have not found patterns without zeros
       # so we do not care for an 'optimal' solution that does not exist anyway
       if ( allowZeros == TRUE ) {
@@ -1905,7 +1905,7 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
           break
         }
       }
-      
+
       resultObj[[length(resultObj)+1]] <- list(
         quaderStrID = valsQ,
         indexing = qInfo$indexing,
@@ -1919,40 +1919,40 @@ setMethod("c_ghmiter_calc_info", signature=c("sdcProblem", "list"), definition=f
       )
     }
   }
-  return(resultObj)  
+  return(resultObj)
 })
 
 setMethod("c_ghmiter_suppress_quader", signature=c("sdcProblem", "list"), definition=function(object, input) {
   pI <- g_problemInstance(object)
   sdcStatus <- g_sdcStatus(pI)
-  
+
   suppIndex <- setdiff(input$qPosition, input$qPosition[which(sdcStatus[input$qPosition]=="u")])
   s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("x", length(suppIndex)))
   s_problemInstance(object) <- pI
-  return(object)  
+  return(object)
 })
 
 setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definition=function(object, input) {
   infoObj <- input[[1]]
   suppMethod <- input[[2]]$suppMethod
   verbose <- input[[2]]$verbose
-  
+
   sdcStatus <- g_sdcStatus(g_problemInstance(object))
   relevantIndices <- as.numeric(unlist(lapply(infoObj, '[', 'schutzInd'))[1])
-  
+
   # already protected
   if ( is.null(infoObj) ) {
     suppObj <- NULL
     return(suppObj)
   }
-  
+
   # not protected yet
   # which elements of iqsInfo are NULL?
   nullElements <- which(unlist(lapply(lapply(infoObj, '[[', 'qPosition'), function(x) { length(x) } )) == 0)
   if ( length(nullElements) > 0 ) {
     infoObj <- infoObj[-nullElements]
   }
-  
+
   # put iqs together so that we can choose the optimal suppression scheme
   qIndexNr <- 1:length(infoObj)
   nrAdditionalSupps <- as.numeric(unlist(lapply(infoObj, '[', 'nrAdditionalSupps')))
@@ -1961,14 +1961,14 @@ setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definiti
   schutz <- as.numeric(unlist(lapply(infoObj, '[', 'schutz')))
   schutzInd <- as.logical(unlist(lapply(infoObj, '[', 'schutzInd')))
   schutzInd <- as.logical(unlist(lapply(infoObj, '[', 'schutzInd')))
-  
+
   possQuaders <- data.frame(qIndexNr, nrAdditionalSupps, sumAdditionalSuppsFreq, indikatorSingleItems, schutz, schutzInd)
-  
+
   # are there any suppression schemes satisfying the necessary interval protection?
   indexIntervallOk <- FALSE
   if ( any(possQuaders$schutzInd==TRUE) )
     indexIntervallOk <- TRUE
-  
+
   # do suppression schemes exist that do not contain single values?
   # these are preferred suppression schemes.
   existNonSingles <- FALSE
@@ -1976,7 +1976,7 @@ setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definiti
     existNonSingles <- TRUE
     possQuaders <- possQuaders[possQuaders$indikatorSingleItems==FALSE,,drop=FALSE]
   }
-  
+
   if( indexIntervallOk ) {
     if ( min(possQuaders$nrAdditionalSupps) > 0 & verbose == TRUE) {
       cat("# additional secondary Supps:", min(possQuaders$nrAdditionalSupps)," ")
@@ -1993,7 +1993,7 @@ setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definiti
       possQuaders <- possQuaders[which(possQuaders$sumAdditionalSuppsFreq == min(log(1+possQuaders$sumAdditionalSuppsFreq))),,drop=FALSE]
       possQuaders <- possQuaders[which(possQuaders$nrAdditionalSupps == min(possQuaders$nrAdditionalSupps)),,drop=FALSE]
     }
-    
+
     # finally choose the suppression scheme
     possQuaders <- possQuaders[1,]
     suppObj <- infoObj[[possQuaders$qIndexNr]]
@@ -2005,7 +2005,7 @@ setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definiti
     # -> everything is ok
     if( all(sdcStatus=="u" | sdcStatus == "x") )
       suppObj <- NULL
-    
+
     # no suppression scheme satisfies the required interval protection
     # the suppression pattern with the max. protection level is selected
     else {
@@ -2016,7 +2016,7 @@ setMethod("c_ghmiter_select_quader", signature=c("sdcProblem", "list"), definiti
       suppObj <- infoObj[[possQuaders$qIndexNr]]
     }
   }
-  return(suppObj)  
+  return(suppObj)
 })
 
 setMethod("c_ghmiter_supp_additional", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -2025,21 +2025,21 @@ setMethod("c_ghmiter_supp_additional", signature=c("sdcProblem", "list"), defini
   suppObj <- input[[3]]
   suppMethod <- input[[4]]$suppMethod
   verbose <- input[[4]]$suppMethod
-  
+
   ### Task: find quader (from) infoObj with following restrictions
   freqs <- g_freq(g_problemInstance(object))
-  
+
   # - must not be suppObj itself
   cellToProtect <- diagObj$cellToProtect
   suppIndicesOrig <- suppObj$qPosition
-  
+
   # the additional quader must non contain these indices
   # the singletons in the original suppressed pattern
   prohibitedIndices <- setdiff(suppIndicesOrig[which(freqs[suppIndicesOrig] == 1)],cellToProtect)
-  
+
   # the possible indices
   possIndices <- lapply(infoObj, function(x) { x$qPosition } )
-  
+
   # do the indices of the possible patterns contain any of the prohibited cells
   res <- sapply(1:length(possIndices), function(x) { any(prohibitedIndices %in% possIndices[[x]]) } )
   if ( all(res == TRUE ) ) {
@@ -2049,12 +2049,12 @@ setMethod("c_ghmiter_supp_additional", signature=c("sdcProblem", "list"), defini
     ind <- which(res==TRUE)
     infoObj <- infoObj[-ind]
   }
-  
+
   suppObjNew <- c_ghmiter_select_quader(object, input=list(infoObj, input[[4]]))
   if ( !is.null(suppObjNew) ) {
     object <- c_ghmiter_suppress_quader(object, input=suppObjNew)
   }
-  return(object)  
+  return(object)
 })
 
 setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -2063,7 +2063,7 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
   dimInfoObj <- g_dimInfo(object)
   dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
   pI <- g_problemInstance(object)
-  
+
   if ( !strID %in% g_strID(pI) ) {
     stop("c_contributing_indices:: strID not found in the current problem!\n")
   }
@@ -2088,36 +2088,36 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
     cellIndex <- pasteStrVec(unlist(expand.grid(levInfo)), length(levInfo))
     indexVec <- which(get.dimInfo(dimInfoObj, type='strID') %in% cellIndex)
   }
-  return(indexVec)  
+  return(indexVec)
 })
 
 setMethod("c_reduce_problem", signature=c("sdcProblem", "list"), definition=function(object, input) {
   x <- object
   y <- input[[1]]
-  
+
   pI <- g_problemInstance(x)
   dimInfo <- g_dimInfo(x)
   strInfo <- strInfoOrig <- get.dimInfo(dimInfo, type='strInfo')
-  
+
   if ( length(y) < 1 ) {
     stop("c_reduce_problem:: length of argument 'y' < 1!\n")
   }
   if ( !all(y %in% 1:g_nrVars(pI)) ) {
     stop("c_reduce_problem:: elements of indices y does not match with problem size!\n")
   }
-  
+
   newDims <- lapply(1:length(strInfo), function(x) { substr(g_strID(pI)[y], strInfo[[x]][1], strInfo[[x]][2]) } )
   newDims2 <- lapply(1:length(newDims), function(x) { sort(unique(newDims[[x]])) } )
   newDimsOrigCodes <- lapply(1:length(newDims), function(k) {
     calc.dimVar(object=dimInfo@dimInfo[[k]], type='matchCodeOrig', input=newDims2[[k]])
   })
-  
+
   lenNewDims <- sapply(newDims2, length)-1
   codesNew <- lapply(1:length(newDims), function(x) { c("@", rep("@@", lenNewDims[x])) } )
-  
+
   dimInfoOld <- lapply(1:length(newDims2),  function(x) { init.dimVar(input=list(input=data.frame(codesNew[[x]], newDims2[[x]]), vName=paste('V',x,sep="")) ) } )
   dimInfoNew <- lapply(1:length(newDims2),  function(x) { init.dimVar(input=list(input=data.frame(codesNew[[x]], newDimsOrigCodes[[x]]), vName=paste('V',x,sep="")) ) } )
-  
+
   new.codes <- lapply(1:length(newDims), function(x) {
     dimInfoOld[[x]]@codesDefault[match(newDims[[x]], dimInfoOld[[x]]@codesOriginal)]
   })
@@ -2139,24 +2139,24 @@ setMethod("c_reduce_problem", signature=c("sdcProblem", "list"), definition=func
   pI@SPL <- g_SPL(pI)[y]
   pI@sdcStatus <- g_sdcStatus(pI)[y]
   x@dimInfo@dimInfo <- dimInfoNew
-  
+
   # strInfo
   info <- c(0, cumsum(sapply(1:length(codesNew), function(x) { sum(sapply(table(codesNew[[x]]), nchar)) } )))
   for ( i in 2:length(info) ) {
     strInfo[[i-1]] <- c(info[i-1]+1, info[i] )
   }
   x@dimInfo@strInfo <- strInfo
-  
+
   s_problemInstance(x) <- pI
   validObject(x)
-  return(x)  
+  return(x)
 })
 
 setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=function(object, input) {
   pI <- g_problemInstance(object)
   dimInfoObj <- g_dimInfo(object)
   partition <- c_make_partitions(input=list(objectA=pI, objectB=dimInfoObj))
-  
+
   dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
   nrLevels <- length(dimInfo)
   nrVars <- g_nrVars(pI)
@@ -2167,7 +2167,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
   requiredCuts <- init.cutList(type='empty', input=list(nrCols=nrVars))
   strInfo <- get.dimInfo(dimInfoObj, type='strInfo')
   x <- rep(0, nrVars)
-  
+
   for ( z in seq_along(primSupps) ) {
     pSupp <- primSupps[z]
     currentPrimSupp <- strIDs[pSupp]
@@ -2179,9 +2179,9 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
     if ( any(is.na(matchInd)) ) {
       stop('elements of matchInd must not be NA!\n')
     }
-    
+
     splitMatchInd <- split(matchInd, rep(1:(length(matchInd)/2), each=2))
-    
+
     for ( u in 1:length(splitMatchInd) ) {
       matchInd <- splitMatchInd[[u]]
       nrPow <- nrLevels - length(which(as.numeric(unlist(strsplit(partition$groups[[matchInd[1]]],"-")))==1))
@@ -2196,7 +2196,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
       if ( any(v2 != 0) ) {
         requiredCuts <- set.cutList(requiredCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v2, dir=">=", rhs=(2^nrPow)))))
       }
-      
+
       ### Todo: at least 2 suppressions in each dimension
       ### there is some error here! -> TODO: CHECK: FIXME!
       #for ( i in 1:length(dimInfo) ) {
@@ -2222,10 +2222,10 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
       #}
     }
   }
-  
+
   dupRows <- get.simpleTriplet(get.cutList(requiredCuts, type='constraints'), type='duplicatedRows', input=list())
   if ( length(dupRows) > 0 ) {
     requiredCuts <- set.cutList(requiredCuts, type='removeCompleteConstraint', input=list(dupRows))
   }
-  return(requiredCuts)  
+  return(requiredCuts)
 })

@@ -29,7 +29,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   dimInfoObj <- input$objectB
   dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
   strIDs <- g_strID(pI)
-  
+
   ## create classes and groups
   tmpDat <- expand.grid(lapply(1:length(dimInfo), function(x) { 1:get.dimVar(dimInfo[[x]], type='nrLevels') } ))
   groups <- apply(tmpDat, 1, function(x) { paste(x, collapse="-")})
@@ -39,7 +39,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   classesUnique <- unique(classes)
   groups <- groups[sortOrder]
   splitGroups <- split(groups, classes)
-  
+
   ## create tables for all classes and groups
   final <- list()
   final$groups <- as.list(groups)
@@ -47,7 +47,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   for ( i in 1:length(groups) ) {
     final$indices[[i]] <- list()
     levs <- as.integer(unlist(sapply(groups[[i]], strsplit, "-")))
-    
+
     res <- list()
     for ( z in 1:length(dimInfo) ) {
       res[[z]] <- list()
@@ -61,7 +61,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
         checkInd <- which(diffs == 1)-1
         out <- data.frame(index=index, levOrig=levOrig, codesDefault=codesDefault, ind=NA)
         out$ind[checkInd] <- 1
-        
+
         checkInd <- c(checkInd, length(index))
         splitVec <- rep(0, length(index))
         for ( j in 2:length(checkInd) ) {
@@ -98,24 +98,24 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
 setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
   x <- input$objectA
   y <- input$objectB
-  
+
   levelObj <- get.dimInfo(y, type='dimInfo')
   strID <- g_strID(x)
   nrVars <- length(levelObj)
   nrCells <- g_nrVars(x)
   freqs <- g_freq(x)
-  
+
   constraintM <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrCells)))
   for ( i in 1:nrVars ) {
     lO <- levelObj[[i]]
     keepList <- lapply(get.dimInfo(y, type='strInfo')[-i], function(k) { seq(k[1], k[2]) } )
     keepList2 <- lapply(get.dimInfo(y, type='strInfo')[i], function(k) { seq(k[1], k[2]) } )
     f1 <- f2 <- mySplitIndicesList(strID, keepList2)
-    
+
     if ( nrVars > 1 ) {
       f1 <- mySplitIndicesList(strID, keepList)
     }
-    
+
     dimlO <- get.dimVar(lO, type='dims')
     if ( length(unique(f2)) != 1 ) {
       dimInd <- sapply(1:length(dimlO), function(x) { identical( sort(unique(f2)), dimlO[[x]]) } )
@@ -140,7 +140,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
         } else {
           spl <- split(splitInd, rep(1, length(splitInd)))
         }
-        
+
         for ( z in 1:length(spl) ) {
           ind <- rep(1,length(spl[[z]]))
           ind[which.max(freqs[spl[[z]]])] <- -1
@@ -152,7 +152,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
       }
     }
   }
-  return(constraintM)  
+  return(constraintM)
 })
 
 setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
@@ -160,7 +160,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   y <- input$objectB
   nrVars <- g_nrVars(x)
   A <- c_gen_mat_m(input=list(objectA=x, objectB=y))
-  
+
   ## calculating (logical) constraints for the master problem ##
   # idea: for each constraint at least 2 suppressions must
   # exist if one xi != 0! (http://www.eia.doe.gov/ices2/missing_papers.pdf)
@@ -172,7 +172,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   # newCutsMaster <<- set.cutList(newCutsMaster, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="<=", rhs=0))))
   #})
   ################################################################
-  
+
   nrConstraints <- get.simpleTriplet(A, type='nrRows', input=list())
   objective <- rep(0, length=2*nrVars+nrConstraints)
   z1 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=FALSE))
@@ -181,11 +181,11 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   A <- calc.simpleTriplet(object=z, type='bind', input=list(get.simpleTriplet(A, type='transpose', input=list()), bindRow=FALSE))
   direction <- rep("==", get.simpleTriplet(A, type='nrRows', input=list()))
   rhs <- rep(0, get.simpleTriplet(A, type='nrRows', input=list()))
-  
+
   types <- rep("C", get.simpleTriplet(A, type='nrCols', input=list()))
   boundsLower <- list(ind=1:get.simpleTriplet(A, type='nrCols', input=list()), val=c(rep(0, 2*nrVars), rep(-Inf, nrConstraints)))
   boundsUpper <- list(ind=1:get.simpleTriplet(A, type='nrCols', input=list()), val=c(rep(Inf, 2*nrVars), rep(Inf,  nrConstraints)))
-  
+
   aProb <- new("linProb",
     objective=objective,
     constraints=A,
@@ -194,7 +194,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
     boundsLower=boundsLower,
     boundsUpper=boundsUpper,
     types=types)
-  return(list(aProb=aProb, newCutsMaster=newCutsMaster))  
+  return(list(aProb=aProb, newCutsMaster=newCutsMaster))
 })
 
 setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
@@ -203,7 +203,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   time.start <- proc.time()
   datO <- get.dataObj(x, type='rawData')
   dimObj <- get.dimInfo(y, type='dimInfo')
-  
+
   # we have to aggregate if we are dealing with microdata
   if ( get.dataObj(x, type='isMicroData') ) {
     rawData <- datO[, lapply(.SD, sum, na.rm=TRUE), by=key(datO), .SDcols=setdiff(colnames(datO), key(datO))]
@@ -212,7 +212,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   }
   ind.dimvars <- get.dataObj(x, type='dimVarInd')
   ind.freq <- get.dataObj(x, type='freqVarInd')
-  
+
   codes <- list(); length(codes) <- length(ind.dimvars)
   for ( i in 1:length(codes) ) {
     codes[[i]] <- rawData[[ind.dimvars[i]]]
@@ -233,18 +233,18 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       stop("c_calc_full_prob:: recoding not possible!\n")
     }
   }
-  
+
   ## calculate all possible combinations within the lowest levels of dim-vars
   ## if any combinations are missing (missing.codes), we have to set them to 0 later
   strID <- as.character(pasteStrVec(unlist(codes), length(codes)))
   exDims <- pasteStrVec(unlist(codes), length(codes))
   possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { get.dimVar(x, type='minimalCodesDefault') }), vector=TRUE)), length(dimObj)))
   missing.codes <- setdiff(possDims, exDims)
-  
+
   ## fill the table
   nrIndexvars <- length(ind.dimvars)
   fullDims <- lapply(dimObj, get.dimVar, type='dims')
-  
+
   allCodes <- expand(lapply(dimObj, get.dimVar, type='codesDefault'), vector=FALSE)
   fullTabObj <- data.table(ID=1:length(allCodes[[1]]))
   for ( i in 1:length(allCodes)) {
@@ -252,14 +252,14 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   }
   setkeyv(fullTabObj, colnames(rawData)[ind.dimvars])
   fullTabObj[,ID:=NULL]
-  
+
   ## revert rawData codes to default codes
   for ( j in seq_along(ind.dimvars) ) {
     v <- calc.dimVar(object=dimObj[[j]], type="matchCodeDefault", input=rawData[,get(names(dimObj)[j])])
     rawData[,names(dimObj)[j]:=v]
   }
   setkeyv(rawData, colnames(rawData)[ind.dimvars])
-  
+
   ## replace NAs in rawData by 0 (required for aggregation)
   cols <- colnames(rawData)[(length(dimObj)+1):ncol(rawData)]
   ind.na <- list(); length(ind.na) <- length(cols)
@@ -269,10 +269,10 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       rawData[ind.na[[i]], cols[i]:=0]
     }
   }
-  
+
   ## merge minDat to fullDat
   fullTabObj <- merge(fullTabObj, rawData, all.x=TRUE)
-  
+
   ## missing dimensions in raw data are filled up with zeros
   ind <- which(is.na(rawData$freq))
   if ( length(ind) > 0 ) {
@@ -280,20 +280,20 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       rawData[ind, cols[k]:=0]
     }
   }
-  
+
   ## set missing combinations of lowest levels to 0
   ## problematic are all levels that should exist, but do not exist
   ## they are filled with 0 so that we can aggregate
   dim.vars <- colnames(fullTabObj)[ind.dimvars]
   strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
-  
+
   if ( length(missing.codes) > 0 ) {
     index <- which(strID%in%missing.codes)
     for ( i in 1:length(cols) ) {
       fullTabObj[index, cols[i]:=0]
     }
   }
-  
+
   ## fill up missing dimensions
   not.finished <- TRUE
   while ( not.finished ) {
@@ -305,9 +305,9 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       } else {
         setkeyv(fullTabObj, dim.vars[1])
       }
-      
+
       dat <- copy(fullTabObj) # we need to copy!
-      
+
       cur.dim <- dimObj[[i]]@dims
       for ( j in length(cur.dim):1 ) {
         cur.levs <-  cur.dim[[j]]
@@ -317,7 +317,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
         } else {
           out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
         }
-        
+
         row.ind <- which(fullTabObj[[ind.dimvars[i]]] == cur.levs[1])
         for ( z in 1:length(col.names) ) {
           v <- out[,col.names[z], with=FALSE]
@@ -329,7 +329,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       not.finished <- FALSE
     }
   }
-  
+
   nrV <- nrow(fullTabObj)
   f <- fullTabObj[[ind.freq]]
   strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
@@ -345,11 +345,11 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       numVarsList[[n]] <- fullTabObj[[n.ind[n]]]
     }
   }
-  
+
   if ( length(n.ind) > 0 ) {
     names(numVarsList) <- colnames(get.dataObj(x, type="rawData"))[n.ind]
   }
-  
+
   ## replace 0 in rawData by NA if they have been replaced earlier
   for ( i in 1:length(ind.na) ) {
     if ( length(ind.na[[i]]) > 0 ) {
@@ -380,5 +380,5 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
     indicesDealtWith=NULL,
     elapsedTime=(proc.time()-time.start)[3]
   )
-  return(sdcProblem)  
+  return(sdcProblem)
 })

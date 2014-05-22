@@ -321,7 +321,7 @@ primarySuppression <- function(object, type, ...) {
   }
 
   elapsed.time <- g_elapsedTime(object) + (proc.time() - start.time)[3]
-  s_elapsedTime(object) <- elapsed.time  
+  s_elapsedTime(object) <- elapsed.time
   return(object)
 }
 
@@ -651,7 +651,7 @@ changeCellStatus <- function(object, characteristics, varNames, rule, verbose=FA
   paraList$verbose <- verbose
 
   cellID <- c_cellID(object, input=paraList)
-  
+
   pI <- g_problemInstance(object)
   s_sdcStatus(pI) <- list(index=cellID, vals=rule)
   s_problemInstance(object) <- pI
@@ -967,7 +967,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
             s_problemInstance(outB) <- pI.B
             s_indicesDealtWith(outB) <- NULL
             s_startJ(outB) <- 1
-            s_startI(outB) <- 1             
+            s_startI(outB) <- 1
             outB <- c_anon_worker(outB, input=paraList)
           }
         }
