@@ -237,43 +237,43 @@ setClass(
   ),
   validity=function(object) {
     if ( !all.equal(
-      length(get.problemInstance(object, type='strID')),
-      length(get.problemInstance(object, type='freq')),
-      length(get.problemInstance(object, type='lb')),
-      length(get.problemInstance(object, type='ub')),
-      length(get.problemInstance(object, type='SPL')),
-      length(get.problemInstance(object, type='LPL')),
-      length(get.problemInstance(object, type='UPL')),
-      length(get.problemInstance(object, type='sdcStatus'))) ) {
+      length(g_strID(object)),
+      length(g_freq(object)),
+      length(g_lb(object)),
+      length(g_ub(object)),
+      length(g_SPL(object)),
+      length(g_LPL(object)),
+      length(g_UPL(object)),
+      length(g_sdcStatus(object))) ) {
         stop("problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL' and 'sdcStatus' must have the same length!\n")
     }
-    if ( !is.null(get.problemInstance(object, type='numVars')) ) {
-      if ( !all(sapply(get.problemInstance(object, type='numVars'), length) == length(get.problemInstance(object, type='numVars')[[1]])) ) {
+    if ( !is.null(g_numVars(object)) ) {
+      if ( !all(sapply(g_numVars(object), length) == length(g_numVars(object)[[1]])) ) {
         stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
       }
     }
-    if ( !is.null(get.problemInstance(object, type='numVars')[[1]]) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='numVars')[[1]]) ) {
+    if ( !is.null(g_numVars(object)[[1]]) & length(g_freq(object)) != length(g_numVars(object)[[1]]) ) {
       stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
     }
-    if ( !is.null(get.problemInstance(object, type='w')) & length(get.problemInstance(object, type='freq')) != length(get.problemInstance(object, type='w')) ) {
+    if ( !is.null(g_w(object)) & length(g_freq(object)) != length(g_w(object)) ) {
       stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
     }
-    if ( any(get.problemInstance(object, type='lb') <= get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL')) == FALSE ) {
+    if ( any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE ) {
       stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
     }
-    if ( any(get.problemInstance(object, type='freq') - get.problemInstance(object, type='LPL') <= get.problemInstance(object, type='freq')) == FALSE ) {
+    if ( any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE ) {
       stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
     }
-    if ( any(get.problemInstance(object, type='freq') <= get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL')) == FALSE ) {
+    if ( any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE ) {
       stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
     }
-    if ( any(get.problemInstance(object, type='freq') + get.problemInstance(object, type='UPL') <= get.problemInstance(object, type='ub')) == FALSE) {
+    if ( any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
     }
-    if ( any(get.problemInstance(object, type='ub') - get.problemInstance(object, type='lb') >= get.problemInstance(object, type='SPL')) == FALSE) {
+    if ( any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
     }
-    if ( !all(get.problemInstance(object, type='sdcStatus') %in% c('s','u','x','z')) ) {
+    if ( !all(g_sdcStatus(object) %in% c('s','u','x','z')) ) {
       stop("problemInstance:: valid codes for sdcStatus are 'z', 's', 'x' or 'u'!\n")
     }
     return(TRUE)
@@ -336,25 +336,25 @@ setClass(
     elapsedTime=NULL
   ),
   validity=function(object) {
-    if ( get.sdcProblem(object, type='startI') > get.sdcProblem(object, type='partition')$nrGroups ) {
-      stop("argument 'startI' must be <=",get.sdcProblem(object, type='partition')$nrGroups,"!\n")
+    if ( g_startI(object) > g_partition(object)$nrGroups ) {
+      stop("argument 'startI' must be <=",g_partition(object)$nrGroups,"!\n")
     }
-    if ( get.sdcProblem(object, type='startJ') > length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]) ) {
-      stop("argument 'startJ' must be <=",length(get.sdcProblem(object, type='partition')$indices[[get.sdcProblem(object, type='startI')]]),"!\n")
+    if ( g_startJ(object) > length(g_partition(object)$indices[[g_startI(object)]]) ) {
+      stop("argument 'startJ' must be <=",length(g_partition(object)$indices[[g_startI(object)]]),"!\n")
     }
-    if ( length(get.sdcProblem(object, type='startI')) != 1 ) {
+    if ( length(g_startI(object)) != 1 ) {
       stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
     }
-    if ( length(get.sdcProblem(object, type='startJ')) != 1 ) {
+    if ( length(g_startJ(object)) != 1 ) {
       stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
     }
-    if ( get.sdcProblem(object, type='startI') < 1 ) {
+    if ( g_startI(object) < 1 ) {
       stop("sdcProblem:: argument 'startI' must be >= 1!\n")
     }
-    if ( get.sdcProblem(object, type='startJ') < 1 ) {
+    if ( g_startJ(object) < 1 ) {
       stop("sdcProblem:: argument 'startJ' must be >= 1!\n")
     }
-    if ( length(get.sdcProblem(object, type='elapsedTime')) != 1 ) {
+    if ( length(g_elapsedTime(object)) != 1 ) {
       stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
     }
     return(TRUE)
@@ -611,25 +611,25 @@ setClass(
     elapsedTime=NULL
   ),
   validity=function(object) {
-    if ( length(get.safeObj(object, type='nrPrimSupps', input=list())) != 1 ) {
+    if ( length(g_nrPrimSupps(object)) != 1 ) {
       stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
     }
-    if ( length(get.safeObj(object, type='nrNonDuplicatedCells', input=list())) != 1 ) {
+    if ( length(g_nrNonDuplicatedCells(object)) != 1 ) {
       stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
     }
-    if ( length(get.safeObj(object, type='nrSecondSupps', input=list())) != 1 ) {
+    if ( length(g_nrSecondSupps(object)) != 1 ) {
       stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
     }
-    if ( length(get.safeObj(object, type='nrPublishableCells', input=list())) != 1 ) {
+    if ( length(g_nrPublishableCells(object)) != 1 ) {
       stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
     }
-    if ( length(get.safeObj(object, type='suppMethod', input=list())) != 1 ) {
+    if ( length(g_suppMethod(object)) != 1 ) {
       stop("safeObj:: length of 'suppMethod' must equal 1!\n")
     }
-    if ( !get.safeObj(object, type='suppMethod', input=list()) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
+    if ( !g_suppMethod(object) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
       stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
     }
-    if ( length(get.safeObj(object, type='elapsedTime', input=list())) != 1 ) {
+    if ( length(g_elapsedTime(object)) != 1 ) {
       stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
     }
     return(TRUE)

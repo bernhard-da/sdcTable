@@ -372,19 +372,19 @@ st_to_mat <- function(x) {
 }
 
 csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
-  pI <- get.sdcProblem(sdcProblem, type="problemInstance")
-  dimInfo <- get.sdcProblem(sdcProblem, type="dimInfo")
-  aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
+  pI <- g_problemInstance(sdcProblem)
+  dimInfo <- g_dimInfo(sdcProblem)
+  aProb <- c_make_att_prob(input=list(objectA=pI, objectB=dimInfo))$aProb
 
   # already suppressed cells
-  ind_prim <- as.integer(sort(c(get.problemInstance(pI, "primSupps"), get.problemInstance(pI, "secondSupps"))))
+  ind_prim <- as.integer(sort(c(g_primSupps(pI), g_secondSupps(pI))))
   len_prim <- as.integer(length(ind_prim))
   bounds_min <- bounds_max <- rep(0, len_prim)
 
-  ind_fixed <- as.integer(get.problemInstance(pI, "forcedCells"))
+  ind_fixed <- as.integer(g_forcedCells(pI))
   len_fixed <- as.integer(length(ind_fixed))
 
-  aProb <- calc.multiple(type='makeAttackerProblem', input=list(objectA=pI, objectB=dimInfo))$aProb
+  aProb <- c_make_att_prob(input=list(objectA=pI, objectB=dimInfo))$aProb
   attProbM <- init.simpleTriplet("simpleTriplet", input=list(mat=st_to_mat(aProb@constraints)))
 
   ia <- as.integer(c(0, get.simpleTriplet(attProbM, type="rowInd", list())))
@@ -395,14 +395,14 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   nr_vars <- as.integer(get.simpleTriplet(attProbM, type="nrCols", list()))
   nr_rows <- as.integer(get.simpleTriplet(attProbM, type="nrRows", list()))
 
-  vals <- as.integer(get.problemInstance(pI, type="freq"))
+  vals <- as.integer(g_freq(pI))
 
-  lb <- as.double(get.problemInstance(pI, type="lb"))
-  ub <- as.double(get.problemInstance(pI, type="ub"))
+  lb <- as.double(g_lb(pI))
+  ub <- as.double(g_ub(pI))
 
-  LPL <- as.integer(get.problemInstance(pI, type="LPL"))
-  UPL <- as.integer(get.problemInstance(pI, type="UPL"))
-  SPL <- as.integer(get.problemInstance(pI, type="SPL"))
+  LPL <- as.integer(g_LPL(pI))
+  UPL <- as.integer(g_UPL(pI))
+  SPL <- as.integer(g_SPL(pI))
 
   if ( attackonly == TRUE ) {
     attackonly <- as.integer(1)
@@ -431,7 +431,8 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     SPL=SPL,
     final_pattern=final_pattern,
     attackonly=attackonly,
-    verbose=as.integer(verbose)
+    verbose=as.integer(verbose),
+    is_ok=0L
   )
 
   if ( attackonly ) {
@@ -440,29 +441,36 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     df$bounds_up >=  df$val + UPL[df$prim_supps] &
       df$bounds_up - df$bounds_low >= SPL[df$prim_supps]
 
-    if ( length(get.problemInstance(pI, "secondSupps")) > 0 ) {
-      index <- get.problemInstance(pI, "primSupps")
+    if ( length(g_secondSupps(pI)) > 0 ) {
+      index <- g_primSupps(pI)
       df <- df[which(df$prim_supps %in% index),]
     }
     return(df)
   } else {
-    nr_vars <- get.problemInstance(sdcProblem@problemInstance, type="nrVars")
-    status_new <- rep("s", nr_vars)
-    status_new[res$final_pattern!=0] <- "x"
-    status_new[ind_prim] <- "u"
-    if ( length(get.problemInstance(pI, "secondSupps")) > 0 ) {
-      status_new[get.problemInstance(pI, "secondSupps")] <- "x"
-    }
-    if ( length(ind_fixed) > 0 ) {
-      status_new[ind_fixed] <- "z"
-    }
-    sdcProblem@problemInstance <- set.problemInstance(sdcProblem@problemInstance, type="sdcStatus", list(index=1:nr_vars, values=status_new))
+    if  ( res$is_ok != 0 ) {
+      warning("no valid solution was obtained!\n")
+      return(NULL)
+    } else {
+      nr_vars <- g_nrVars(g_problemInstance(sdcProblem))
+      status_new <- rep("s", nr_vars)
+      status_new[res$final_pattern!=0] <- "x"
+      status_new[ind_prim] <- "u"
+      if ( length(g_secondSupps(pI)) > 0 ) {
+        status_new[g_secondSupps(pI)] <- "x"
+      }
+      if ( length(ind_fixed) > 0 ) {
+        status_new[ind_fixed] <- "z"
+      }
+      
+      pI <- g_problemInstance(sdcProblem)
+      s_sdcStatus(pI) <- list(index=1:nr_vars, vals=status_new)
+      s_problemInstance(sdcProblem) <- pI
 
-    time.el <- get.sdcProblem(sdcProblem, type='elapsedTime')+(proc.time()-time.start)[3]
-    sdcProblem <- set.sdcProblem(sdcProblem, type="elapsedTime", input=list(time.el))
-
-    sdcProblem <- set.sdcProblem(sdcProblem, type="indicesDealtWith", input=list(1:nr_vars))
-    return(sdcProblem)
+      time.el <- g_elapsedTime(sdcProblem)+(proc.time()-time.start)[3]
+      s_elapsedTime(sdcProblem) <- time.el
+      s_indicesDealtWith(sdcProblem) <- 1:nr_vars
+      return(sdcProblem)
+    }
   }
 }
 
@@ -548,19 +556,19 @@ performQuickSuppression <- function(object, input) {
   }
 
   verbose <- input$verbose
-  pI <- get.sdcProblem(object, type="problemInstance")
+  pI <- g_problemInstance(object)
 
-  strIDs <- get.problemInstance(pI, type="strID")
+  strIDs <- g_strID(pI)
 
   dat <- data.frame(
     id=1:length(strIDs),
     strID=strIDs,
-    freq=get.problemInstance(pI, type="freq"),
-    sdcStatus=get.problemInstance(pI, type="sdcStatus"), stringsAsFactors=F
+    freq=g_freq(pI),
+    sdcStatus=g_sdcStatus(pI), stringsAsFactors=F
   )
 
-  indices <- get.sdcProblem(object, type="partition")$indices
-  dimInfo <- get.sdcProblem(object, type="dimInfo")
+  indices <- g_partition(object)$indices
+  dimInfo <- g_dimInfo(object)
   strInfo <- get.dimInfo(dimInfo, type="strInfo")
   vNames <- get.dimInfo(dimInfo, type="varName")
 
@@ -621,10 +629,183 @@ performQuickSuppression <- function(object, input) {
   }
 
   matchID <- match(dat$strID,strIDs )
-  pI <- set.problemInstance(pI, type="sdcStatus", input=list(index=matchID, values=dat$sdcStatus))
-
-  object <- set.sdcProblem(object, type="problemInstance", list(pI))
+  s_sdcStatus(pI) <- list(index=matchID, vals=dat$sdcStatus)
+  s_problemInstance(object) <- pI
   object
 }
 
+# using optimally solving a problem using c++ implementation (used in protectTable())
+opt_cpp <- function(object, input) {
+  if ( !class(object) == "sdcProblem" ) {
+    stop("check input 'object' (not of class 'sdcProblem')!\n")
+  }
 
+  timeLimit <- input$timeLimit
+  verbose <- input$verbose
+  save <- input$save
+
+  start.time <- proc.time()
+  pI <- g_problemInstance(object)
+  sdcStatusBegin <- g_sdcStatus(pI)
+  primSupps <- primSuppsOrig <- g_primSupps(pI)
+
+  indexPool <- numeric()
+  allStrIDs <- g_strID(pI)
+
+  s_elapsedTime(object) <- g_elapsedTime(object) + (proc.time()-start.time)[3]
+  invisible(csp_cpp(sdcProblem=object, attackonly=FALSE, verbose=input$verbose))
+}
+
+# heuristically solving a problem using c++ implementation (used in protectTable())
+hitas_cpp <- function(object, input) {
+  if ( !class(object) == "sdcProblem" ) {
+    stop("check input 'object' (not of class 'sdcProblem')!\n")
+  }
+
+  timeLimit <- input$timeLimit
+  verbose <- input$verbose
+  save <- input$save
+
+  start.time <- proc.time()
+  pI <- g_problemInstance(object)
+  sdcStatusBegin <- g_sdcStatus(pI)
+  primSupps <- primSuppsOrig <- g_primSupps(pI)
+
+  indexPool <- numeric()
+  allStrIDs <- g_strID(pI)
+
+  partition <- g_partition(object)
+  run_ind <- TRUE
+  while ( run_ind ) {
+    for ( i in 1:(partition$nrGroups) ) {
+      s_startJ(object) <- 1 # reset j before updating i
+      s_startI(object) <- i
+
+      indexPool <- NULL
+      if ( i > 1 ) {
+        indexPool <- sort(unique(unlist(partition$indices[1:(i-1)])))
+      }
+      ind <- partition$indices[[i]]
+
+      for ( j in 1:(length(ind)) ) {
+        is_ok <- TRUE
+        s_startJ(object) <- j
+        currentIndices <- ind[[j]] # within complete table
+
+        ### cells with status 'u' or 'x' exist
+        pI <- g_problemInstance(object)
+        if ( any(g_sdcStatus(pI)[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
+          if ( verbose ) {
+            cat("starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
+          }
+          # if we have cells with "u" or "x" we need to protect
+          # the corresponding subtable --> reduce problemInstance
+          probNew <- c_reduce_problem(object, input=list(currentIndices))
+          pI.new <- g_problemInstance(probNew)
+
+          # is it necessary to protect the table??
+          currentPrimSupps <- primSupps[!is.na(match(primSupps, currentIndices ))]
+
+          # indices that have already been inner cells in tables dealt earlier
+          # FIXME: save indexpool somehow
+          indicesDealtWith <- which(currentIndices %in% indexPool) #in current current subproblem
+
+          ### fix marginal-cells
+          ### --> its-suppression state must not change!
+          currentPattern <- g_sdcStatus(g_problemInstance(probNew))
+
+          introducedSupps <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "x")]
+          if ( length(introducedSupps) > 0 ) {
+            ### secondary suppressions from upper tables
+            s_sdcStatus(pI.new) <- list(index=introducedSupps, vals=rep("u", length(introducedSupps)))
+
+            ### temporarily change LPL, UPL, SPL for these cells
+            LPL.current <- g_LPL(pI.new)[introducedSupps]
+            UPL.current <- g_UPL(pI.new)[introducedSupps]
+            SPL.current <- g_SPL(pI.new)[introducedSupps]
+
+            s_LPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
+            s_UPL(pI.new) <- list(index=introducedSupps, vals=rep(0, length(introducedSupps)))
+            s_SPL(pI.new) <- list(index=introducedSupps, vals=rep(0.1, length(introducedSupps)))            
+          }
+
+          ### force non-suppression of cells that have already been dealt with
+          indForced <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "s")]
+          if ( length(indForced) > 0 ) {
+            s_sdcStatus(pI.new) <- list(index=indForced, vals=rep("z", length(indForced)))
+          }
+          s_problemInstance(probNew) <- pI.new
+          
+          # solve the problem using c++ implementation
+          res <- csp_cpp(sdcProblem=probNew, attackonly=FALSE, verbose=input$verbose)
+          if ( is.null(res) ) {
+            cat("\nWe got a problem and need to relax some conditions!\n\n")
+            old.status <- probNew@problemInstance@sdcStatus
+            ii <- which(old.status %in% c("z") & probNew@problemInstance@Freq > 0)
+            if ( length(ii) == 0 ) {
+              stop("This is a really nasty problem. No solution can be computed. Please contact the package maintainer.\n")
+            }
+            probNew@problemInstance@sdcStatus[ii] <- "s"
+            res <- csp_cpp(sdcProblem=probNew, attackonly=FALSE, verbose=input$verbose)
+            if ( is.null(res) ) {
+              stop("This is a really nasty problem. No solution can be computed. Please contact the package maintainer.\n")
+            }
+            probNew <- res
+            new.status <- probNew@problemInstance@sdcStatus
+            xx <- data.frame(currentIndices=currentIndices,old=old.status, new=new.status, freq=probNew@problemInstance@Freq)
+
+            ii <- which(new.status=="x" & old.status=="z")
+
+            updated_status <- rep("s", length(old.status))
+            updated_status[which(old.status=="u")] <- "u"
+            updated_status[probNew@problemInstance@Freq==0] <- "z"
+            updated_status[ii] <- "u"# previously "z", now "u"
+
+            xx <- sdcStatusBegin
+            xx[currentIndices] <- updated_status
+            pI <- g_problemInstance(object)
+            s_LPL(pI) <- list(index=currentIndices[ii], vals=rep(0, length(ii)))
+            s_UPL(pI) <- list(index=currentIndices[ii], vals=rep(0, length(ii)))
+            s_SPL(pI) <- list(index=currentIndices[ii], vals=rep(0.1, length(ii)))
+            
+            s_sdcStatus(pI) <- list(index=1:length(xx), vals=xx)
+            s_problemInstance(object) <- pI
+            is_ok <- FALSE
+          } else {
+            probNew <- res
+          }
+          # break j-loop
+          if ( !is_ok ) {
+            break
+          }
+
+          ### update sdcStatus
+          status <- g_sdcStatus(g_problemInstance(probNew))
+
+          pI <- g_problemInstance(object)
+          if ( length(indForced) > 0 ) {
+            status[indForced] <- "s"
+          }
+          if ( length(introducedSupps) > 0 ) {
+            status[introducedSupps] <- "x"
+            s_LPL(pI) <- list(index=currentIndices[introducedSupps], vals=LPL.current)
+            s_UPL(pI) <- list(index=currentIndices[introducedSupps], vals=UPL.current)
+            s_SPL(pI) <- list(index=currentIndices[introducedSupps], vals=SPL.current)        
+          }
+          s_sdcStatus(pI) <- list(index=currentIndices, vals=status)
+          s_problemInstance(object) <- pI
+        }
+      }
+      # break i-loop
+      if ( !is_ok ) {
+        break
+      }
+      ### update indices that we have already dealt with
+      s_indicesDealtWith(object) <- unique(c(indexPool, currentIndices))
+    }
+    if ( is_ok ) {
+      run_ind <- FALSE
+    }
+  }
+  invisible(object)
+}

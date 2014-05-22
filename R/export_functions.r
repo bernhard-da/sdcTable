@@ -221,7 +221,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
   out <- doPrep(inputData, dimList)
 
   ## use output of doPrep() to calculate an object of class "sdcProblem"
-  prob <- calc.multiple(type='calcFullProblem', input=list(objectA=out$inputData, objectB=out$dimInfoObj))
+  prob <- c_calc_full_prob(input=list(objectA=out$inputData, objectB=out$dimInfoObj))
   prob
 }
 
@@ -292,36 +292,36 @@ primarySuppression <- function(object, type, ...) {
     stop("valid types are 'nk', 'freq', 'p' or 'pq'!\n")
   }
 
-  numVarsIndices <- get.dataObj(get.sdcProblem(object, type='dataObj'), type='numVarInd')
+  numVarsIndices <- get.dataObj(g_dataObj(object), type='numVarInd')
   paraList <- genParaObj(selection='control.primary', numVarIndices=numVarsIndices, ...)
 
   if ( type == "freq") {
-    object <- calc.sdcProblem(object, type="rule.freq", input=paraList)
+    object <- c_rule_freq(object, input=paraList)
   }
 
   if ( type == "nk" ) {
     if ( is.na(paraList$numVarInd) ) {
       stop("argument 'numVarInd' must be specified!\n")
     }
-    object <- calc.sdcProblem(object, type="rule.nk", input=paraList)
+    object <- c_rule_nk(object, input=paraList)
   }
 
   if ( type == "p") {
     if ( is.na(paraList$numVarInd) ) {
       stop("argument 'numVarInd' must be specified!\n")
     }
-    object <- calc.sdcProblem(object, type="rule.p", input=paraList)
+    object <- c_rule_p(object, input=paraList)
   }
 
   if ( type == "pq") {
     if ( is.na(paraList$numVarInd) ) {
       stop("argument 'numVarInd' must be specified!\n")
     }
-    object <- calc.sdcProblem(object, type="rule.pq", input=paraList)
+    object <- c_rule_pq(object, input=paraList)
   }
 
-  elapsed.time <- get.sdcProblem(object, type='elapsedTime') + (proc.time() - start.time)[3]
-  object <- set.sdcProblem(object, type='elapsedTime', input=list(elapsed.time))
+  elapsed.time <- g_elapsedTime(object) + (proc.time() - start.time)[3]
+  s_elapsedTime(object) <- elapsed.time  
   return(object)
 }
 
@@ -396,16 +396,25 @@ protectTable <- function(object, method, ...) {
   }
 
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
-  if ( length(get.problemInstance(object@problemInstance, type="primSupps")) == 0 ) {
-    return(calc.sdcProblem(object, type='finalize', input=paraList))
+  if ( length(g_primSupps(object@problemInstance)) == 0 ) {
+    return(c_finalize(object=object, input=paraList))
   }
 
   if ( method == 'SIMPLEHEURISTIC' ) {
     out <- performQuickSuppression(object, input=paraList)
   } else {
-    out <- calc.sdcProblem(object, type='anonWorker', input=paraList)
+    if ( paraList$useC ) {
+      if ( method == "OPT" ) {
+        out <- opt_cpp(object=object, input=paraList)
+      }
+      if ( method == "HITAS" ) {
+        out <- hitas_cpp(object=object, input=paraList)
+      }
+    } else {
+      out <- c_anon_worker(object, input=paraList)
+    }
   }
-  return(calc.sdcProblem(out, type='finalize', input=paraList))
+  invisible(c_finalize(object=out, input=paraList))
 }
 
 #' attacking primary suppressed cells and calculating current lower and upper bounds
@@ -514,7 +523,7 @@ getInfo <- function(object, type) {
       stop("getInfo:: check argument 'type'!\n")
     }
     if ( class(object) == 'sdcProblem' ) {
-      pI <- get.sdcProblem(object, type='problemInstance')
+      pI <- g_problemInstance(object)
     } else {
       pI <- object
     }
@@ -577,7 +586,7 @@ setInfo <- function(object, type, index, input) {
   }
 
   if ( class(object) == "sdcProblem" ) {
-    pI <- get.sdcProblem(object, type='problemInstance')
+    pI <- g_problemInstance(object)
   } else {
     pI <- object
   }
@@ -585,7 +594,7 @@ setInfo <- function(object, type, index, input) {
   pI <- set.problemInstance(pI, type=type, input=list(index=index, values=input))
 
   if ( class(object) == "sdcProblem" ) {
-    object <- set.sdcProblem(object, type='problemInstance', input=list(pI))
+    s_problemInstance(object) <- pI
   } else {
     object <- pI
   }
@@ -641,14 +650,14 @@ changeCellStatus <- function(object, characteristics, varNames, rule, verbose=FA
   paraList$codes <- characteristics
   paraList$verbose <- verbose
 
-  cellID <- calc.sdcProblem(object, type='cellID', input=paraList)
-
-  pI <- get.sdcProblem(object, type='problemInstance')
-  pI <- set.problemInstance(pI, type='sdcStatus', input=list(index=cellID, values=rule))
-  object <- set.sdcProblem(object, type='problemInstance', input=list(pI))
+  cellID <- c_cellID(object, input=paraList)
+  
+  pI <- g_problemInstance(object)
+  s_sdcStatus(pI) <- list(index=cellID, vals=rule)
+  s_problemInstance(object) <- pI
 
   if ( paraList$verbose ) {
-    cat('--> The cell with ID=', cellID,'and Frequency',get.problemInstance(pI, type='freq')[cellID], 'has been set to', rule,'.\n')
+    cat('--> The cell with ID=', cellID,'and Frequency',g_freq(pI)[cellID], 'has been set to', rule,'.\n')
   }
   object
 }
@@ -693,7 +702,7 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
   paraList[[1]] <- varNames
   paraList[[2]] <- characteristics
   paraList[[3]] <- verbose
-  get.safeObj(object, type='cellInfo', input=paraList)
+  g_getCellInfo(object, input=paraList)
 }
 
 #' protect two \code{\link{sdcProblem-class}} objects that have common cells
@@ -814,14 +823,14 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   f.calcCommonCellIndices <- function(input1, input2, commonCells) {
-    pI1 <- get.sdcProblem(input1, type='problemInstance')
-    pI2 <- get.sdcProblem(input2, type='problemInstance')
+    pI1 <- g_problemInstance(input1)
+    pI2 <- g_problemInstance(input2)
 
-    commonInd1 <- 1:get.problemInstance(pI1, type='nrVars')
-    commonInd2 <- 1:get.problemInstance(pI2, type='nrVars')
+    commonInd1 <- 1:g_nrVars(pI1)
+    commonInd2 <- 1:g_nrVars(pI2)
 
-    dI1 <- get.sdcProblem(input1, type='dimInfo')
-    dI2 <- get.sdcProblem(input2, type='dimInfo')
+    dI1 <- g_dimInfo(input1)
+    dI2 <- g_dimInfo(input2)
 
     strInfo1 <- get.dimInfo(dI1, type='strInfo')
     strInfo2 <- get.dimInfo(dI2, type='strInfo')
@@ -839,8 +848,8 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     varsNotUsed2 <- setdiff(1:length(vNames2), varsUsed2)
 
     ### for each common variable -> get original labels from dI
-    codesDefault1 <- lapply(1:length(strInfo1), function(x) { mySplit(get.problemInstance(pI1, type='strID'), strInfo1[[x]][1]:strInfo1[[x]][2]) } )
-    codesDefault2 <- lapply(1:length(strInfo2), function(x) { mySplit(get.problemInstance(pI2, type='strID'), strInfo2[[x]][1]:strInfo2[[x]][2]) } )
+    codesDefault1 <- lapply(1:length(strInfo1), function(x) { mySplit(g_strID(pI1), strInfo1[[x]][1]:strInfo1[[x]][2]) } )
+    codesDefault2 <- lapply(1:length(strInfo2), function(x) { mySplit(g_strID(pI2), strInfo2[[x]][1]:strInfo2[[x]][2]) } )
 
     codesOrig1 <-  list()
     for ( i in 1:length(codesDefault1) ) {
@@ -879,7 +888,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
       stop("Error: length of common cell indices must be equal!\n")
     }
 
-    if ( any(get.problemInstance(pI1, type='freq')[commonInd1] != get.problemInstance(pI2, type='freq')[commonInd2]) ) {
+    if ( any(g_freq(pI1)[commonInd1] != g_freq(pI2)[commonInd2]) ) {
       stop("Error: common cells must have same values!\n")
     }
     return(list(commonInd1=commonInd1, commonInd2=commonInd2))
@@ -900,23 +909,23 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
 
   ### first run
-  outA <- calc.sdcProblem(objectA, type='anonWorker', input=paraList)
-  outB <- calc.sdcProblem(objectB, type='anonWorker', input=paraList)
+  outA <- c_anon_worker(objectA, input=paraList)
+  outB <- c_anon_worker(objectB, input=paraList)
 
-  pI.A <- get.sdcProblem(outA, type='problemInstance')
-  pI.B <- get.sdcProblem(outB, type='problemInstance')
+  pI.A <- g_problemInstance(outA)
+  pI.B <- g_problemInstance(outB)
   # calc original primary suppressions
 
-  origPrimSupp1Index <- get.problemInstance(pI.A, type='primSupps')
-  origPrimSupp2Index <- get.problemInstance(pI.B, type='primSupps')
+  origPrimSupp1Index <- g_primSupps(pI.A)
+  origPrimSupp2Index <- g_primSupps(pI.B)
 
   # no primary suppressions
   if ( length(origPrimSupp1Index) + length(origPrimSupp2Index) == 0 ) {
     if ( paraList$verbose ) {
       cat("\n===> no primary suppressions. All common cells have the same anonymity-status! [Finished]\n")
     }
-    outA <- calc.sdcProblem(outA, type='finalize', input=paraList)
-    outB <- calc.sdcProblem(outB, type='finalize', input=paraList)
+    outA <- c_finalize(object=outA, input=paraList)
+    outB <- c_finalize(object=outB, input=paraList)
     return(list(outObj1=outA, outObj2=outB))
   }
 
@@ -924,8 +933,8 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   commonCellIndices <- f.calcCommonCellIndices(outA, outB, commonCells)
 
   # suppression patterns after the first run
-  suppPatternA <- get.problemInstance(pI.A, type='suppPattern')
-  suppPatternB <- get.problemInstance(pI.B, type='suppPattern')
+  suppPatternA <- g_suppPattern(pI.A)
+  suppPatternB <- g_suppPattern(pI.B)
 
   indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
   counter <- 1
@@ -945,27 +954,27 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
       for ( j in 1:2 ) {
         if ( length(index[[j]]) > 0 ) {
           if ( j == 1 ) {
-            pI.A <- get.sdcProblem(outA, type='problemInstance')
-            pI.A <- set.problemInstance(pI.A, type='sdcStatus', input=list(index=index[[j]], values=rep("u", length(index[[j]]))))
-            outA <- set.sdcProblem(outA, type='problemInstance', input=list(pI.A))
-            outA <- set.sdcProblem(outA, type='indicesDealtWith', input=list(NULL))
-            outA <- set.sdcProblem(outA, type='startJ', input=list(1))
-            outA <- set.sdcProblem(outA, type='startI', input=list(1))
-            outA <- calc.sdcProblem(outA, type='anonWorker', input=paraList)
+            pI.A <- g_problemInstance(outA)
+            s_sdcStatus(pI.A) <- list(index=index[[j]], vals=rep("u", length(index[[j]])))
+            s_problemInstance(outA) <- pI.A
+            s_indicesDealtWith(outA) <- NULL
+            s_startJ(outA) <- 1
+            s_startI(outA) <- 1
+            outA <- c_anon_worker(outA, input=paraList)
           } else {
-            pI.B <- get.sdcProblem(outB, type='problemInstance')
-            pI.B <- set.problemInstance(pI.B, type='sdcStatus', input=list(index=index[[j]], values=rep("u", length(index[[j]]))))
-            outB <- set.sdcProblem(outB, type='problemInstance', input=list(pI.B))
-            outB <- set.sdcProblem(outB, type='indicesDealtWith', input=list(NULL))
-            outB <- set.sdcProblem(outB, type='startJ', input=list(1))
-            outB <- set.sdcProblem(outB, type='startI', input=list(1))
-            outB <- calc.sdcProblem(outB, type='anonWorker', input=paraList)
+            pI.B <- g_problemInstance(outB)
+            s_sdcStatus(pI.B) <- list(index=index[[j]], vals=rep("u", length(index[[j]])))
+            s_problemInstance(outB) <- pI.B
+            s_indicesDealtWith(outB) <- NULL
+            s_startJ(outB) <- 1
+            s_startI(outB) <- 1             
+            outB <- c_anon_worker(outB, input=paraList)
           }
         }
       }
 
-      suppPatternA <- get.problemInstance(get.sdcProblem(outA, type='problemInstance'), type='suppPattern')
-      suppPatternB <- get.problemInstance(get.sdcProblem(outB, type='problemInstance'), type='suppPattern')
+      suppPatternA <- g_suppPattern(g_problemInstance(outA))
+      suppPatternB <- g_suppPattern(g_problemInstance(outB))
 
       cbind(suppPatternA[commonCellIndices[[1]]], suppPatternB[commonCellIndices[[2]]])
       indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
@@ -982,7 +991,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   if ( paraList$verbose ) {
     cat("\n===> all common cells have the same anonymity-state in both tables after",counter,"iterations! [Finished]\n")
   }
-  outA <- calc.sdcProblem(outA, type='finalize', input=paraList)
-  outB <- calc.sdcProblem(outB, type='finalize', input=paraList)
+  outA <- c_finalize(object=outA, input=paraList)
+  outB <- c_finalize(object=outB, input=paraList)
   return(list(outObj1=outA, outObj2=outB))
 }
