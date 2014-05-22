@@ -582,7 +582,7 @@ glp_prob * setup_incprob(sdcinfo *info, vector<double> &xi) {
   return incprob;
 }
 
-void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bool use_existing_solution) {
+int heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bool use_existing_solution) {
   int ik, nr;
   vector<int> heuristic_solution(info->nr_vars);
 
@@ -614,17 +614,18 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
 
   for ( int z=1; z<=info->len_prim; ++z ) {
     ik = info->ind_prim[z-1];
-    Rprintf("we are now dealing with cell %d that has a value of %d!\n", ik, info->vals[ik-1]);
+    //Rprintf("we are now dealing with cell %d that has a value of %d!\n", ik, info->vals[ik-1]);
     if ( info->UPL[ik-1] > 0 || info->SPL[ik-1] > 0 ) {
       glp_set_col_bnds(incprob, ik, GLP_FX, (double)info->UPL[ik-1], (double)info->UPL[ik-1]);
       glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_FX, 0.0, 0.0);
       glp_simplex(incprob, NULL);
-      //if ( glp_get_status(incprob) != GLP_OPT ) {
+      if ( glp_get_status(incprob) != GLP_OPT ) {
+        return(1);
       //  Rprintf("writing prob_up at cell %d!\n", ik);
       //  glp_write_lp(incprob, NULL, "prob_up.txt");
       //} else {
       //  Rprintf("the solution of the attacker problem has an obj-val of %g\n", glp_get_obj_val(incprob));
-      //}
+      }
       for ( int j=1; j<=info->nr_vars; ++j ) {
         if ( glp_get_col_prim(incprob, j) + glp_get_col_prim(incprob, info->nr_vars+j) > 0 ) {
           if ( heuristic_solution[j-1] != 1 ) {
@@ -640,10 +641,11 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
       glp_set_col_bnds(incprob, ik, GLP_FX, 0.0, 0.0);
       glp_set_col_bnds(incprob, ik+info->nr_vars, GLP_FX, (double)info->LPL[ik-1], (double)info->LPL[ik-1]);
       glp_simplex(incprob, NULL);
-      //if ( glp_get_status(incprob) != GLP_OPT ) {
+      if ( glp_get_status(incprob) != GLP_OPT ) {
+        return(1);
       //  Rprintf("writing prob_lo at cell %d\n", ik);
       //  glp_write_lp(incprob, NULL, "prob_lo.txt");
-      //}
+      }
       for ( int j=1; j<=info->nr_vars; ++j ) {
         if ( glp_get_col_prim(incprob, j) + glp_get_col_prim(incprob, info->nr_vars+j) > 0 ) {
           if ( heuristic_solution[j-1] != 1 ) {
@@ -726,6 +728,7 @@ void heuristic_solution(glp_prob *incprob, sdcinfo *info, vector<double> &xi, bo
       info->upper_bound = bound;
     }
   }
+  return(0);
 }
 
 void preprocess(glp_prob *aprob, glp_prob *mprob, sdcinfo *info, vector<double> &xi) {
@@ -1189,7 +1192,7 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
 extern "C" {
   void csp(int *ind_prim, int *len_prim, double *bounds_min, double *bounds_max, int *ind_fixed, int *len_fixed, int *ia, int *ja, double *ar,
       int *cells_mat, int *nr_vars, int *nr_rows, int *vals, double *lb, double *ub,
-      int *LPL, int *UPL, int *SPL, int *final_pattern, int *attackonly, int *verbose) {
+      int *LPL, int *UPL, int *SPL, int *final_pattern, int *attackonly, int *verbose, int *is_ok) {
 
     glp_term_out(GLP_OFF);
 
@@ -1313,10 +1316,15 @@ extern "C" {
     }
 
     /* calculate a heuristic solution and return an upper_bound */
-    heuristic_solution(incprob, pinfo, xi, false);
-    if ( info.verbose == true ) {
-      Rprintf("--> calculated a heuristic solution with obj_val=%g! [done]\n", info.upper_bound);
-      R_FlushConsole();
+    is_ok[0] = heuristic_solution(incprob, pinfo, xi, false);
+    if ( is_ok[0] == 0 ) {
+      if ( info.verbose == true ) {
+        Rprintf("--> calculated a heuristic solution with obj_val=%g! [done]\n", info.upper_bound);
+        R_FlushConsole();
+      }
+    } else {
+      Rprintf("it was not possible to calculate a valid heuristic solution!\n");
+      return;
     }
 
     //for ( int i=0; i<info.len_prim; ++i ) {
