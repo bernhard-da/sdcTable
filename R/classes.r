@@ -57,16 +57,16 @@ setClass(
     isMicroData=NULL
   ),
   validity=function(object) {
-    if ( !all(get.dataObj(object, type='freqVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
+    if ( !all(g_freqvar_ind(object) %in% 1:length(g_raw_data(object))) ) {
       stop("dataObj:: check input parameter 'freqVarInd'!\n")
     }
-    if ( !all(get.dataObj(object, type='numVarInd') %in% 1:length(get.dataObj(object, type='rawData'))) ) {
+    if ( !all(g_numvar_ind(object) %in% 1:length(g_raw_data(object))) ) {
       stop("dataObj:: check input parameter 'numVarInd'!\n")
     }
-    if ( length(get.dataObj(object, type='weightVarInd')) > 1 ) {
+    if ( length(g_weightvar_ind(object)) > 1 ) {
       stop("dataObj:: length of parameter 'weightVarInd' must not be greater than 1!\n")
     }
-    if ( length(get.dataObj(object, type='sampWeightInd')) > 1 ) {
+    if ( length(g_sampweight_ind(object)) > 1 ) {
       stop("dataObj:: length of parameter 'sampWeightInd' must not be greater than 1!\n")
     }
     return(TRUE)

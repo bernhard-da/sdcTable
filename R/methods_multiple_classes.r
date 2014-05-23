@@ -201,17 +201,17 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   x <- input$objectA
   y <- input$objectB
   time.start <- proc.time()
-  datO <- get.dataObj(x, type='rawData')
+  datO <- g_raw_data(x)
   dimObj <- get.dimInfo(y, type='dimInfo')
 
   # we have to aggregate if we are dealing with microdata
-  if ( get.dataObj(x, type='isMicroData') ) {
+  if ( g_is_microdata(x) ) {
     rawData <- datO[, lapply(.SD, sum, na.rm=TRUE), by=key(datO), .SDcols=setdiff(colnames(datO), key(datO))]
   } else {
     rawData <- copy(datO)
   }
-  ind.dimvars <- get.dataObj(x, type='dimVarInd')
-  ind.freq <- get.dataObj(x, type='freqVarInd')
+  ind.dimvars <- g_dimvar_ind(x)
+  ind.freq <- g_freqvar_ind(x)
 
   codes <- list(); length(codes) <- length(ind.dimvars)
   for ( i in 1:length(codes) ) {
@@ -334,11 +334,11 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   f <- fullTabObj[[ind.freq]]
   strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
   w <- numVarsList <- NULL
-  w.ind <- get.dataObj(x, type="weightVarInd")
+  w.ind <- g_weightvar_ind(x)
   if ( !is.null(w.ind) ) {
     w <- fullTabObj[[w.ind]]
   }
-  n.ind <- get.dataObj(x, type="numVarInd")
+  n.ind <- g_numvar_ind(x)
   if ( !is.null(n.ind) ) {
     numVarsList <- list(); length(numVarsList) <- length(n.ind)
     for ( n in 1:length(n.ind) ) {
@@ -347,7 +347,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   }
 
   if ( length(n.ind) > 0 ) {
-    names(numVarsList) <- colnames(get.dataObj(x, type="rawData"))[n.ind]
+    names(numVarsList) <- colnames(g_raw_data(x))[n.ind]
   }
 
   ## replace 0 in rawData by NA if they have been replaced earlier

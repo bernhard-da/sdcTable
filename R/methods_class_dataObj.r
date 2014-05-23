@@ -3,42 +3,42 @@
 ########################################
 #' @aliases get.dataObj,dataObj,character-method
 #' @rdname get.dataObj-method
-setMethod(f='get.dataObj', signature=c('dataObj', 'character'),
+setMethod(f="get.dataObj", signature=c("dataObj", "character"),
   definition=function(object, type) {
-    if ( !type %in% c('rawData', 'dimVarInd', 'freqVarInd',
-        'numVarInd', 'weightVarInd', 'sampWeightInd',
-        'isMicroData', 'numVarNames', 'freqVarName', 'varName') ) {
+    if ( !type %in% c("rawData", "dimVarInd", "freqVarInd",
+        "numVarInd", "weightVarInd", "sampWeightInd",
+        "isMicroData", "numVarNames", "freqVarName", "varName") ) {
       stop("get.dataObj:: argument 'type' is not valid!\n")
     }
-    if ( type == 'rawData' ) {
-      return(object@rawData)
+    if ( type == "rawData" ) {
+      return(g_raw_data(object))
     }
-    if ( type == 'dimVarInd' ) {
-      return(object@dimVarInd)
+    if ( type == "dimVarInd" ) {
+      return(g_dimvar_ind(object))
     }
-    if ( type == 'freqVarInd' ) {
-      return(object@freqVarInd)
+    if ( type == "freqVarInd" ) {
+      return(g_freqvar_ind(object))
     }
-    if ( type == 'numVarInd' ) {
-      return(object@numVarInd)
+    if ( type == "numVarInd" ) {
+      return(g_numvar_ind(object))
     }
-    if ( type == 'weightVarInd' ) {
-      return(object@weightVarInd)
+    if ( type == "weightVarInd" ) {
+      return(g_weightvar_ind(object))
     }
-    if ( type == 'sampWeightInd' ) {
-      return(object@sampWeightInd)
+    if ( type == "sampWeightInd" ) {
+      return(g_sampweight_ind(object))
     }
-    if ( type == 'isMicroData' ) {
-      return(object@isMicroData)
+    if ( type == "isMicroData" ) {
+      return(g_is_microdata(object))
     }
     if ( type == 'numVarNames' ) {
-      return(names(get.dataObj(object, type='rawData'))[get.dataObj(object, type='numVarInd')])
+      return(names(g_raw_data(object))[g_numvar_ind(object)])
     }
     if ( type == 'freqVarName' ) {
-      return(names(get.dataObj(object, type='rawData'))[get.dataObj(object, type='freqVarInd')])
+      return(names(g_raw_data(object))[g_freqvar_ind(object)])
     }
     if ( type == 'varName' ) {
-      return(names(get.dataObj(object, type='rawData'))[get.dataObj(object, type='dimVarInd')])
+      return(names(g_raw_data(object))[g_dimvar_ind(object)])
     }
   }
 )
@@ -158,3 +158,53 @@ setMethod(f='init.dataObj', signature=c('list'),
     return(out)
   }
 )
+
+setMethod(f="g_raw_data", signature=c("dataObj"), definition=function(object) {
+  return(object@rawData)
+})
+
+setMethod(f="g_dimvar_ind", signature=c("dataObj"), definition=function(object) {
+  return(object@dimVarInd)
+})
+
+setMethod(f="g_freqvar_ind", signature=c("dataObj"), definition=function(object) {
+  return(object@freqVarInd)
+})
+
+setMethod(f="g_numvar_ind", signature=c("dataObj"), definition=function(object) {
+  return(object@numVarInd)
+})
+
+setMethod(f="g_weightvar_ind", signature=c("dataObj"), definition=function(object) {
+  return(object@weightVarInd)
+})
+
+setMethod(f="g_sampweight_ind", signature=c("dataObj"), definition=function(object) {
+  return(object@sampWeightInd)
+})
+
+setMethod(f="g_is_microdata", signature=c("dataObj"), definition=function(object) {
+  return(object@isMicroData)
+})
+
+setMethod(f="g_numvar_names", signature=c("dataObj"), definition=function(object) {
+  return(names(g_raw_data(object))[g_numvar_ind(object)])
+})
+
+setMethod(f="g_freqvar_name", signature=c("dataObj"), definition=function(object) {
+  return(names(g_raw_data(object))[g_freqvar_ind(object)])
+})
+
+setMethod(f="g_var_name", signature=c("dataObj"), definition=function(object) {
+  return(names(g_raw_data(object))[g_dimvar_ind(objecn)])
+})
+
+
+
+
+
+
+
+
+
+

@@ -157,7 +157,7 @@ setMethod(f='summary', signature='sdcProblem',
     pI <- g_problemInstance(object)
     dO <- g_dataObj(object)
     dI <- g_dimInfo(object)
-    if ( get.dataObj(dO, type="isMicroData") ) {
+    if ( g_is_microdata(dO) ) {
       cat("The raw data contains micro data!")
       if ( length(pI@numVars) > 0 ) {
         cat("--> the use of dominance rules for primary suppressions is possible!")
@@ -297,15 +297,15 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
     # if TRUE, cell needs to be suppressed
     (sumNcont) > (k/100*celltot)
   }
-  if ( !get.dataObj(g_dataObj(object), type='isMicroData') ) {
+  if ( !g_is_microdata(g_dataObj(object)) ) {
     stop("nk-dominance rule can only be applied if micro-data are available!\n")
   }
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
   strIDs <- g_strID(pI)
-  numVarInds <- get.dataObj(dataObj, type='numVarInd')
+  numVarInds <- g_numvar_ind(dataObj)
 
-  numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
+  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
@@ -358,16 +358,16 @@ setMethod("c_rule_p", signature=c("sdcProblem", "list"), definition=function(obj
     (celltot - cont1 - cont2) < (p/100*cont1)
   }
 
-  if ( !get.dataObj(g_dataObj(object), type='isMicroData') ) {
+  if ( !g_is_microdata(g_dataObj(object)) ) {
     stop("p-percent rule can only be applied if micro-data are available!\n")
   }
 
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
-  numVarInds <- get.dataObj(dataObj, type='numVarInd')
+  numVarInds <- g_numvar_ind(dataObj)
   strIDs <- g_strID(pI)
 
-  numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
+  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
@@ -409,16 +409,16 @@ setMethod("c_rule_pq", signature=c("sdcProblem", "list"), definition=function(ob
     # if TRUE, cell needs to be suppressed
     (celltot - cont1 - cont2) < (p/q)*cont1
   }
-  if ( !get.dataObj(g_dataObj(object), type='isMicroData') ) {
+  if ( !g_is_microdata(g_dataObj(object)) ) {
     stop("p-percent rule can only be applied if micro-data are available!\n")
   }
 
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
-  numVarInds <- get.dataObj(dataObj, type='numVarInd')
+  numVarInds <- g_numvar_ind(dataObj)
   strIDs <- g_strID(pI)
 
-  numVal <- get.dataObj(dataObj, type='rawData')[[numVarInds[input$numVarInd]]]
+  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
   if ( any(numVal < 0 ) ) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
@@ -1695,7 +1695,7 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
   if ( !is.null(numVars) ) {
     data.obj <- g_dataObj(object)
     nV <- as.data.frame(numVars)
-    colnames(nV) <- colnames(get.dataObj(data.obj,"rawData"))[get.dataObj(data.obj,"numVarInd")]
+    colnames(nV) <- colnames(g_raw_data(data.obj))[g_numvar_ind(data.obj)]
     out <- cbind(out, nV)
   }
   out$sdcStatus <- g_sdcStatus(pI)

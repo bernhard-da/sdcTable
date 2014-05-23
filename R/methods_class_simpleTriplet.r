@@ -51,10 +51,10 @@ setMethod(f="get.simpleTriplet", signature=c("simpleTriplet", "character", 'list
       return(g_transpose(object))
     }
     if ( type == "getRow" ) {
-      return(g_row(object))
+      return(g_row(object, input[[1]]))
     }
     if ( type == "getCol" ) {
-      return(g_col(object))
+      return(g_col(object, input[[1]]))
     }
   }
 )
@@ -186,7 +186,7 @@ setMethod("g_duplicated_rows", signature=c("simpleTriplet"), definition=function
 setMethod("g_transpose", signature=c("simpleTriplet"), definition=function(object) {
   out <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=g_nr_cols(object), ncol=0)))
   for ( i in 1:g_nr_rows(object) ) {
-    r <- g_row(object)
+    r <- g_row(object, input=list(i))
     out <- g_add_col(out, input=list(index=g_col_ind(r), values=g_values(r)))
   }
   return(out)

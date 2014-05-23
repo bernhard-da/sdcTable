@@ -101,17 +101,17 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
       stop("Error: 'inputData' be of class 'dataObj'!\n")
     }
 
-    varNames <- get.dataObj(inputData, type='varName')
+    varNames <- g_var_name(inputData)
     varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
 
     if ( !all(varNamesInDims %in% varNames) ) {
       stop("makeProblem::doPrep() mismatch in variable names in 'inputData' and 'inputDims'!\n")
     }
 
-    rawData <- get.dataObj(inputData, type='rawData')
+    rawData <- g_raw_data(inputData)
 
     # variable names in dataObj
-    vNamesInData <- get.dataObj(inputData, type='varName')
+    vNamesInData <- g_var_name(inputData)
 
     # vNames in inputDims
     vNamesInDimList <- sapply(1:length(inputDims), function(x) { get.dimVar(inputDims[[x]], type='varName') })
@@ -129,7 +129,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     }
 
     posIndex <- match(vNamesInData, vNamesInDimList)
-    dimVarInd <- get.dataObj(inputData, type='dimVarInd')
+    dimVarInd <- g_dimvar_ind(inputData)
     if ( length(posIndex) < 1 ) {
       stop("Error: matching of variable names failed. Please check 'inputData' and/or 'inputDims'!\n")
     } else {
@@ -209,7 +209,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
 
   ## check if all variable names listed in inputDims exist in the
   ## specified dimensions of the input data
-  varNames <- get.dataObj(inputData, type='varName')
+  varNames <- g_var_name(inputData)
   varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
 
   if ( !all(varNamesInDims %in% varNames) ) {
@@ -292,7 +292,7 @@ primarySuppression <- function(object, type, ...) {
     stop("valid types are 'nk', 'freq', 'p' or 'pq'!\n")
   }
 
-  numVarsIndices <- get.dataObj(g_dataObj(object), type='numVarInd')
+  numVarsIndices <- g_numvar_ind(g_dataObj(object))
   paraList <- genParaObj(selection='control.primary', numVarIndices=numVarsIndices, ...)
 
   if ( type == "freq") {
