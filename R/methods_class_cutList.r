@@ -22,37 +22,18 @@ setMethod(f="get.cutList", signature=c("cutList", "character"),
 
 #' @aliases set.cutList,cutList,character,list-method
 #' @rdname set.cutList-method
-setMethod(f='set.cutList', signature=c('cutList', 'character', 'list'),
+setMethod(f='set.cutList', signature=c("cutList", "character", "list"),
   definition=function(object, type, input) {
-    if ( !type %in% c('addCompleteConstraint', 'removeCompleteConstraint') ) {
+    if ( !type %in% c("addCompleteConstraint", "removeCompleteConstraint") ) {
       stop("set.cutList:: argument 'type' is not valid!\n")
     }
-
-    input <- input[[1]]
-    if ( type == 'addCompleteConstraint' ) {
-      if ( g_nr_cols(g_constraints(object)) != g_nr_cols(g_constraints(input)) ) {
-        stop("set.cutList:: nrCols of 'object' and 'input' differ!\n")
-      }
-      if ( g_nr_constraints(input) > 0 ) {
-        con <- g_constraints(input)
-        for ( k in 1:g_nr_rows(con) ) {
-          x <- g_row(con, input=list(k))
-          object@con <- c_add_row(g_constraints(object), input=list(index=g_col_ind(x), values=g_values(x)))
-        }
-        object@direction <- c(g_direction(object), g_direction(input))
-        object@rhs <- c(g_rhs(object), g_rhs(input))
+    if ( type == "addCompleteConstraint" ) {
+      s_add_complete_constraint(object) <- input[[1]]
       }
     }
-
-    if ( type == 'removeCompleteConstraint' ) {
-      if ( !all(input %in% 1:length(g_rhs(object))) ) {
-        stop("elements of argument 'input' must be >=1 and <=",length(g_rhs(object)),"!\n")
-      }
-      object@con <- c_remove_row(g_constraints(object), input=list(input))
-      object@direction <- g_drection(object)[-input]
-      object@rhs <- g_rhs(object)[-input]
+    if ( type == "removeCompleteConstraint" ) {
+      s_remove_complete_constraint(object) <- input[[1]]
     }
-
     validObject(object)
     return(object)
   }
@@ -106,7 +87,6 @@ setMethod(f='init.cutList', signature=c('character', 'list'),
   }
 )
 
-
 setMethod(f="g_constraints", signature=c("cutList"), definition=function(object) {
   return(object@con)
 })
@@ -121,6 +101,31 @@ setMethod(f="g_rhs", signature=c("cutList"), definition=function(object) {
 
 setMethod(f="g_nr_constraints", signature=c("cutList"), definition=function(object) {
   return(length(g_rhs))
+})
+
+setReplaceMethod(f="s_add_complete_constraint", signature=c("cutList", "list"), definition=function(object, value) {
+  if ( g_nr_cols(g_constraints(object)) != g_nr_cols(g_constraints(input)) ) {
+    stop("s_add_complete_constraint:: nrCols of 'object' and 'input' differ!\n")
+  }
+  if ( g_nr_constraints(input) > 0 ) {
+    con <- g_constraints(input)
+    for ( k in 1:g_nr_rows(con) ) {
+      x <- g_row(con, input=list(k))
+      object@con <- c_add_row(g_constraints(object), input=list(index=g_col_ind(x), values=g_values(x)))
+    }
+    object@direction <- c(g_direction(object), g_direction(input))
+    object@rhs <- c(g_rhs(object), g_rhs(input))
+    return(object)
+})
+
+setReplaceMethod(f="s_remove_complete_constraint", signature=c("cutList", "list"), definition=function(object, value) {
+  if ( !all(input %in% 1:length(g_rhs(object))) ) {
+    stop("elements of argument 'input' must be >=1 and <=",length(g_rhs(object)),"!\n")
+  }
+  object@con <- c_remove_row(g_constraints(object), input=list(input))
+  object@direction <- g_drection(object)[-input]
+  object@rhs <- g_rhs(object)[-input]
+  return(object)
 })
 
 setMethod(f="c_stengthen", signature=c("cutList"), definition=function(object) {
@@ -179,14 +184,3 @@ setMethod(f="c_bind_together", signature=c("cutList"), definition=function(objec
   return(x)
 })
 
-setMethod(f="", signature=c("cutList"), definition=function(object) {
-
-})
-
-setMethod(f="", signature=c("cutList"), definition=function(object) {
-
-})
-
-setMethod(f="", signature=c("cutList"), definition=function(object) {
-
-})

@@ -169,7 +169,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   # cols <- g_col_ind(g_row(A, input=list(x)))
   # v <- rep(0, nrVars)
   # v[cols] <- c(1, rep(-1, length(cols)))
-  # newCutsMaster <<- set.cutList(newCutsMaster, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="<=", rhs=0))))
+  # s_add_complete_constraint(newCutsMaster) <<- list(init.cutList(type='singleCut', input=list(vals=v, dir="<=", rhs=0)))
   #})
   ################################################################
 

@@ -1166,7 +1166,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         v <- (alpha.down+alpha.up)*UB + (beta.down+beta.up)*LB
         v[which(is.zero(v))] <- 0
         if ( any(v != 0) )
-          newCuts <- set.cutList(newCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[3]))))
+          s_add_complete_constraint(newCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[3])))
       } else  {
         if ( limits[1] != 0 & freqs[primSupps[i]] - AttProbDown[i] < limits[1] ) { # LPL
           status <- c(status, down$status)
@@ -1176,7 +1176,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           v <- alpha.down*UB + beta.down*LB
           v[which(is.zero(v))] <- 0
           if ( any(v != 0) )
-            newCuts <- set.cutList(newCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[1]))))
+            s_add_complete_constraint(newCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[1])))
         }
         if ( limits[2] != 0 & AttProbUp[i] - freqs[primSupps[i]] < limits[2] ) { # UPL
           status <- c(status, up$status)
@@ -1186,7 +1186,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           v <- alpha.up*UB + beta.up*LB
           v[which(is.zero(v))] <- 0
           if ( any(v != 0) )
-            newCuts <- set.cutList(newCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[2]))))
+            s_add_complete_constraint(newCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[2])))
         }
       }
       #cat('limits ( origValue=',weights[cellInd],') : [',AttProbDown[i],':',AttProbUp[i],']\n')
@@ -1238,7 +1238,8 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         brIneq[is.zero(brIneq)] <- 0
         brIneq[brIneq > 0] <- 1
         brIneq[bridgelessInd] <- -1
-        brCuts <- set.cutList(brCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=brIneq, dir=">=", rhs=0))))
+        s_add_complete_constraint(brCuts) <- list(init.cutList(type='singleCut', input=list(vals=brIneq, dir=">=", rhs=0)))
+
       }
       if ( g_nr_constraints(brCuts) > 0 ) {
         mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(brCuts))
@@ -1368,8 +1369,10 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         cl <- problemPool[[selectInd]]
         v <- rep(0, nrVars)
         v[branchVar] <- 1
-        c1 <- set.cutList(cl, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="==", rhs=0))))
-        c2 <- set.cutList(cl, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="==", rhs=1))))
+        c1 <- c2 <- cl
+        s_add_complete_constraint(c1) <- list(init.cutList(type='singleCut', input=list(vals=v, dir="==", rhs=0)))
+        s_add_complete_constraint(c2) <- list(init.cutList(type='singleCut', input=list(vals=v, dir="==", rhs=1)))
+
         problemPool[[length(problemPool)+1]] <- c1
         problemPool[[length(problemPool)+1]] <- c2; rm(cl)
 
@@ -1575,19 +1578,19 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
       v <- alpha.down*UB + beta.down*LB
       v[which(is.zero(v))] <- 0
       if ( any(v > 0) )
-        validCuts <- set.cutList(validCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[1]))))
+        s_add_complete_constraint(validCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[1])))
     }
     if ( limits[2] != 0 ) { # UPL
       v <- alpha.up*UB + beta.up*LB
       v[which(is.zero(v))] <- 0
       if ( any(v > 0) )
-        validCuts <- set.cutList(validCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[2]))))
+        s_add_complete_constraint(validCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[2])))
     }
     if ( limits[3] != 0 & calcUp - calcDown < limits[3] ) { # SPL
       v <- (alpha.down+alpha.up)*UB + (beta.down+beta.up)*LB
       v[which(is.zero(v))] <- 0
       if ( any(v > 0) )
-        validCuts <- set.cutList(validCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[3]))))
+      s_add_complete_constraint(validCuts) <- list(init.cutList(type='singleCut', input=list(vals=v, dir=">=", rhs=limits[3])))
     }
   }
 
@@ -2191,10 +2194,10 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
       v2[index] <- 1
       lim <- sum(sort(weights[index])[1:(2^nrPow)])
       if ( any(v1 != 0) ) {
-        requiredCuts <- set.cutList(requiredCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v1, dir=">=", rhs=lim))))
+        s_add_complete_constraint(requiredCuts) <- list(init.cutList(type='singleCut', input=list(vals=v1, dir=">=", rhs=lim)))
       }
       if ( any(v2 != 0) ) {
-        requiredCuts <- set.cutList(requiredCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v2, dir=">=", rhs=(2^nrPow)))))
+        s_add_complete_constraint(requiredCuts) <- list(init.cutList(type='singleCut', input=list(vals=v2, dir=">=", rhs=(2^nrPow))))
       }
 
       ### Todo: at least 2 suppressions in each dimension
@@ -2213,11 +2216,11 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
       # lim <- sum(sort(weights[index])[1:2])
       # if ( any(v3 != 0) ) {
       #   if ( !is.na(lim) ) {
-      #     requiredCuts <- set.cutList(requiredCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v3, dir=">=", rhs=lim))))
+      #     s_add_complete_constraint(requiredCuts) <- list(init.cutList(type='singleCut', input=list(vals=v3, dir=">=", rhs=lim)))
       #   }
       # }
       # if ( any(v4 != 0) ) {
-      #   requiredCuts <- set.cutList(requiredCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v4, dir=">=", rhs=2))))
+      #   s_add_complete_constraint(requiredCuts) <- list(init.cutList(type='singleCut', input=list(vals=v4, dir=">=", rhs=2)))
       # }
       #}
     }
@@ -2225,7 +2228,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
 
   dupRows <- g_duplicated_rows(g_constraints(requiredCuts))
   if ( length(dupRows) > 0 ) {
-    requiredCuts <- set.cutList(requiredCuts, type='removeCompleteConstraint', input=list(dupRows))
+    s_remove_complete_constraint(requiredCuts) <- list(dupRows)
   }
   return(requiredCuts)
 })
