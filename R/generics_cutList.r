@@ -123,8 +123,8 @@ setGeneric("g_rhs", function(object) { standardGeneric("g_rhs") })
 setGeneric("g_nr_constraints", function(object) { standardGeneric("g_nr_constraints") })
 
 # set-methods
-setGeneric("s_add_complete_constraint<-", function(object, value) { standardGeneric("s_add_complete_constraint") })
-setGeneric("s_remove_complete_constraint<-", function(object, value) { standardGeneric("s_remove_complete_constraint") })
+setGeneric("s_add_complete_constraint<-", function(object, value) { standardGeneric("s_add_complete_constraint<-") })
+setGeneric("s_remove_complete_constraint<-", function(object, value) { standardGeneric("s_remove_complete_constraint<-") })
 
 # calc-methods
 setGeneric("c_strengthen", function(object) { standardGeneric("c_strengthen") })

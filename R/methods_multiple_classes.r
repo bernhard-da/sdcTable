@@ -179,7 +179,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   z2 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=TRUE))
   z <- c_bind(object=z1, input=list(z2, bindRow=FALSE))
   A <- c_bind(object=z, input=list(g_transpose(A), bindRow=FALSE))
-  direction <- rep("==", g_nr_rows(A)
+  direction <- rep("==", g_nr_rows(A))
   rhs <- rep(0, g_nr_rows(A))
 
   types <- rep("C", g_nr_cols(A))

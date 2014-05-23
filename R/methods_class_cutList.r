@@ -29,7 +29,6 @@ setMethod(f='set.cutList', signature=c("cutList", "character", "list"),
     }
     if ( type == "addCompleteConstraint" ) {
       s_add_complete_constraint(object) <- input[[1]]
-      }
     }
     if ( type == "removeCompleteConstraint" ) {
       s_remove_complete_constraint(object) <- input[[1]]
@@ -91,7 +90,7 @@ setMethod(f="g_constraints", signature=c("cutList"), definition=function(object)
   return(object@con)
 })
 
-setMethod(f="", signature=c("cutList"), definition=function(object) {
+setMethod(f="g_direction", signature=c("cutList"), definition=function(object) {
   return(object@direction)
 })
 
@@ -115,7 +114,8 @@ setReplaceMethod(f="s_add_complete_constraint", signature=c("cutList", "list"), 
     }
     object@direction <- c(g_direction(object), g_direction(input))
     object@rhs <- c(g_rhs(object), g_rhs(input))
-    return(object)
+  }
+  return(object)
 })
 
 setReplaceMethod(f="s_remove_complete_constraint", signature=c("cutList", "list"), definition=function(object, value) {
@@ -128,7 +128,7 @@ setReplaceMethod(f="s_remove_complete_constraint", signature=c("cutList", "list"
   return(object)
 })
 
-setMethod(f="c_stengthen", signature=c("cutList"), definition=function(object) {
+setMethod(f="c_strengthen", signature=c("cutList"), definition=function(object) {
   con <- g_constraints(object)
   nrRows <- g_nr_rows(con)
   nrCols <- g_nr_cols(con)

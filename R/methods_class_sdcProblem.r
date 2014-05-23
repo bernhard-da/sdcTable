@@ -618,7 +618,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       conMat <- g_constraints(validCuts)
       result <- rep(NA, g_nr_rows(conMat))
       for ( z in 1:g_nr_rows(conMat) ) {
-        expr <- paste(sum(xiWorking[g_col_ind(g_row(conMat, input=list(z)))]), g_direction(validCuts)[z], g_rhs(validCuts)[z]
+        expr <- paste(sum(xiWorking[g_col_ind(g_row(conMat, input=list(z)))]), g_direction(validCuts)[z], g_rhs(validCuts)[z])
         result[z] <- eval(parse(text=expr))
       }
     } else {
@@ -1044,7 +1044,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   #######
 
   ### create master problem and add constraints derived in pre-processing
-  mProb <- c_make_masterproblem(probleminstance, input=list()
+  mProb <- c_make_masterproblem(probleminstance, input=list())
   mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(validCuts))
   if ( verbose ) {
     cat("solving the original master problem (no additional constraints)...\n")
