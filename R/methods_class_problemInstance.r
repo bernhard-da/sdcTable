@@ -280,8 +280,8 @@ setMethod("c_make_masterproblem", signature=c("problemInstance", "list"), defini
     nrVars <- g_nrVars(object)
 
     M <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrVars)))
-    direction <- rep("==", get.simpleTriplet(M, type='nrRows', input=list()))
-    rhs <- rep(1, get.simpleTriplet(M, type='nrRows', input=list()))
+    direction <- rep("==", g_nr_rows(M))
+    rhs <- rep(1, g_nr_rows(M))
 
     # cells with sdcStatus=="z" must be published
     if ( g_hasForcedCells(object) ) {

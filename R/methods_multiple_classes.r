@@ -165,26 +165,26 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   # idea: for each constraint at least 2 suppressions must
   # exist if one xi != 0! (http://www.eia.doe.gov/ices2/missing_papers.pdf)
   newCutsMaster <- init.cutList(type='empty', input=list(nrCols=nrVars))
-  #xx <- lapply(1:get.simpleTriplet(A, type='nrRows', input=list()), function(x) {
-  # cols <- get.simpleTriplet(get.simpleTriplet(A, type='getRow', input=list(x)), type='colInd')
+  #xx <- lapply(1:g_nr_rows(A), function(x) {
+  # cols <- g_col_ind(g_row(A, input=list(x)))
   # v <- rep(0, nrVars)
   # v[cols] <- c(1, rep(-1, length(cols)))
   # newCutsMaster <<- set.cutList(newCutsMaster, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=v, dir="<=", rhs=0))))
   #})
   ################################################################
 
-  nrConstraints <- get.simpleTriplet(A, type='nrRows', input=list())
+  nrConstraints <- g_nr_rows(A)
   objective <- rep(0, length=2*nrVars+nrConstraints)
   z1 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=FALSE))
   z2 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=TRUE))
   z <- c_bind(object=z1, input=list(z2, bindRow=FALSE))
   A <- c_bind(object=z, input=list(g_transpose(A), bindRow=FALSE))
-  direction <- rep("==", get.simpleTriplet(A, type='nrRows', input=list()))
-  rhs <- rep(0, get.simpleTriplet(A, type='nrRows', input=list()))
+  direction <- rep("==", g_nr_rows(A)
+  rhs <- rep(0, g_nr_rows(A))
 
-  types <- rep("C", get.simpleTriplet(A, type='nrCols', input=list()))
-  boundsLower <- list(ind=1:get.simpleTriplet(A, type='nrCols', input=list()), val=c(rep(0, 2*nrVars), rep(-Inf, nrConstraints)))
-  boundsUpper <- list(ind=1:get.simpleTriplet(A, type='nrCols', input=list()), val=c(rep(Inf, 2*nrVars), rep(Inf,  nrConstraints)))
+  types <- rep("C", g_nr_cols(A))
+  boundsLower <- list(ind=1:g_nr_cols(A), val=c(rep(0, 2*nrVars), rep(-Inf, nrConstraints)))
+  boundsUpper <- list(ind=1:g_nr_cols(A), val=c(rep(Inf, 2*nrVars), rep(Inf,  nrConstraints)))
 
   aProb <- new("linProb",
     objective=objective,

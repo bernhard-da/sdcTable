@@ -184,7 +184,7 @@ setMethod("g_duplicated_rows", signature=c("simpleTriplet"), definition=function
 })
 
 setMethod("g_transpose", signature=c("simpleTriplet"), definition=function(object) {
-  out <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=get.simpleTriplet(object, type='nrCols', input=list()), ncol=0)))
+  out <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=g_nr_cols(object), ncol=0)))
   for ( i in 1:g_nr_rows(object) ) {
     r <- g_row(object)
     out <- g_add_col(out, input=list(index=g_col_ind(r), values=g_values(r)))
@@ -415,7 +415,7 @@ setMethod("c_bind", signature=c("simpleTriplet"), definition=function(object, in
     }
     out <- init.simpleTriplet(type='simpleTriplet',
       input=list(mat=matrix(0, nrow=g_nr_rows(object1), ncol=g_nr_cols(object1)+g_nr_cols(object2))))
-    object2@j <- object2@j + get.simpleTriplet(object1, type='nrCols', input=list())
+    object2@j <- object2@j + g_nr_cols(object1)
   }
   out@i <- c(object1@i, object2@i)
   out@j <- c(object1@j, object2@j)

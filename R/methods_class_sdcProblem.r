@@ -487,12 +487,12 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   nrConstraints <- nrow(AInc)
   objective <- rep(ci, 2)
 
-  direction <- rep("==", get.simpleTriplet(AInc, type='nrRows', input=list()))
-  rhs <- rep(0, get.simpleTriplet(AInc, type='nrRows', input=list()))
+  direction <- rep("==", g_nr_rows(AInc))
+  rhs <- rep(0, g_nr_rows(AInc))
 
-  types <- rep("C", get.simpleTriplet(AInc, type='nrCols', input=list()))
-  boundsLower <- list(ind=1:get.simpleTriplet(AInc, type='nrCols', input=list()), val=rep(0,get.simpleTriplet(AInc, type='nrCols', input=list())))
-  boundsUpper <- list(ind=1:get.simpleTriplet(AInc, type='nrCols', input=list()), val=c(UB, LB))
+  types <- rep("C", g_nr_cols(AInc))
+  boundsLower <- list(ind=1:g_nr_cols(AInc), val=rep(0, g_nr_cols(AInc)))
+  boundsUpper <- list(ind=1:g_nr_cols(AInc), val=c(UB, LB))
 
   aProbInc <- new("linProb",
     objective=objective,
@@ -507,14 +507,14 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   # are not part of the heuristic solution
   if ( length(forcedCells) > 0 ) {
     for ( u in 1:length(forcedCells) ) {
-      con <- rep(0, get.simpleTriplet(AInc, type='nrCols', input=list()))
+      con <- rep(0, g_nr_cols(AInc))
       con[c(forcedCells[u], nrVars+forcedCells[u])] <- c(1,-1)
       aCon <- init.cutList(type='singleCut', input=list(vals=con, dir="==", rhs=0))
       aProbInc <- set.linProb(aProbInc, type='addCompleteConstraint', input=list(aCon))
     }
   }
 
-  x <- rep(0, get.simpleTriplet(AInc, type='nrCols', input=list()))
+  x <- rep(0, g_nr_cols(AInc))
   UPL <- g_UPL(pI)
   LPL <- g_LPL(pI)
   SPL <- g_SPL(pI)
@@ -614,11 +614,11 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
     # check if any validCuts are not valid with xiWorking!
     # validCuts needs to be supplemented in function call
     ### get a constraint from validCuts
-    if ( get.cutList(validCuts, type='nrConstraints') > 0 ) {
-      conMat <- get.cutList(validCuts, type='constraints')
-      result <- rep(NA, get.simpleTriplet(conMat, type='nrRows', input=list()))
-      for ( z in 1:get.simpleTriplet(conMat, type='nrRows', input=list()) ) {
-        expr <- paste(sum(xiWorking[get.simpleTriplet(get.simpleTriplet(conMat, type='getRow', input=list(z)), type='colInd', input=list())]),  get.cutList(validCuts, type='direction')[z], get.cutList(validCuts, type='rhs')[z])
+    if ( g_nr_constraints(validCuts) > 0 ) {
+      conMat <- g_constraints(validCuts)
+      result <- rep(NA, g_nr_rows(conMat))
+      for ( z in 1:g_nr_rows(conMat) ) {
+        expr <- paste(sum(xiWorking[g_col_ind(g_row(conMat, input=list(z)))]), g_direction(validCuts)[z], g_rhs(validCuts)[z]
         result[z] <- eval(parse(text=expr))
       }
     } else {
@@ -1016,7 +1016,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   aProb <- resultPreProcess$aProb
 
   # no valid cuts have been generated in preprocessing!
-  if ( get.simpleTriplet(get.cutList(validCuts, type='constraints'), type='nrRows', input=list()) == 0 ) {
+  if ( g_nr_rows(g_constraints(validCuts)) == 0 ) {
     return(object)
   }
 
@@ -1039,8 +1039,8 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
 
   structureCuts <- c_gen_structcuts(object, input=list())
   # does heuristicSolution violates any cuts from structure-cuts??
-  #calc.cutList(structureCuts, type='checkViolation', input=list(heuristicSolution, g_weight(problemInstance)))
-  validCuts <- calc.cutList(validCuts, type='bindTogether', input=list(structureCuts))
+  #c_check_violation(structureCuts, input=list(heuristicSolution, g_weight(problemInstance)))
+  validCuts <- c_bind_together(validCuts, input=list(structureCuts))
   #######
 
   ### create master problem and add constraints derived in pre-processing
@@ -1192,12 +1192,12 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       #cat('limits ( origValue=',weights[cellInd],') : [',AttProbDown[i],':',AttProbUp[i],']\n')
     }
 
-    if ( get.cutList(newCuts, type='nrConstraints') > 0 ) {
+    if ( g_nr_constraints(newCuts) > 0 ) {
       # strengthen cuts
       if ( verbose ) {
-        cat("strengthening the cuts and adding",get.cutList(newCuts, type='nrConstraints'),"new derived cuts to master problem...\n")
+        cat("strengthening the cuts and adding",g_nr_constraints(newCuts),"new derived cuts to master problem...\n")
       }
-      newCuts <- calc.cutList(newCuts, type='strengthen', input=list())
+      newCuts <- c_strengthen(newCuts)
       mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(newCuts))
     }
     ### check for duplicated constraints
@@ -1240,7 +1240,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         brIneq[bridgelessInd] <- -1
         brCuts <- set.cutList(brCuts, type='addCompleteConstraint', input=list(init.cutList(type='singleCut', input=list(vals=brIneq, dir=">=", rhs=0))))
       }
-      if ( get.cutList(brCuts, type='nrConstraints') > 0 ) {
+      if ( g_nr_constraints(brCuts) > 0 ) {
         mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(brCuts))
       }
     }
@@ -1257,9 +1257,9 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       break
     }
 
-    if ( get.cutList(problemPool[[selectInd]], type='nrConstraints') > 0 ) {
+    if ( g_nr_constraints(problemPool[[selectInd]]) > 0 ) {
       if ( verbose ) {
-        cat("adding",get.cutList(problemPool[[selectInd]], type='nrConstraints'),"constraints to the master problem...\n")
+        cat("adding",g_nr_constraints(problemPool[[selectInd]]),"constraints to the master problem...\n")
       }
       mProbWorking <- set.linProb(mProb, type='addCompleteConstraint', input=list(problemPool[[selectInd]]))
     }
@@ -1361,7 +1361,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       }
     } else {
       ## 2) Branching: wir erweitern den ProblemPool und löschen dann den aktuellen Node
-      branchedVars <- get.simpleTriplet(get.cutList(problemPool[[selectInd]], type='constraints'), type='colInd', input=list())
+      branchedVars <- g_col_ind(g_constraints(problemPool[[selectInd]]))
       branchVar <- getBranchingVariable(xi, branchedVars, noBranchVars)
 
       if ( length(branchVar) == 1 ) {
@@ -1591,8 +1591,8 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     }
   }
 
-  if ( get.cutList(validCuts, type='nrConstraints') > 0 ) {
-    validCuts <- calc.cutList(validCuts, type='strengthen', input=list())
+  if ( g_nr_constraints(validCuts) > 0 ) {
+    validCuts <- c_stengthen(validCuts)
 
     setZeroUPL <- which(freqs[primSupps]+UPL <= HIGH) # -> set UPL = 0
     setZeroLPL <- which(freqs[primSupps]-LPL >= LOW) # -> set LPL = 0
@@ -2223,7 +2223,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
     }
   }
 
-  dupRows <- get.simpleTriplet(get.cutList(requiredCuts, type='constraints'), type='duplicatedRows', input=list())
+  dupRows <- g_duplicated_rows(g_constraints(requiredCuts))
   if ( length(dupRows) > 0 ) {
     requiredCuts <- set.cutList(requiredCuts, type='removeCompleteConstraint', input=list(dupRows))
   }

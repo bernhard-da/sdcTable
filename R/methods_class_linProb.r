@@ -58,17 +58,17 @@ setMethod(f='set.linProb', signature=c('linProb', 'character', 'list'),
     }
     if ( type == 'addCompleteConstraint' ) {
       input <- input[[1]]
-      if ( get.simpleTriplet(get.linProb(object, type='constraints'), type='nrCols', input=list()) != get.simpleTriplet(get.cutList(input, type='constraints'), type='nrCols', input=list()) ) {
+      if ( g_nr_cols(get.linProb(object, type='constraints')) != g_nr_cols(g_constraints(input)) ) {
         stop("set.linProb:: nrCols of 'object' and 'input' differ!\n")
       }
-      if ( get.cutList(input, type='nrConstraints') > 0 ) {
-        con <- get.cutList(input, type='constraints')
-        for ( k in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
-          x <- get.simpleTriplet(con, type='getRow', input=list(k))
+      if ( g_nr_constraints(input) > 0 ) {
+        con <- g_constraints(input)
+        for ( k in 1:g_nr_rows(con) ) {
+          x <- g_row(con, input=list(k))
           object@constraints <- c_add_row(get.linProb(object, type='constraints'), input=list(index=g_col_ind(x), values=g_values(x)))
         }
-        object@direction <- c(get.linProb(object, type='direction'), get.cutList(input, type='direction'))
-        object@rhs <- c(get.linProb(object, type='rhs'), get.cutList(input, type='rhs'))
+        object@direction <- c(get.linProb(object, type='direction'), g_direction(input))
+        object@rhs <- c(get.linProb(object, type='rhs'), g_rhs(input))
       }
     }
 
@@ -167,7 +167,7 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
       dir <- get.linProb(object, type='direction')
       obj <- get.linProb(object, type='objective')
       bounds <- get.linProb(object, type='bounds')
-      nrVars <- get.simpleTriplet(con, type='nrCols', input=list())
+      nrVars <- g_nr_cols(con)
 
       my.lp <- make.lp(0, nrVars)
 
@@ -175,10 +175,10 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
       set.bounds(my.lp, upper = bounds$upper$val)
       set.bounds(my.lp, lower = bounds$lower$val)
 
-      for ( i in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
-        r <- get.simpleTriplet(con, type='getRow', input=list(i))
-        cols <- get.simpleTriplet(r, type='colInd', input=list())
-        vals <- get.simpleTriplet(r, type='values', input=list())
+      for ( i in 1:g_nr_rows(con) ) {
+        r <- g_row(con, input=list(i))
+        cols <- g_col_ind(r)
+        vals <- g_values(r)
         dd <- ifelse(dir[i]=="==", "=", dir[i])
         add.constraint(my.lp, vals, dd, rhs[i], indices=cols)
       }

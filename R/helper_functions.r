@@ -110,11 +110,10 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
   x <- glp_call_interface(
     obj,
     n_of_objective_vars,
-    get.simpleTriplet(mat, type='rowInd', input=list()),
-    get.simpleTriplet(mat, type='colInd', input=list()),
-    get.simpleTriplet(mat, type='values', input=list()),
-    length(get.simpleTriplet(mat, type='values', input=list())),
-
+    g_row_ind(mat),
+    g_col_ind(mat),
+    g_values(mat),
+    length(g_values(mat)),
     rhs, direction_of_constraints, n_of_constraints, is_integer,
     integers, binaries,
     direction_of_optimization,
@@ -357,14 +356,14 @@ genParaObj <- function(selection, ...) {
 
 # convert simple triplet to matrix
 st_to_mat <- function(x) {
-  n.rows <- get.simpleTriplet(x, type='nrRows', input=list())
-  n.cols <- get.simpleTriplet(x, type='nrCols', input=list())
+  n.rows <- g_nr_rows(x)
+  n.cols <- g_nr_cols(x)
   M <- matrix(0, nrow=n.rows, ncol=n.cols)
 
-  i.x <- get.simpleTriplet(x, type='rowInd', input=list())
-  j.x <- get.simpleTriplet(x, type='colInd', input=list())
-  v.x <- get.simpleTriplet(x, type='values', input=list())
-  for ( i in 1:get.simpleTriplet(x, type='nrCells', input=list()) ) {
+  i.x <- g_row_ind(x)
+  j.x <- g_col_ind(x)
+  v.x <- g_values(x)
+  for ( i in 1:g_nr_cells(x) ) {
     M[i.x[i], j.x[i]] <- v.x[i]
   }
   # matrizen from attackers problem are transposed -> switch!
@@ -387,13 +386,13 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   aProb <- c_make_att_prob(input=list(objectA=pI, objectB=dimInfo))$aProb
   attProbM <- init.simpleTriplet("simpleTriplet", input=list(mat=st_to_mat(aProb@constraints)))
 
-  ia <- as.integer(c(0, get.simpleTriplet(attProbM, type="rowInd", list())))
-  ja <- as.integer(c(0, get.simpleTriplet(attProbM, type="colInd", list())))
-  ar <- as.double(c(0, get.simpleTriplet(attProbM, type="values", list())))
+  ia <- as.integer(c(0, g_row_ind(attProbM)))
+  ja <- as.integer(c(0, g_col_ind(attProbM)))
+  ar <- as.double(c(0, g_values(attProbM)))
 
   cells_mat <- as.integer(length(ia))
-  nr_vars <- as.integer(get.simpleTriplet(attProbM, type="nrCols", list()))
-  nr_rows <- as.integer(get.simpleTriplet(attProbM, type="nrRows", list()))
+  nr_vars <- as.integer(g_nr_cols(attProbM))
+  nr_rows <- as.integer(g_nr_rows(attProbM))
 
   vals <- as.integer(g_freq(pI))
 

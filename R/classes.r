@@ -470,11 +470,11 @@ setClass(
     if ( length(object@rhs) != length(object@direction) ) {
       stop("linProb:: length of 'rhs' and 'direction' differ!\n")
     }
-    nrRows.constraints <- get.simpleTriplet(object@constraints, type='nrRows', input=list())
+    nrRows.constraints <- g_nr_rows(object@constraints)
     if ( length(object@direction) != nrRows.constraints ) {
       stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n")
     }
-    nrCols.constraints <- get.simpleTriplet(object@constraints, type='nrCols', input=list())
+    nrCols.constraints <- g_nr_cols(object@constraints)
     if ( length(object@objective) != nrCols.constraints ) {
       stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")
     }
@@ -538,13 +538,13 @@ setClass(
     rhs=numeric(0)
   ),
   validity=function(object) {
-    if ( get.simpleTriplet(get.cutList(object, type='constraints'), type='nrRows', input=list()) != length(get.cutList(object, type='direction')) ) {
+    if ( g_nr_rows(g_constraints(object)) != length(g_direction(object)) ) {
       stop("cutList:: number of rows of 'con' and length of 'direction' differs!\n")
     }
-    if ( length(get.cutList(object, type='direction'))!= length(get.cutList(object, type='rhs')) ) {
+    if ( length(g_direction(object))!= length(g_rhs(object)) ) {
       stop("cutList:: length of 'direction' and 'rhs' differ!\n")
     }
-    if ( !all(get.cutList(object, type='direction') %in% c(">", ">=", "==", "<", "<=")) ) {
+    if ( !all(g_direction(object) %in% c(">", ">=", "==", "<", "<=")) ) {
       stop("cutList:: elements of 'direction' must only contain symbols '>', '>=', '==', '<' or '<='!\n")
     }
     return(TRUE)

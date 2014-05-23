@@ -1,21 +1,21 @@
 #' @aliases get.cutList,cutList,character-method
 #' @rdname get.cutList-method
-setMethod(f='get.cutList', signature=c('cutList', 'character'),
+setMethod(f="get.cutList", signature=c("cutList", "character"),
   definition=function(object, type) {
-    if ( !type %in% c('constraints', 'direction', 'rhs', 'nrConstraints') ) {
+    if ( !type %in% c("constraints", "direction", "rhs", "nrConstraints") ) {
       stop("get.cutList:: argument 'type' is not valid!\n")
     }
-    if ( type == 'constraints' ) {
-      return(object@con)
+    if ( type == "constraints" ) {
+      return(g_constraints(object))
     }
-    if ( type == 'direction' ) {
-      return(object@direction)
+    if ( type == "direction" ) {
+      return(g_direction(object))
     }
-    if ( type == 'rhs' ) {
-      return(object@rhs)
+    if ( type == "rhs" ) {
+      return(g_rhs(object))
     }
-    if ( type == 'nrConstraints' ) {
-      return(length(get.cutList(object, type='rhs')))
+    if ( type == "nrConstraints" ) {
+      return(g_nr_constraints(object))
     }
   }
 )
@@ -29,29 +29,28 @@ setMethod(f='set.cutList', signature=c('cutList', 'character', 'list'),
     }
 
     input <- input[[1]]
-
     if ( type == 'addCompleteConstraint' ) {
-      if ( get.simpleTriplet(get.cutList(object, type='constraints'), type='nrCols', input=list()) != get.simpleTriplet(get.cutList(input, type='constraints'), type='nrCols', input=list()) ) {
+      if ( g_nr_cols(g_constraints(object)) != g_nr_cols(g_constraints(input)) ) {
         stop("set.cutList:: nrCols of 'object' and 'input' differ!\n")
       }
-      if ( get.cutList(input, type='nrConstraints') > 0 ) {
-        con <- get.cutList(input, type='constraints')
-        for ( k in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
-          x <- get.simpleTriplet(con, type='getRow', input=list(k))
-          object@con <- c_add_row(get.cutList(object, type='constraints'), input=list(index=g_col_ind(x), values=g_values(x)))
+      if ( g_nr_constraints(input) > 0 ) {
+        con <- g_constraints(input)
+        for ( k in 1:g_nr_rows(con) ) {
+          x <- g_row(con, input=list(k))
+          object@con <- c_add_row(g_constraints(object), input=list(index=g_col_ind(x), values=g_values(x)))
         }
-        object@direction <- c(get.cutList(object, type='direction'), get.cutList(input, type='direction'))
-        object@rhs <- c(get.cutList(object, type='rhs'), get.cutList(input, type='rhs'))
+        object@direction <- c(g_direction(object), g_direction(input))
+        object@rhs <- c(g_rhs(object), g_rhs(input))
       }
     }
 
     if ( type == 'removeCompleteConstraint' ) {
-      if ( !all(input %in% 1:length(get.cutList(object, type='rhs'))) ) {
-        stop("elements of argument 'input' must be >=1 and <=",length(get.cutList(object, type='rhs')),"!\n")
+      if ( !all(input %in% 1:length(g_rhs(object))) ) {
+        stop("elements of argument 'input' must be >=1 and <=",length(g_rhs(object)),"!\n")
       }
-      object@con <- c_remove_row(get.cutList(object, type='constraints'), input=list(input))
-      object@direction <- get.cutList(object, type='direction')[-input]
-      object@rhs <- get.cutList(object, type='rhs')[-input]
+      object@con <- c_remove_row(g_constraints(object), input=list(input))
+      object@direction <- g_drection(object)[-input]
+      object@rhs <- g_rhs(object)[-input]
     }
 
     validObject(object)
@@ -61,61 +60,19 @@ setMethod(f='set.cutList', signature=c('cutList', 'character', 'list'),
 
 #' @aliases calc.cutList,cutList,character,list-method
 #' @rdname calc.cutList-method
-setMethod(f='calc.cutList', signature=c('cutList', 'character', 'list'),
+setMethod(f="calc.cutList", signature=c("cutList", "character", "list"),
   definition=function(object, type, input) {
-    if ( !type %in% c('strengthen', 'checkViolation', 'bindTogether') ) {
+    if ( !type %in% c("strengthen", "checkViolation", "bindTogether") ) {
       stop("calc.cutList:: argument 'type' is not valid!\n")
     }
-
-    if ( type == 'strengthen' ) {
-      con <- get.cutList(object, type='constraints')
-      nrRows <- get.simpleTriplet(con, type='nrRows', input=list())
-      nrCols <- get.simpleTriplet(con, type='nrCols', input=list())
-      rhs <- get.cutList(object, type='rhs')
-      vals <- lapply(1:nrRows, function(x) { get.simpleTriplet(get.simpleTriplet(con, type='getRow', input=list(x)), type='values', input=list()) } )
-      vals <- lapply(1:nrRows, function(x) { sapply(vals[[x]], function(y) { min(y, rhs[x]) } )   })
-      colInds <- lapply(1:nrRows, function(x) { get.simpleTriplet(get.simpleTriplet(con, type='getRow', input=list(x)), type='colInd', input=list()) } )
-
-      st <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, 0, nrCols)))
-      lapply(1:nrRows, function(x) {
-        st <<- c_add_row(st, input=list(index=colInds[[x]], values=vals[[x]]))
-      })
-
-      object@con <- st
-      validObject(object)
-      return(object)
+    if ( type == "strengthen" ) {
+      return(c_strengthen(object))
     }
-
-    if ( type == 'checkViolation' ) {
-      sol <- input[[1]]
-      w <- input[[2]]
-      con <- get.cutList(object, type='constraints')
-      if ( get.simpleTriplet(con, type='nrCols', input=list()) != length(sol) ) {
-        stop("calc.cutList (type==checkViolation):: length of argument 'sol' and number of columns of 'someCuts' differ!\n")
-      }
-      if ( length(sol) != length(w) ) {
-        stop("calc.cutList (type==checkViolation):: length of argument 'sol' 'w' differ!\n")
-      }
-      res <- rep(NA, get.simpleTriplet(con, type='nrRows', input=list()))
-      rhs <- get.cutList(object, type='rhs')
-      dir <- get.cutList(object, type='direction')
-      for ( z in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
-        colInd <- get.simpleTriplet(get.simpleTriplet(con, type='getRow', input=list(z)), type='colInd', input=list())
-        expr <- paste(sum(sol[colInd]*w[colInd]), dir[z], rhs[z])
-        res[z] <- eval(parse(text=expr))
-      }
-      return(any(res == FALSE))
+    if ( type == "checkViolation" ) {
+      return(c_check_violation(object, input))
     }
-
-    if ( type == 'bindTogether' ) {
-      object1 <- object
-      object2 <- input[[1]]
-      x <- new("cutList")
-      x@con <- c_bind(object=get.cutList(object1, type='constraints'), input=list(get.cutList(object2, type='constraints'), bindRow=TRUE))
-      x@direction <- c(get.cutList(object1, type='direction'), get.cutList(object2, type='direction'))
-      x@rhs <- c(get.cutList(object1, type='rhs'), get.cutList(object2, type='rhs'))
-      validObject(x)
-      return(x)
+    if ( type == "bindTogether" ) {
+      return(c_bind_together(object, input))
     }
   }
 )
@@ -148,3 +105,88 @@ setMethod(f='init.cutList', signature=c('character', 'list'),
     x
   }
 )
+
+
+setMethod(f="g_constraints", signature=c("cutList"), definition=function(object) {
+  return(object@con)
+})
+
+setMethod(f="", signature=c("cutList"), definition=function(object) {
+  return(object@direction)
+})
+
+setMethod(f="g_rhs", signature=c("cutList"), definition=function(object) {
+  return(object@rhs)
+})
+
+setMethod(f="g_nr_constraints", signature=c("cutList"), definition=function(object) {
+  return(length(g_rhs))
+})
+
+setMethod(f="c_stengthen", signature=c("cutList"), definition=function(object) {
+  con <- g_constraints(object)
+  nrRows <- g_nr_rows(con)
+  nrCols <- g_nr_cols(con)
+  rhs <- g_rhs(object)
+  vals <- lapply(1:nrRows, function(x) {
+    g_values(g_row(con, input=list(x)))
+  })
+  vals <- lapply(1:nrRows, function(x) {
+    sapply(vals[[x]], function(y) { min(y, rhs[x]) } )
+  })
+  colInds <- lapply(1:nrRows, function(x) {
+    g_col_ind(g_row(con, input=list(x)))
+  })
+
+  st <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, 0, nrCols)))
+  lapply(1:nrRows, function(x) {
+    st <<- c_add_row(st, input=list(index=colInds[[x]], values=vals[[x]]))
+  })
+  object@con <- st
+  validObject(object)
+  return(object)
+})
+
+setMethod(f="c_check_violation", signature=c("cutList"), definition=function(object, input) {
+  sol <- input[[1]]
+  w <- input[[2]]
+  con <- g_constraints(object)
+  if ( g_nr_cols(con) != length(sol) ) {
+    stop("c_check_violation:: length of argument 'sol' and number of columns of 'someCuts' differ!\n")
+  }
+  if ( length(sol) != length(w) ) {
+    stop("c_check_violation:: length of argument 'sol' 'w' differ!\n")
+  }
+  res <- rep(NA, g_nr_rows(con))
+  rhs <- g_rhs(object)
+  dir <- g_direction(object)
+  for ( z in 1:g_nr_rows(con) ) {
+    colInd <- g_col_ind(g_row(con, input=list(z)))
+    expr <- paste(sum(sol[colInd]*w[colInd]), dir[z], rhs[z])
+    res[z] <- eval(parse(text=expr))
+  }
+  return(any(res == FALSE))
+})
+
+setMethod(f="c_bind_together", signature=c("cutList"), definition=function(object, input) {
+  object1 <- object
+  object2 <- input[[1]]
+  x <- new("cutList")
+  x@con <- c_bind(object=g_constraints(object1), input=list(g_constraints(object2), bindRow=TRUE))
+  x@direction <- c(g_direction(object1), g_direction(object2))
+  x@rhs <- c(g_rhs(object1), g_rhs(object2))
+  validObject(x)
+  return(x)
+})
+
+setMethod(f="", signature=c("cutList"), definition=function(object) {
+
+})
+
+setMethod(f="", signature=c("cutList"), definition=function(object) {
+
+})
+
+setMethod(f="", signature=c("cutList"), definition=function(object) {
+
+})
