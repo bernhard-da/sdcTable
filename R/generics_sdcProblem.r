@@ -171,7 +171,7 @@ setGeneric('set.sdcProblem', function(object, type, input) {standardGeneric('set
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setGeneric('calc.sdcProblem', function(object, type, input) {standardGeneric('calc.sdcProblem')})
 
-# get functions
+# get-methods
 setGeneric("g_problemInstance", function(object) { standardGeneric("g_problemInstance") })
 setGeneric("g_dimInfo", function(object) { standardGeneric("g_dimInfo") })
 setGeneric("g_partition", function(object) { standardGeneric("g_partition") })
@@ -182,7 +182,7 @@ setGeneric("g_startJ", function(object) { standardGeneric("g_startJ") })
 setGeneric("g_indicesDealtWith", function(object) { standardGeneric("g_indicesDealtWith") })
 setGeneric("g_innerAndMarginalCellInfo", function(object) { standardGeneric("g_innerAndMarginalCellInfo") })
 
-# set-functions
+# set-methods
 setGeneric("s_problemInstance<-", function(object, value) standardGeneric("s_problemInstance<-"))
 setGeneric("s_partition<-", function(object, value) standardGeneric("s_partition<-"))
 setGeneric("s_startI<-", function(object, value) standardGeneric("s_startI<-"))
@@ -190,7 +190,7 @@ setGeneric("s_startJ<-", function(object, value) standardGeneric("s_startJ<-"))
 setGeneric("s_indicesDealtWith<-", function(object, value) standardGeneric("s_indicesDealtWith<-"))
 setGeneric("s_elapsedTime<-", function(object, value) standardGeneric("s_elapsedTime<-"))
 
-# calculations
+# calc-methods
 setGeneric("c_rule_freq", function(object, input) { standardGeneric("c_rule_freq") })
 setGeneric("c_rule_nk", function(object, input) { standardGeneric("c_rule_nk") })
 setGeneric("c_rule_nk", function(object, input) { standardGeneric("c_rule_nk") })
