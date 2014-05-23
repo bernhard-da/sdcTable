@@ -129,7 +129,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
             if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
               stop("something went wrong!\n")
             }
-            constraintM <- calc.simpleTriplet(constraintM, type='addRow', input=list(index=spl[[z]], values=ind))
+            constraintM <- c_add_row(constraintM, input=list(index=spl[[z]], values=ind))
           }
         }
       } else {
@@ -147,7 +147,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
           if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
             stop("something went wrong! (z=",z," und names(spl)[z]='",names(spl)[z],")\n")
           }
-          constraintM <- calc.simpleTriplet(constraintM, type='addRow', input=list(index=spl[[z]], values=ind))
+          constraintM <- c_add_row(constraintM, input=list(index=spl[[z]], value=ind))
         }
       }
     }
@@ -177,8 +177,8 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
   objective <- rep(0, length=2*nrVars+nrConstraints)
   z1 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=FALSE))
   z2 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=TRUE))
-  z <- calc.simpleTriplet(object=z1, type='bind', input=list(z2, bindRow=FALSE))
-  A <- calc.simpleTriplet(object=z, type='bind', input=list(get.simpleTriplet(A, type='transpose', input=list()), bindRow=FALSE))
+  z <- c_bind(object=z1, input=list(z2, bindRow=FALSE))
+  A <- c_bind(object=z, input=list(g_transpose(A), bindRow=FALSE))
   direction <- rep("==", get.simpleTriplet(A, type='nrRows', input=list()))
   rhs <- rep(0, get.simpleTriplet(A, type='nrRows', input=list()))
 

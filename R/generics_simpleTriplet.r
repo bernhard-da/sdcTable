@@ -124,3 +124,26 @@ setGeneric('calc.simpleTriplet', function(object, type, input) {standardGeneric(
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setGeneric('init.simpleTriplet', function(type, input) {standardGeneric('init.simpleTriplet')})
+
+# get-methods
+setGeneric("g_row_ind", function(object) { standardGeneric("g_row_ind") })
+setGeneric("g_col_ind", function(object) { standardGeneric("g_col_ind") })
+setGeneric("g_values", function(object) { standardGeneric("g_values") })
+setGeneric("g_nr_rows", function(object) { standardGeneric("g_nr_rows") })
+setGeneric("g_nr_cols", function(object) { standardGeneric("g_nr_cols") })
+setGeneric("g_nr_cells", function(object) { standardGeneric("g_nr_cells") })
+setGeneric("g_duplicated_rows", function(object) { standardGeneric("g_duplicated_rows") })
+setGeneric("g_transpose", function(object) { standardGeneric("g_transpose") })
+setGeneric("g_row", function(object, value) { standardGeneric("g_row") })
+setGeneric("g_col", function(object, value) { standardGeneric("g_col") })
+
+# calc-methods
+setGeneric("c_remove_row", function(object, input) { standardGeneric("c_remove_row") })
+setGeneric("c_remove_col", function(object, input) { standardGeneric("c_remove_col") })
+setGeneric("c_add_row", function(object, input) { standardGeneric("c_add_row") })
+setGeneric("c_add_col", function(object, input) { standardGeneric("c_add_col") })
+setGeneric("c_modify_row", function(object, input) { standardGeneric("c_modify_row") })
+setGeneric("c_modify_col", function(object, input) { standardGeneric("c_modify_col") })
+setGeneric("c_modify_cell", function(object, input) { standardGeneric("c_modify_cell") })
+setGeneric("c_bind", function(object, input) { standardGeneric("c_bind") })
+

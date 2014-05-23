@@ -482,7 +482,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
   m1 <- c_gen_mat_m(input=list(objectA=pI, objectB=dimInfoObj))
   m2 <- m1
   m2@v <- -1* m2@v
-  AInc <- calc.simpleTriplet(object=m1, type='bind', input=list(m2, bindRow=FALSE))
+  AInc <- c_bind(object=m1, input=list(m2, bindRow=FALSE))
 
   nrConstraints <- nrow(AInc)
   objective <- rep(ci, 2)

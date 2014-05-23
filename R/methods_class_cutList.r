@@ -38,7 +38,7 @@ setMethod(f='set.cutList', signature=c('cutList', 'character', 'list'),
         con <- get.cutList(input, type='constraints')
         for ( k in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
           x <- get.simpleTriplet(con, type='getRow', input=list(k))
-          object@con <- calc.simpleTriplet(get.cutList(object, type='constraints'), type='addRow', input=list(index=get.simpleTriplet(x, type='colInd', input=list()), values=get.simpleTriplet(x, type='values', input=list())))
+          object@con <- c_add_row(get.cutList(object, type='constraints'), input=list(index=g_col_ind(x), values=g_values(x)))
         }
         object@direction <- c(get.cutList(object, type='direction'), get.cutList(input, type='direction'))
         object@rhs <- c(get.cutList(object, type='rhs'), get.cutList(input, type='rhs'))
@@ -49,7 +49,7 @@ setMethod(f='set.cutList', signature=c('cutList', 'character', 'list'),
       if ( !all(input %in% 1:length(get.cutList(object, type='rhs'))) ) {
         stop("elements of argument 'input' must be >=1 and <=",length(get.cutList(object, type='rhs')),"!\n")
       }
-      object@con <- calc.simpleTriplet(get.cutList(object, type='constraints'), type='removeRow', input=list(input))
+      object@con <- c_remove_row(get.cutList(object, type='constraints'), input=list(input))
       object@direction <- get.cutList(object, type='direction')[-input]
       object@rhs <- get.cutList(object, type='rhs')[-input]
     }
@@ -77,7 +77,9 @@ setMethod(f='calc.cutList', signature=c('cutList', 'character', 'list'),
       colInds <- lapply(1:nrRows, function(x) { get.simpleTriplet(get.simpleTriplet(con, type='getRow', input=list(x)), type='colInd', input=list()) } )
 
       st <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, 0, nrCols)))
-      lapply(1:nrRows, function(x) { st <<- calc.simpleTriplet(st, type='addRow', input=list(index=colInds[[x]], values=vals[[x]]))} )
+      lapply(1:nrRows, function(x) {
+        st <<- c_add_row(st, input=list(index=colInds[[x]], values=vals[[x]]))
+      })
 
       object@con <- st
       validObject(object)
@@ -109,7 +111,7 @@ setMethod(f='calc.cutList', signature=c('cutList', 'character', 'list'),
       object1 <- object
       object2 <- input[[1]]
       x <- new("cutList")
-      x@con <- calc.simpleTriplet(object=get.cutList(object1, type='constraints'), type='bind', input=list(get.cutList(object2, type='constraints'), bindRow=TRUE))
+      x@con <- c_bind(object=get.cutList(object1, type='constraints'), input=list(get.cutList(object2, type='constraints'), bindRow=TRUE))
       x@direction <- c(get.cutList(object1, type='direction'), get.cutList(object2, type='direction'))
       x@rhs <- c(get.cutList(object1, type='rhs'), get.cutList(object2, type='rhs'))
       validObject(x)

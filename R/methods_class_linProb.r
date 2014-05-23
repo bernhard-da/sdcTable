@@ -52,7 +52,7 @@ setMethod(f='set.linProb', signature=c('linProb', 'character', 'list'),
       if ( !all(input %in% 1:length(get.linProb(object, type='rhs'))) ) {
         stop("set.linProb:: elements of argument 'input' must be >=1 and <=",length(get.linProb(object, type='rhs')),"!\n")
       }
-      object@constraints <- calc.simpleTriplet(get.linProb(object, type='constraints'), type='removeRow', input=list(input))
+      object@constraints <- c_remove_row(get.linProb(object, type='constraints'), input=list(input))
       object@direction <- get.linProb(object, type='direction')[-input]
       object@rhs <- get.linProb(object, type='rhs')[-input]
     }
@@ -65,7 +65,7 @@ setMethod(f='set.linProb', signature=c('linProb', 'character', 'list'),
         con <- get.cutList(input, type='constraints')
         for ( k in 1:get.simpleTriplet(con, type='nrRows', input=list()) ) {
           x <- get.simpleTriplet(con, type='getRow', input=list(k))
-          object@constraints <- calc.simpleTriplet(get.linProb(object, type='constraints'), type='addRow', input=list(index=get.simpleTriplet(x, type='colInd', input=list()), values=get.simpleTriplet(x, type='values', input=list())))
+          object@constraints <- c_add_row(get.linProb(object, type='constraints'), input=list(index=g_col_ind(x), values=g_values(x)))
         }
         object@direction <- c(get.linProb(object, type='direction'), get.cutList(input, type='direction'))
         object@rhs <- c(get.linProb(object, type='rhs'), get.cutList(input, type='rhs'))

@@ -288,7 +288,7 @@ setMethod("c_make_masterproblem", signature=c("problemInstance", "list"), defini
       forcedCells <- g_forcedCells(object)
       if ( length(forcedCells) > 0 ) {
         for ( i in seq_along(forcedCells) ) {
-          M <- calc.simpleTriplet(M, type='addRow', input=list(index=forcedCells[i], values=1))
+          M <- c_add_row(M, input=list(index=forcedCells[i], values=1))
         }
         direction <- c(direction, rep("==", length(forcedCells)))
         rhs <- c(rhs, rep(0, length(forcedCells)))
