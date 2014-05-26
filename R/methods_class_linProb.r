@@ -1,88 +1,64 @@
 #' @aliases get.linProb,linProb,character-method
 #' @rdname get.linProb-method
-setMethod(f='get.linProb', signature=c('linProb', 'character'),
+setMethod(f="get.linProb", signature=c("linProb", "character"),
   definition=function(object, type) {
-    if ( !type %in% c('constraints', 'direction', 'rhs', 'objective', 'types', 'bounds') ) {
+    if ( !type %in% c("constraints", "direction", "rhs", "objective", "types", "bounds") ) {
       stop("get.cutList:: argument 'type' is not valid!\n")
     }
-    if ( type == 'constraints' ) {
-      return(object@constraints)
+    if ( type == "constraints" ) {
+      return(g_constraints(object))
     }
-    if ( type == 'direction' ) {
-      return(object@direction)
+    if ( type == "direction" ) {
+      return(g_direction(object))
     }
-    if ( type == 'rhs' ) {
-      return(object@rhs)
+    if ( type == "rhs" ) {
+      return(g_rhs(object))
     }
-    if ( type == 'objective' ) {
-      return(object@objective)
+    if ( type == "objective" ) {
+      return(g_objective(object))
     }
-    if ( type == 'types' ) {
-      return(object@types)
+    if ( type == "types" ) {
+      return(g_types(object))
     }
-    if ( type == 'bounds' ) {
-      return(list(upper=object@boundsUpper, lower=object@boundsLower))
+    if ( type == "bounds" ) {
+      return(g_bounds(object))
     }
   }
 )
 
 #' @aliases set.linProb,linProb,character,list-method
 #' @rdname set.linProb-method
-setMethod(f='set.linProb', signature=c('linProb', 'character', 'list'),
+setMethod(f="set.linProb", signature=c("linProb", "character", "list"),
   definition=function(object, type, input) {
-    if ( !type %in% c('objective', 'direction', 'rhs', 'types',
-        'removeCompleteConstraint', 'addCompleteConstraint',
-        'bounds', 'constraints') ) {
+    if ( !type %in% c("objective", "direction", "rhs", "types",
+        "removeCompleteConstraint", "addCompleteConstraint",
+        "bounds", "constraints") ) {
       stop("set.linProb:: check argument 'type'!\n")
     }
-    if ( type == 'objective' ) {
-      object@objective <- input[[1]]
+    if ( type == "objective" ) {
+      s_objective(object) <- input
     }
-    if ( type == 'direction' ) {
-      object@direction <- input[[1]]
+    if ( type == "direction" ) {
+      s_direction(object) <- input
     }
-    if ( type == 'rhs' ) {
-      object@rhs <- input[[1]]
+    if ( type == "rhs" ) {
+      s_rhs(object) <- input
     }
-    if ( type == 'types' ) {
-      object@types <- input[[1]]
+    if ( type == "types" ) {
+      s_types(object) <- input
     }
-    if  ( type == 'removeCompleteConstraint' ) {
-      input <- input[[1]]
-      if ( !all(input %in% 1:length(get.linProb(object, type='rhs'))) ) {
-        stop("set.linProb:: elements of argument 'input' must be >=1 and <=",length(get.linProb(object, type='rhs')),"!\n")
-      }
-      object@constraints <- c_remove_row(get.linProb(object, type='constraints'), input=list(input))
-      object@direction <- get.linProb(object, type='direction')[-input]
-      object@rhs <- get.linProb(object, type='rhs')[-input]
+    if  ( type == "removeCompleteConstraint" ) {
+      s_remove_complete_constraint(object) <- input
     }
-    if ( type == 'addCompleteConstraint' ) {
-      input <- input[[1]]
-      if ( g_nr_cols(get.linProb(object, type='constraints')) != g_nr_cols(g_constraints(input)) ) {
-        stop("set.linProb:: nrCols of 'object' and 'input' differ!\n")
-      }
-      if ( g_nr_constraints(input) > 0 ) {
-        con <- g_constraints(input)
-        for ( k in 1:g_nr_rows(con) ) {
-          x <- g_row(con, input=list(k))
-          object@constraints <- c_add_row(get.linProb(object, type='constraints'), input=list(index=g_col_ind(x), values=g_values(x)))
-        }
-        object@direction <- c(get.linProb(object, type='direction'), g_direction(input))
-        object@rhs <- c(get.linProb(object, type='rhs'), g_rhs(input))
-      }
+    if ( type == "addCompleteConstraint" ) {
+      s_add_complete_constraint(object) <- input
     }
-
-    if ( type == 'bounds' ) {
-      # FIXME: check bounds input (lower|upper,...)
-      object@boundsLower <- input$lower
-      object@boundsUpper <- input$upper
+    if ( type == "bounds" ) {
+      s_bounds(object) <- input
     }
-
-    if ( type == 'constraints' ) {
-      object@constraints <- input[[1]]
+    if ( type == "constraints" ) {
+      s_constraints(object) <- input
     }
-
-
     validObject(object)
     return(object)
   }
@@ -104,13 +80,13 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
       }
       if ( solver == "glpk" ) {
         sol <- my.Rglpk_solve_LP(
-          get.linProb(object, type='objective'),
-          get.linProb(object, type='constraints'),
-          get.linProb(object, type='direction'),
-          get.linProb(object, type='rhs'),
-          get.linProb(object, type='types'),
+          g_objective(object),
+          g_constraints(object),
+          g_direction(object),
+          g_rhs(object),
+          g_types(object),
           max = FALSE,
-          bounds=get.linProb(object, type='bounds'),
+          bounds=g_bounds(object),
           verbose = FALSE)
       }
       if ( solver == "lpSolve" ) {
@@ -118,32 +94,32 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
       }
       if ( solver == "symphony" ) {
         #sol <- Rsymphony_solve_LP(
-        # get.linProb(object, type='objective'),
-        # get.linProb(object, type='constraints'),
-        # get.linProb(object, type='direction'),
-        # get.linProb(object, type='rhs'),
-        # bounds=get.linProb(object, type='bounds'), #bounds
-        # get.linProb(object, type='types'),
+        # g_objective(object),
+        # g_constraints(object),
+        # g_direction(object),
+        # g_rhs(object),
+        # bounds=g_bounds(object), #bounds
+        # g_types(object),
         # max = FALSE)
         stop("solving with 'symphony' not yet available!\n")
       }
       if ( solver == "cplex" ) {
-        #directionOrig <- get.linProb(object, type='direction'),
+        #directionOrig <- g_direction(object),
         #sense <- rep(NA, length(directionOrig))
         #sense[directionOrig=="=="] <- "E"
         #sense[directionOrig=="<="] <- "L"
         #sense[directionOrig==">="] <- "G"
         #sol <- Rcplex(
-        # get.linProb(object, type='objective'),
-        # get.linProb(object, type='constraints'),
-        # get.linProb(object, type='rhs'),
+        # g_objective(object),
+        # g_constraints(object),
+        # g_rhs(object),
         # Qmat = NULL,
         # lb = 0,
         # ub = 1,
         # control = list(),
         # objsense = "min",
         # sense = sense,
-        # vtype = get.linProb(object, type='types'),
+        # vtype = g_types(object),
         # n = 1)
         stop("solving with 'cplex' not yet available!\n")
       }
@@ -162,11 +138,11 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
         stop("calc.linProb (type==fixVariables):: arguments 'ub' must be >= argument 'lb'!\n")
       }
 
-      con <- get.linProb(object, type='constraints')
-      rhs <- get.linProb(object, type='rhs')
-      dir <- get.linProb(object, type='direction')
-      obj <- get.linProb(object, type='objective')
-      bounds <- get.linProb(object, type='bounds')
+      con <- g_constraints(object)
+      rhs <- g_rhs(object)
+      dir <- g_direction(object)
+      obj <- g_objective(object)
+      bounds <- g_bounds(object)
       nrVars <- g_nr_cols(con)
 
       my.lp <- make.lp(0, nrVars)
@@ -215,4 +191,88 @@ setMethod(f='calc.linProb', signature=c('linProb', 'character', 'list'),
     }
   }
 )
+
+setMethod(f="g_constraints", signature=c("linProb"), definition=function(object) {
+  return(object@constraints)
+})
+
+setMethod(f="g_direction", signature=c("linProb"), definition=function(object) {
+  return(object@direction)
+})
+
+setMethod(f="g_rhs", signature=c("linProb"), definition=function(object) {
+  return(object@rhs)
+})
+
+setMethod(f="g_objective", signature=c("linProb"), definition=function(object) {
+  return(object@objective)
+})
+
+setMethod(f="g_types", signature=c("linProb"), definition=function(object) {
+  return(object@types)
+})
+
+setMethod(f="g_bounds", signature=c("linProb"), definition=function(object) {
+  return(list(upper=object@boundsUpper, lower=object@boundsLower))
+})
+
+setReplaceMethod(f="s_objective", signature=c("linProb", "list"), definition=function(object, value) {
+  object@objective <- value[[1]]
+  return(object)
+})
+
+setReplaceMethod(f="s_direction", signature=c("linProb", "list"), definition=function(object, value) {
+  object@direction <- value[[1]]
+  return(object)
+})
+
+setReplaceMethod(f="s_rhs", signature=c("linProb", "list"), definition=function(object, value) {
+  object@rhs <- value[[1]]
+  return(object)
+})
+
+setReplaceMethod(f="s_types", signature=c("linProb", "list"), definition=function(object, value) {
+  object@types <- value[[1]]
+  return(object)
+})
+
+setReplaceMethod(f="s_bounds", signature=c("linProb", "list"), definition=function(object, value) {
+  # FIXME: check bounds input (lower|upper,...)
+  object@boundsLower <- value$lower
+  object@boundsUpper <- value$upper
+  return(object)
+})
+
+setReplaceMethod(f="s_constraints", signature=c("linProb", "list"), definition=function(object, value) {
+  object@constraints <- value[[1]]
+  return(object)
+})
+
+setReplaceMethod(f="s_remove_complete_constraint", signature=c("linProb", "list"), definition=function(object, value) {
+  input <- value[[1]]
+  if ( !all(input %in% 1:length(g_rhs(object))) ) {
+    stop("s_remove_complete_constraint:: elements of argument 'input' must be >=1 and <=",length(g_rhs(object)),"!\n")
+  }
+  object@constraints <- c_remove_row(g_constraints(object), input=list(input))
+  object@direction <- g_direction(object)[-input]
+  object@rhs <- g_rhs(object)[-input]
+  return(object)
+})
+
+setReplaceMethod(f="s_add_complete_constraint", signature=c("linProb", "list"), definition=function(object, value) {
+  input <- value[[1]]
+  if ( g_nr_cols(g_constraints(object)) != g_nr_cols(g_constraints(input)) ) {
+    stop("s_add_complete_constraint:: nrCols of 'object' and 'input' differ!\n")
+  }
+  if ( g_nr_constraints(input) > 0 ) {
+    con <- g_constraints(input)
+    for ( k in 1:g_nr_rows(con) ) {
+      x <- g_row(con, input=list(k))
+      object@constraints <- c_add_row(g_constraints(object), input=list(index=g_col_ind(x), values=g_values(x)))
+    }
+    object@direction <- c(g_direction(object), g_direction(input))
+    object@rhs <- c(g_rhs(object), g_rhs(input))
+  }
+  return(object)
+})
 

@@ -108,3 +108,23 @@ setGeneric('set.linProb', function(object, type, input) {standardGeneric('set.li
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setGeneric('calc.linProb', function(object, type, input) {standardGeneric('calc.linProb')})
+
+# get-methods
+setGeneric("g_constraints", function(object) { standardGeneric("g_constraints") })
+setGeneric("g_direction", function(object) { standardGeneric("g_direction") })
+setGeneric("g_rhs", function(object) { standardGeneric("g_rhs") })
+setGeneric("g_objective", function(object) { standardGeneric("g_objective") })
+setGeneric("g_types", function(object) { standardGeneric("g_types") })
+setGeneric("g_bounds", function(object) { standardGeneric("g_bounds") })
+
+# set-methods
+setGeneric("s_objective<-", function(object, value) { standardGeneric("s_objective<-") })
+setGeneric("s_direction<-", function(object, value) { standardGeneric("s_direction<-") })
+setGeneric("s_rhs<-", function(object, value) { standardGeneric("s_rhs<-") })
+setGeneric("s_types<-", function(object, value) { standardGeneric("s_types<-") })
+setGeneric("s_bounds<-", function(object, value) { standardGeneric("s_bounds<-") })
+setGeneric("s_constraints<-", function(object, value) { standardGeneric("s_constraints<-") })
+setGeneric("s_add_complete_constraint<-", function(object, value) { standardGeneric("s_add_complete_constraint<-") })
+setGeneric("s_remove_complete_constraint<-", function(object, value) { standardGeneric("s_remove_complete_constraint<-") })
+
+
