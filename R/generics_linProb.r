@@ -127,4 +127,6 @@ setGeneric("s_constraints<-", function(object, value) { standardGeneric("s_const
 setGeneric("s_add_complete_constraint<-", function(object, value) { standardGeneric("s_add_complete_constraint<-") })
 setGeneric("s_remove_complete_constraint<-", function(object, value) { standardGeneric("s_remove_complete_constraint<-") })
 
-
+# calc-methods
+setGeneric("c_solve_problem", function(object, input) { standardGeneric("c_solve_problem") })
+setGeneric("c_fix_variables", function(object, input) { standardGeneric("c_fix_variables") })

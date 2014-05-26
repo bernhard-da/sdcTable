@@ -535,7 +535,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       aCon <- init.cutList(type='multipleCuts', input=list(mat=init.simpleTriplet(type='simpleTriplet', input=list(mat=rbind(con1, con2))), dir=rep("==", 2), rhs=c(UPL[cellInd], 0)))
       prob <- aProbInc
       s_add_complete_constraint(prob) <- list(aCon)
-      sol <- calc.linProb(prob, type='solveProblem', input=list(solver))$solution
+      sol <- c_solve_problem(prob, input=list(solver))$solution
       v <- sol[1:nrVars]+sol[(nrVars+1):length(sol)]
       v[which(is.zero(v))] <- 0
       addIndex <- which ( v > 0 )
@@ -552,7 +552,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       aCon <- init.cutList(type='multipleCuts', input=list(mat=init.simpleTriplet(type='simpleTriplet', input=list(mat=rbind(con1, con2))), dir=rep("==", 2), rhs=c(0, LPL[cellInd])))
       prob <- aProbInc
       s_add_complete_constraint(prob) <- list(aCon)
-      sol <- calc.linProb(prob, type='solveProblem', input=list(solver))$solution
+      sol <- c_solve_problem(prob, input=list(solver))$solution
       v <- sol[1:nrVars]+sol[(nrVars+1):length(sol)]
       v[which(is.zero(v))] <- 0
       addIndex <- which ( v > 0 )
@@ -569,7 +569,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
       aCon <- init.cutList(type='singleCut', input=list(vals=con3, dir="==", rhs=SPL[cellInd]))
       prob <- aProbInc
       s_add_complete_constraint(prob) <- list(aCon)
-      sol <- calc.linProb(prob, type='solveProblem', input=list(solver))$solution
+      sol <- c_solve_problem(prob, input=list(solver))$solution
       v <- sol[1:nrVars]+sol[(nrVars+1):length(sol)]
       v[which(is.zero(v))] <- 0
       addIndex <- which ( v > 0 )
@@ -638,11 +638,11 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
         rhs[cellInd] <- 1
         s_rhs(aProb) <- list(rhs)
         s_objective(aProb) <- list(c(weights + UBWorking*xiWorking, -(weights-xiWorking*LBWorking), rep(0, nrConstraints)))
-        up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        up <- c_solve_problem(aProb, input=list(solver))
 
         # solveAttackerProblem (lower bound)
         s_rhs(aProb) <- list(-1*rhs)
-        down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        down <- c_solve_problem(aProb, input=list(solver))
 
         calcDown <- -down$optimum
         calcUp <- up$optimum
@@ -653,7 +653,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
           rhs[cellInd] <- -1
           s_rhs(aProb) <- list(rhs)
           s_objective(aProb) <- list(c(weights + UBWorking*xiWorking, -(weights-xiWorking*LBWorking), rep(0, nrConstraints)))
-          down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+          down <- c_solve_problem(aProb, input=list(solver))
           calcDown <- -down$optimum
         }
         # solve attackers problem (maximize)
@@ -662,7 +662,7 @@ setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=
           rhs[cellInd] <- 1
           s_rhs(aProb) <- list(rhs)
           s_objective(aProb) <- list(c(weights + UBWorking*xiWorking, -(weights-xiWorking*LBWorking), rep(0, nrConstraints)))
-          up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+          up <- c_solve_problem(aProb, input=list(solver))
           calcUp <- up$optimum
         }
       }
@@ -1051,7 +1051,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   if ( verbose ) {
     cat("solving the original master problem (no additional constraints)...\n")
   }
-  masterSolution <- calc.linProb(mProb, type='solveProblem', input=list(solver))
+  masterSolution <- c_solve_problem(mProb, input=list(solver))
   masterObj <- masterSolution$optimum
   xi <- masterSolution$solution
   xi[is.zero(xi)] <- 0
@@ -1072,7 +1072,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       if ( verbose ) {
         cat("fixing variables...\n")
       }
-      fixedVars <- calc.linProb(mProb, type='fixVariables', input=list(currentBestBoundDown, currentBestBoundUp, primSupps))
+      fixedVars <- c_fix_variables(mProb, input=list(currentBestBoundDown, currentBestBoundUp, primSupps))
       if (length(fixedVars) > 0 ) {
         if ( verbose ) {
           cat("--> setting",length(fixedVars),"variables to 0!\n")
@@ -1122,11 +1122,11 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         rhs[cellInd] <- 1
         s_rhs(aProb) <- list(rhs)
         s_objective(aProb) <- list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints)))
-        up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        up <- c_solve_problem(aProb, input=list(solver))
 
         ### solveAttackerProblem (lower bound)
         s_rhs(aProb) <- list(-1*rhs)
-        down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        down <- c_solve_problem(aProb, input=list(solver))
 
         AttProbDown[i] <- -down$optimum
         AttProbUp[i] <- up$optimum
@@ -1144,7 +1144,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           rhs <- rep(0, length(g_rhs(aProb)))
           rhs[cellInd] <- -1
           s_rhs(aProb) <- list(rhs)
-          down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+          down <- c_solve_problem(aProb, input=list(solver))
           AttProbDown[i] <- -down$optimum
         }
         # solve attackers problem (maximize)
@@ -1153,7 +1153,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
           rhs[cellInd] <- 1
           s_rhs(aProb) <- list(rhs)
           s_objective(aProb) <- list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints)))
-          up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+          up <- c_solve_problem(aProb, input=list(solver))
           AttProbUp[i] <- up$optimum
         }
       }
@@ -1224,11 +1224,11 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         rhs[bridgelessInd] <- 1
         s_rhs(aProb) <- list(rhs)
         s_objective(aProb) <- list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints)))
-        up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        up <- c_solve_problem(aProb, input=list(solver))
 
         ### solveAttackerProblem (lower bound)
         s_rhs(aProb) <- list(-1*rhs)
-        down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+        down <- c_solve_problem(aProb, input=list(solver))
 
         alpha.down <- down$solution[1:nrVars]
         alpha.up <- up$solution[1:nrVars]
@@ -1250,7 +1250,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
 
     mProbWorking <- mProb
     # eventually update the lower bound...
-    tmpSolution <- calc.linProb(mProbWorking, type='solveProblem', input=list(solver))
+    tmpSolution <- c_solve_problem(mProbWorking, input=list(solver))
     tmpObj <- tmpSolution$optimum
     if ( tmpObj > currentBestBoundDown & tmpObj <= currentBestBoundUp ) {
       currentBestBoundDown <- tmpObj
@@ -1271,7 +1271,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
     if ( verbose ) {
       cat("solving the master problem with",length(g_rhs(mProbWorking)),"constraints...\n")
     }
-    masterSolution <- calc.linProb(mProbWorking, type='solveProblem', input=list(solver))
+    masterSolution <- c_solve_problem(mProbWorking, input=list(solver))
     masterObj <- masterSolution$optimum
     xi <- masterSolution$solution
     xi[is.zero(xi)] <- 0
@@ -1284,7 +1284,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
 
     ### again fixing variables
     #if ( fixVariables == TRUE ) {
-    # newFixedVars <- calc.linProb(mProb, type='fixVariables', input=list(currentBestBoundDown, currentBestBoundUp, primSupps))
+    # newFixedVars <- c_fix_variables(mProb, input=list(currentBestBoundDown, currentBestBoundUp, primSupps))
     # if ( !all(newFixedVars) %in% fixedVars ) {
     #   cat("setting",length(newFixedVars),"variables to 0!\n")
     #   bounds <- g_bounds(mProb)
@@ -1553,7 +1553,7 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
     rhs[cellInd] <- 1
     s_rhs(aProb) <- list(rhs)
     s_objective(aProb) <- list(c(weights + UB*xi, -(weights-xi*LB), rep(0, nrConstraints)))
-    up <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+    up <- c_solve_problem(aProb, input=list(solver))
     if ( up$status != 0 ) {
       stop("unsolvable problem (up)!\n")
     }
@@ -1563,7 +1563,7 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
 
     # solveAttackerProblem (lower bound)
     s_rhs(aProb) <- list(-1*rhs)
-    down <- calc.linProb(aProb, type='solveProblem', input=list(solver))
+    down <- c_solve_problem(aProb, input=list(solver))
     if ( down$status != 0 ) {
       stop("unsolvable problem (down)!\n")
     }
