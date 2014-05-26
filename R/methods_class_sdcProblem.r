@@ -1044,7 +1044,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
   #######
 
   ### create master problem and add constraints derived in pre-processing
-  mProb <- c_make_masterproblem(probleminstance, input=list())
+  mProb <- c_make_masterproblem(problemInstance, input=list())
   mProb <- set.linProb(mProb, type='addCompleteConstraint', input=list(validCuts))
   if ( verbose ) {
     cat("solving the original master problem (no additional constraints)...\n")
@@ -1595,7 +1595,7 @@ setMethod("c_preprocess", signature=c("sdcProblem", "list"), definition=function
   }
 
   if ( g_nr_constraints(validCuts) > 0 ) {
-    validCuts <- c_stengthen(validCuts)
+    validCuts <- c_strengthen(validCuts)
 
     setZeroUPL <- which(freqs[primSupps]+UPL <= HIGH) # -> set UPL = 0
     setZeroLPL <- which(freqs[primSupps]-LPL >= LOW) # -> set LPL = 0

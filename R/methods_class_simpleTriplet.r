@@ -51,10 +51,10 @@ setMethod(f="get.simpleTriplet", signature=c("simpleTriplet", "character", 'list
       return(g_transpose(object))
     }
     if ( type == "getRow" ) {
-      return(g_row(object, input[[1]]))
+      return(g_row(object, input))
     }
     if ( type == "getCol" ) {
-      return(g_col(object, input[[1]]))
+      return(g_col(object, input))
     }
   }
 )
@@ -187,14 +187,14 @@ setMethod("g_transpose", signature=c("simpleTriplet"), definition=function(objec
   out <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=g_nr_cols(object), ncol=0)))
   for ( i in 1:g_nr_rows(object) ) {
     r <- g_row(object, input=list(i))
-    out <- g_add_col(out, input=list(index=g_col_ind(r), values=g_values(r)))
+    out <- c_add_col(out, input=list(index=g_col_ind(r), values=g_values(r)))
   }
   return(out)
 })
 
-setMethod("g_row", signature=c("simpleTriplet"), definition=function(object, value) {
+setMethod("g_row", signature=c("simpleTriplet", "list"), definition=function(object, input) {
   # if somebody specifies a vector of length > 1, the row with the first index is returned
-  index <- value[1]
+  index <- input[[1]][1]
   if ( !index %in% 1:g_nr_rows(object) ) {
     stop("g_row:: parameter 'index' must be >=1 and <=",g_nr_rows(object),"!\n")
   }
@@ -212,9 +212,9 @@ setMethod("g_row", signature=c("simpleTriplet"), definition=function(object, val
   }
   return(out)
 })
-setMethod("g_col", signature=c("simpleTriplet"), definition=function(object, value) {
+setMethod("g_col", signature=c("simpleTriplet", "list"), definition=function(object, input) {
   # if somebody specifies a vector of length > 1, the column with the first index is returned
-  index <- value[1]
+  index <- input[[1]][1]
   if ( !index %in% 1:g_nr_cols(object) ) {
     stop("g_col:: parameter 'index' must be >=1 and <=",g_nr_cols(object),"!\n")
   }

@@ -198,6 +198,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
 })
 
 setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
+  .SD <- ID <- NULL
   x <- input$objectA
   y <- input$objectB
   time.start <- proc.time()
@@ -356,7 +357,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
       rawData[ind.na[[i]], cols[i]:=NA]
     }
   }
-  x <- set.dataObj(x, type="rawData", input=list(datO))
+  s_raw_data(x) <- list(datO)
   problemInstance <- new("problemInstance",
     strID=strID,
     Freq=f,

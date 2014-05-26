@@ -83,25 +83,30 @@ getBranchingVariable <- function(sol, alreadyBranched, primSupps) {
 }
 
 my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bounds = NULL, verbose = FALSE) {
-  if (!identical(max, TRUE) && !identical(max, FALSE))
-    stop("'Argument 'max' must be either TRUE or FALSE.")
+  if ( !identical(max, TRUE) && !identical(max, FALSE) ) {
+    stop("'Argument 'max' must be either TRUE or FALSE!\n")
+  }
   direction_of_optimization <- as.integer(max)
-  if (!identical(verbose, TRUE) && !identical(verbose, FALSE))
-    stop("'Argument 'verbose' must be either TRUE or FALSE.")
+  if ( !identical(verbose, TRUE) && !identical(verbose, FALSE) ) {
+    stop("'Argument 'verbose' must be either TRUE or FALSE.\n")
+  }
   if ( !class(mat) == "simpleTriplet" ) {
-    stop("mat must be of class 'simpleTriplet'")
+    stop("argument 'mat' must be of class 'simpleTriplet'\n")
   }
 
   verb <- as.integer(verbose)
   n_of_constraints <- length(dir)
   direction_of_constraints <- match(dir, c("<", "<=", ">", ">=", "=="))
-  if (any(is.na(direction_of_constraints)))
-    stop("Argument 'dir' must be either '<', '<=', '>', '>=' or '=='.")
+  if ( any(is.na(direction_of_constraints)) ) {
+    stop("Argument 'dir' must be either '<', '<=', '>', '>=' or '=='.\n")
+  }
   n_of_objective_vars <- length(obj)
-  if (is.null(types))
+  if ( is.null(types) ) {
     types <- "C"
-  if (any(is.na(match(types, c("I", "B", "C"), nomatch = NA))))
-    stop("'types' must be either 'B', 'C' or 'I'.")
+  }
+  if ( any(is.na(match(types, c("I", "B", "C"), nomatch = NA))) ) {
+    stop("'types' must be either 'B', 'C' or 'I'.\n")
+  }
   types <- rep(types, length.out = n_of_objective_vars)
   integers <- types == "I"
   binaries <- types == "B"
@@ -110,10 +115,10 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
   x <- glp_call_interface(
     obj,
     n_of_objective_vars,
-    g_row_ind(mat),
-    g_col_ind(mat),
-    g_values(mat),
-    length(g_values(mat)),
+    get.simpleTriplet(mat, type="rowInd", input=list()),
+    get.simpleTriplet(mat, type="colInd", input=list()),
+    get.simpleTriplet(mat, type="values", input=list()),
+    length(get.simpleTriplet(mat, type="values", input=list())),
     rhs, direction_of_constraints, n_of_constraints, is_integer,
     integers, binaries,
     direction_of_optimization,

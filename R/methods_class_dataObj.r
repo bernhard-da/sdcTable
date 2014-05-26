@@ -45,13 +45,13 @@ setMethod(f="get.dataObj", signature=c("dataObj", "character"),
 
 #' @aliases set.dataObj,dataObj,character,listOrNULL-method
 #' @rdname set.dataObj-method
-setMethod(f='set.dataObj', signature=c('dataObj', 'character', 'listOrNULL'),
+setMethod(f='set.dataObj', signature=c("dataObj", "character", "listOrNULL"),
   definition=function(object, type, input) {
-    if ( !type %in% c('rawData') ) {
+    if ( !type %in% c("rawData") ) {
       stop("set.dataObj:: check argument 'type'!\n")
     }
-    if ( type == 'rawData' ) {
-      object@rawData <- input[[1]]
+    if ( type == "rawData" ) {
+      s_raw_data(object) <- input[[1]]
     }
     validObject(object)
     return(object)
@@ -196,7 +196,12 @@ setMethod(f="g_freqvar_name", signature=c("dataObj"), definition=function(object
 })
 
 setMethod(f="g_var_name", signature=c("dataObj"), definition=function(object) {
-  return(names(g_raw_data(object))[g_dimvar_ind(objecn)])
+  return(names(g_raw_data(object))[g_dimvar_ind(object)])
+})
+
+setReplaceMethod(f="s_raw_data", signature=c("dataObj", "list"), definition=function(object, value) {
+  object@rawData <- value[[1]]
+  return(object)
 })
 
 

@@ -165,7 +165,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
               }
             }
           }
-          inputData <- set.dataObj(inputData, type='rawData', input=list(rawData))
+          s_raw_data(inputData) <- list(rawData)
         }
         ss[[i]] <- calc.dimVar(inputDims[[i]], type='standardize', input=rawData[[dimVarInd[i]]])
       } else {

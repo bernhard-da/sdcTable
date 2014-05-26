@@ -99,10 +99,11 @@ setMethod(f="g_rhs", signature=c("cutList"), definition=function(object) {
 })
 
 setMethod(f="g_nr_constraints", signature=c("cutList"), definition=function(object) {
-  return(length(g_rhs))
+  return(length(g_rhs(object)))
 })
 
 setReplaceMethod(f="s_add_complete_constraint", signature=c("cutList", "list"), definition=function(object, value) {
+  input <- value[[1]]
   if ( g_nr_cols(g_constraints(object)) != g_nr_cols(g_constraints(input)) ) {
     stop("s_add_complete_constraint:: nrCols of 'object' and 'input' differ!\n")
   }
@@ -119,11 +120,12 @@ setReplaceMethod(f="s_add_complete_constraint", signature=c("cutList", "list"), 
 })
 
 setReplaceMethod(f="s_remove_complete_constraint", signature=c("cutList", "list"), definition=function(object, value) {
+  input <- value[[1]]
   if ( !all(input %in% 1:length(g_rhs(object))) ) {
     stop("elements of argument 'input' must be >=1 and <=",length(g_rhs(object)),"!\n")
   }
   object@con <- c_remove_row(g_constraints(object), input=list(input))
-  object@direction <- g_drection(object)[-input]
+  object@direction <- g_direction(object)[-input]
   object@rhs <- g_rhs(object)[-input]
   return(object)
 })

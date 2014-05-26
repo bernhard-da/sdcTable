@@ -134,8 +134,8 @@ setGeneric("g_nr_cols", function(object) { standardGeneric("g_nr_cols") })
 setGeneric("g_nr_cells", function(object) { standardGeneric("g_nr_cells") })
 setGeneric("g_duplicated_rows", function(object) { standardGeneric("g_duplicated_rows") })
 setGeneric("g_transpose", function(object) { standardGeneric("g_transpose") })
-setGeneric("g_row", function(object, value) { standardGeneric("g_row") })
-setGeneric("g_col", function(object, value) { standardGeneric("g_col") })
+setGeneric("g_row", function(object, input) { standardGeneric("g_row") })
+setGeneric("g_col", function(object, input) { standardGeneric("g_col") })
 
 # calc-methods
 setGeneric("c_remove_row", function(object, input) { standardGeneric("c_remove_row") })

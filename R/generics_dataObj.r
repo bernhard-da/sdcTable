@@ -75,6 +75,7 @@ setGeneric("init.dataObj", function(input) { standardGeneric("init.dataObj") })
 # get-methods
 setGeneric("g_raw_data", function(object) { standardGeneric("g_raw_data") })
 setGeneric("g_dimvar_ind", function(object) { standardGeneric("g_dimvar_ind") })
+setGeneric("g_freqvar_ind", function(object) { standardGeneric("g_freqvar_ind") })
 setGeneric("g_numvar_ind", function(object) { standardGeneric("g_numvar_ind") })
 setGeneric("g_weightvar_ind", function(object) { standardGeneric("g_weightvar_ind") })
 setGeneric("g_sampweight_ind", function(object) { standardGeneric("g_sampweight_ind") })
@@ -82,6 +83,7 @@ setGeneric("g_is_microdata", function(object) { standardGeneric("g_is_microdata"
 setGeneric("g_numvar_names", function(object) { standardGeneric("g_numvar_names") })
 setGeneric("g_freqvar_name", function(object) { standardGeneric("g_freqvar_name") })
 setGeneric("g_var_name", function(object) { standardGeneric("g_var_name") })
-# set-methods
 
+# set-methods
+setGeneric("s_raw_data<-", function(object, value) { standardGeneric("s_raw_data<-") })
 
