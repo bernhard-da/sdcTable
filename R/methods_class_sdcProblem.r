@@ -234,7 +234,27 @@ setMethod("g_innerAndMarginalCellInfo", signature="sdcProblem", definition=funct
   indexInnerCells <- match(innerCells, strIDs)
   return(list(innerCells=innerCells, totCells=totCells, indexInnerCells=indexInnerCells, indexTotCells=indexTotCells))
 })
-
+setMethod("g_df", signature="sdcProblem", definition=function(object) {
+  pI <- g_problemInstance(object)
+  df <- data.frame(
+    strID=g_strID(pI),
+    freq=g_freq(pI),
+    sdcStatus=g_sdcStatus(pI),
+    stringsAsFactors=FALSE
+  )
+  dI <- g_dimInfo(object)
+  strInfo <- g_str_info(dI)
+  dimObj <- g_dim_info(dI)
+  vNames <- g_varname(dI)
+  for ( i in 1:length(strInfo) ) {
+    df[,vNames[i]] <- substr(df$strID, strInfo[[i]][1], strInfo[[i]][2])
+    v <- paste(vNames[i],"-o",sep="")
+    df[,v] <- c_match_orig_codes(object=dimObj[[i]], input=df[,vNames[i]])
+  }
+  df <- as.data.table(df)
+  setkeyv(df, "strID")
+  return(df)
+})
 setReplaceMethod("s_problemInstance", signature=c("sdcProblem", "problemInstance"), definition=function(object, value) {
   object@problemInstance <- value
   validObject(object)
