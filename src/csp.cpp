@@ -400,14 +400,18 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     }
     // adding a constraint to the master problem, if necessary
     check_max = (double)info->vals[indexvar-1]+info->UPL[indexvar-1];
-    //Rprintf("up: cell=%d | zmax=%g | check_max=%g, val=%d | UPL=%d\n", indexvar, zmax, check_max, info->vals[indexvar-1], info->UPL[indexvar-1]);
     if ( zmax < check_max && fabs(zmax-check_max) > info->tol ) {
+      //if ( bridgeless == 0 ) {
+      //  Rprintf("up: cell=%d | zmax=%g | check_max=%g, val=%d | UPL=%d\n", indexvar, zmax, check_max, info->vals[indexvar-1], info->UPL[indexvar-1]);
+      //}
       constraint_val = (double)info->UPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
         alphas_max[j] = glp_get_col_prim(aprob, j);
         betas_max[j] = glp_get_col_prim(aprob, j+nr_real_variables);
         double v = glp_get_col_prim(aprob, j)*info->UB[j-1] + glp_get_col_prim(aprob,j+nr_real_variables)*info->LB[j-1];
-        if ( fabs(v) < info->tol ) { v = 0.0; }
+        if ( fabs(v) < info->tol ) {
+          v = 0.0;
+        }
         constraint_values_max[j] = fmin(v, constraint_val);
       }
       if ( bridgeless == 0 ) {
@@ -429,15 +433,18 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     }
     // adding a constraint to the master problem, if necessary
     check_min = (double)info->vals[indexvar-1]-info->LPL[indexvar-1];
-    //Rprintf("down: cell=%d | zmin=%g | check_min=%g, val=%d | LPL=%d\n", indexvar, zmin, check_min, info->vals[indexvar-1], info->LPL[indexvar-1]);
-
     if ( zmin > check_min && fabs(check_min-zmin) > info->tol ) {
+      //if ( bridgeless == 0 ) {
+      //  Rprintf("down: cell=%d | zmin=%g | check_min=%g, val=%d | LPL=%d\n", indexvar, zmin, check_min, info->vals[indexvar-1], info->LPL[indexvar-1]);
+      //}
       constraint_val = (double)info->LPL[indexvar-1];
       for ( int j=1; j<=nr_real_variables; ++j) {
         alphas_min[j] = glp_get_col_prim(aprob, j);
         betas_min[j] = glp_get_col_prim(aprob, j+nr_real_variables);
         double v = glp_get_col_prim(aprob, j)*info->UB[j-1] + glp_get_col_prim(aprob,j+nr_real_variables)*info->LB[j-1];
-        if ( fabs(v) < info->tol ) { v = 0.0; }
+        if ( fabs(v) < info->tol ) {
+          v = 0.0;
+        }
         constraint_values_min[j] = fmin(v, constraint_val);
       }
       if ( bridgeless == 0 ) {
@@ -462,7 +469,9 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
       alphas_tot[j] = alphas_min[j] + alphas_max[j];
       betas_tot[j] = betas_min[j] + betas_max[j];
       double v = alphas_tot[j]*info->UB[j-1] + betas_tot[j]*info->LB[j-1];
-      if ( fabs(v) < info->tol ) { v = 0.0; }
+      if ( fabs(v) < info->tol ) {
+        v = 0.0;
+      }
       if ( bridgeless == 0 ) {
         constraint_values_tot[j] = fmin(v, constraint_val);
       }
@@ -470,7 +479,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
         if ( j == indexvar ) {
           constraint_values_tot[j] = -1;
         } else {
-          if ( v > 0 ) {
+          if ( v > 1 ) {
             constraint_values_tot[j] = 1;
           } else {
             constraint_values_tot[j] = 0;
@@ -478,9 +487,11 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
         }
       }
     }
+    if ( bridgeless == 0 ) {
+      nr_additional_constraints = nr_additional_constraints + 1;
+    }
     update_master_problem(mprob, constraint_indices, constraint_values_tot, constraint_val);
     update_constraint_pool(constraint_pool, constraint_indices, constraint_values_tot, constraint_val, 2, info->nr_vars);
-    nr_additional_constraints = nr_additional_constraints + 1;
   }
 
   /* reset rowbound for cell that should be maxed/minimized */
@@ -502,6 +513,7 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
     Rprintf("bridgevar=%d (%d): [[ %g | %g ]]\n", indexvar, info->vals[indexvar-1], zmin, zmax);
   }
   */
+  //Rprintf("nr_additional_constraints: %d\n", nr_additional_constraints);
   return(nr_additional_constraints);
 }
 
@@ -1173,7 +1185,7 @@ bool is_valid_solution(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>&
   for ( int k=0; k < info->len_prim; ++k ) {
     nr_additional_constraints += solve_att_prob(aprob, mprob, constraint_pool, info->ind_prim[k], info, xi, 0, false);
   }
-  //Rprintf("nr_con (prim_supps): %d\n", nr_additional_constraints);
+  //Rprintf("nr_con (prim_supps): %d", nr_additional_constraints);
 
   for ( int k=1; k <= info->nr_vars; ++k ) {
     double tmp = xi[k-1];
