@@ -842,11 +842,11 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     dI1 <- g_dimInfo(input1)
     dI2 <- g_dimInfo(input2)
 
-    strInfo1 <- get.dimInfo(dI1, type='strInfo')
-    strInfo2 <- get.dimInfo(dI2, type='strInfo')
+    strInfo1 <- g_str_info(dI1)
+    strInfo2 <- g_str_info(dI2)
 
-    vNames1 <- get.dimInfo(dI1, type='varName')
-    vNames2 <- get.dimInfo(dI2, type='varName')
+    vNames1 <- g_varname(dI1)
+    vNames2 <- g_varname(dI2)
 
     varsUsed1 <- as.character(sapply(commonCells, function(x) x[[1]]))
     varsUsed2 <- as.character(sapply(commonCells, function(x) x[[2]]))
@@ -867,11 +867,11 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
     codesOrig1 <-  list()
     for ( i in 1:length(codesDefault1) ) {
-      codesOrig1[[i]] <- c_match_orig_codes(object=get.dimInfo(dI1, type='dimInfo')[[i]], input=codesDefault1[[i]] )
+      codesOrig1[[i]] <- c_match_orig_codes(object=g_dim_info(dI1)[[i]], input=codesDefault1[[i]] )
     }
     codesOrig2 <-  list()
     for ( i in 1:length(codesDefault2) ) {
-      codesOrig2[[i]] <- c_match_orig_codes(object=get.dimInfo(dI2, type='dimInfo')[[i]], input=codesDefault2[[i]] )
+      codesOrig2[[i]] <- c_match_orig_codes(object=g_dim_info(dI2)[[i]], input=codesDefault2[[i]] )
     }
 
     ### find matching indices
@@ -886,14 +886,14 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     # eliminate 'subtotals' from variables that are not used!
     if ( length(varsNotUsed1) > 0 ) {
       for ( i in seq_along(varsNotUsed1) )  {
-        subTotals <- g_original_codes(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]])[g_minimal_codes(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]])==FALSE]
+        subTotals <- g_original_codes(g_dim_info(dI1)[[varsNotUsed1[i]]])[g_minimal_codes(g_dim_info(dI1)[[varsNotUsed1[i]]])==FALSE]
         commonInd1 <- setdiff(commonInd1, which(!codesOrig1[[varsNotUsed1[i]]] %in% subTotals))
       }
     }
 
     if ( length(varsNotUsed2) > 0 ) {
       for ( i in seq_along(varsNotUsed2) )  {
-        subTotals <- g_original_codes(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]])[g_minimal_codes(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]])==FALSE]
+        subTotals <- g_original_codes(g_dim_info(dI2)[[varsNotUsed2[i]]])[g_minimal_codes(g_dim_info(dI2)[[varsNotUsed2[i]]])==FALSE]
         commonInd2 <- setdiff(commonInd2, which(!codesOrig2[[varsNotUsed2[i]]] %in% subTotals))
       }
     }

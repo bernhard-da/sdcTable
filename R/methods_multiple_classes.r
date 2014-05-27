@@ -27,7 +27,7 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
 setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   pI <- input$objectA
   dimInfoObj <- input$objectB
-  dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
+  dimInfo <- g_dim_info(dimInfoObj)
   strIDs <- g_strID(pI)
 
   ## create classes and groups
@@ -99,7 +99,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
   x <- input$objectA
   y <- input$objectB
 
-  levelObj <- get.dimInfo(y, type='dimInfo')
+  levelObj <- g_dim_info(y)
   strID <- g_strID(x)
   nrVars <- length(levelObj)
   nrCells <- g_nrVars(x)
@@ -108,8 +108,12 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
   constraintM <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrCells)))
   for ( i in 1:nrVars ) {
     lO <- levelObj[[i]]
-    keepList <- lapply(get.dimInfo(y, type='strInfo')[-i], function(k) { seq(k[1], k[2]) } )
-    keepList2 <- lapply(get.dimInfo(y, type='strInfo')[i], function(k) { seq(k[1], k[2]) } )
+    keepList <- lapply(g_str_info(y)[-i], function(k) {
+      seq(k[1], k[2])
+    })
+    keepList2 <- lapply(g_str_info(y)[i], function(k) {
+      seq(k[1], k[2])
+    })
     f1 <- f2 <- mySplitIndicesList(strID, keepList2)
 
     if ( nrVars > 1 ) {
@@ -203,7 +207,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   y <- input$objectB
   time.start <- proc.time()
   datO <- g_raw_data(x)
-  dimObj <- get.dimInfo(y, type='dimInfo')
+  dimObj <- g_dim_info(y)
 
   # we have to aggregate if we are dealing with microdata
   if ( g_is_microdata(x) ) {

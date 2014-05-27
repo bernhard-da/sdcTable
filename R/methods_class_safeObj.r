@@ -162,8 +162,8 @@ setMethod(f="g_getCellID", signature="safeObj", definition=function(object, inpu
   finalData <- g_finalData(object)
   dimInfo <- g_dimInfo(object)
 
-  vNames <- get.dimInfo(dimInfo, type="varName")
-  vIndex <- get.dimInfo(dimInfo, type="posIndex")
+  vNames <- g_varname(dimInfo)
+  vIndex <- g_pos_index(dimInfo)
 
   indexVar <- match(para.names, vNames)
 

@@ -1,36 +1,36 @@
 #' @aliases get.sdcProblem,sdcProblem,character-method
 #' @rdname get.sdcProblem-method
-setMethod(f='get.sdcProblem', signature=c('sdcProblem','character'),
+setMethod(f="get.sdcProblem", signature=c("sdcProblem", "character"),
   definition=function(object, type) {
-    if ( !type %in% c('dataObj', 'problemInstance', 'partition', 'elapsedTime', 'dimInfo', 'indicesDealtWith',
-        'startI', 'startJ', 'innerAndMarginalCellInfo') ) {
+    if ( !type %in% c("dataObj", "problemInstance", "partition", "elapsedTime", "dimInfo", "indicesDealtWith",
+        "startI", "startJ", "innerAndMarginalCellInfo") ) {
       stop("get.sdcProblem:: argument 'type' is not valid!\n")
     }
-    if ( type == 'dataObj' ) {
+    if ( type == "dataObj" ) {
       return(g_dataObj(object))
     }
-    if ( type == 'problemInstance' ) {
+    if ( type == "problemInstance" ) {
       return(g_problemInstance(object))
     }
-    if ( type == 'partition' ) {
+    if ( type == "partition" ) {
       return(g_partition(object))
     }
-    if ( type == 'elapsedTime' ) {
+    if ( type == "elapsedTime" ) {
       return(g_elapsedTime(object))
     }
-    if ( type == 'dimInfo' ) {
+    if ( type == "dimInfo" ) {
       return(g_dimInfo(object))
     }
-    if ( type == 'indicesDealtWith' ) {
+    if ( type == "indicesDealtWith" ) {
       return(g_indicesDealtWith(object))
     }
-    if ( type == 'startI' ) {
+    if ( type == "startI" ) {
       return(g_startI(object))
     }
-    if ( type == 'startJ' ) {
+    if ( type == "startJ" ) {
       return(g_startJ(object))
     }
-    if ( type == 'innerAndMarginalCellInfo' ) {
+    if ( type == "innerAndMarginalCellInfo" ) {
       return(g_innerAndMarginalCellInfo(object))
     }
   }
@@ -38,28 +38,28 @@ setMethod(f='get.sdcProblem', signature=c('sdcProblem','character'),
 
 #' @aliases set.sdcProblem,sdcProblem,character,list-method
 #' @rdname set.sdcProblem-method
-setMethod(f='set.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
+setMethod(f="set.sdcProblem", signature=c("sdcProblem", "character", "list"),
   definition=function(object, type, input) {
-    if ( !type %in% c('problemInstance', 'partition', 'rule.freq', 'rule.nk',
-        'rule.p', 'rule.pk', 'startI', 'startJ', 'indicesDealtWith', 'elapsedTime') ) {
+    if ( !type %in% c("problemInstance", "partition", "rule.freq", "rule.nk",
+        "rule.p", "rule.pk", "startI", "startJ", "indicesDealtWith", "elapsedTime") ) {
       stop("set.sdcProblem:: check argument 'type'!\n")
     }
-    if ( type == 'problemInstance' ) {
+    if ( type == "problemInstance" ) {
       s_problemInstance(object) <- input[[1]]
     }
-    if ( type == 'partition' ) {
+    if ( type == "partition" ) {
       s_partition(object) <- input[[1]]
     }
-    if ( type == 'startI' ) {
+    if ( type == "startI" ) {
       s_startI(object) <- input[[1]]
     }
-    if ( type == 'startJ' ) {
+    if ( type == "startJ" ) {
       s_startJ(object) <- input[[1]]
     }
-    if ( type == 'indicesDealtWith' ) {
+    if ( type == "indicesDealtWith" ) {
       s_indicesDealtWith(object) <- input[[1]]
     }
-    if ( type == 'elapsedTime' ) {
+    if ( type == "elapsedTime" ) {
       s_elapsedTime(object) <- input[[1]]
     }
     validObject(object)
@@ -69,17 +69,16 @@ setMethod(f='set.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 
 #' @aliases calc.sdcProblem,sdcProblem,character,list-method
 #' @rdname calc.sdcProblem-method
-setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
+setMethod(f="calc.sdcProblem", signature=c("sdcProblem", "character", "list"),
   definition=function(object, type, input) {
-    if ( !type %in% c('rule.freq', 'rule.nk', 'rule.p', 'rule.pq', 'heuristicSolution',
-      'cutAndBranch', 'anonWorker', 'ghmiter', 'preprocess', 'cellID',
-      'finalize', 'ghmiter.diagObj', 'ghmiter.calcInformation',
-      'ghmiter.suppressQuader', 'ghmiter.selectQuader',
-      'ghmiter.suppressAdditionalQuader', 'contributingIndices',
-      'reduceProblem', 'genStructuralCuts') ) {
+    if ( !type %in% c("rule.freq", "rule.nk", "rule.p", "rule.pq", "heuristicSolution",
+      "cutAndBranch", "anonWorker", "ghmiter", "preprocess", "cellID",
+      "finalize", "ghmiter.diagObj", "ghmiter.calcInformation",
+      "ghmiter.suppressQuader", "ghmiter.selectQuader",
+      "ghmiter.suppressAdditionalQuader", "contributingIndices",
+      "reduceProblem", "genStructuralCuts") ) {
       stop("calc.sdcProblem:: check argument 'type'!\n")
     }
-
     # frequency-rule
     if ( type == "rule.freq" ) {
       return(c_rule_freq(object, input))
@@ -96,49 +95,49 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
     if ( type == "rule.pq" ) {
       return(c_rule_pq(object, input))
     }
-    if ( type == 'heuristicSolution' ) {
+    if ( type == "heuristicSolution" ) {
       return(c_heuristic_solution(object, input))
     }
-    if ( type == 'cutAndBranch' ) {
+    if ( type == "cutAndBranch" ) {
       return(c_cut_and_branch(object, input))
     }
-    if ( type == 'anonWorker' ) {
+    if ( type == "anonWorker" ) {
       return(c_anon_worker(object, input))
     }
-    if ( type == 'ghmiter' ) {
+    if ( type == "ghmiter" ) {
       return(c_ghmiter(object, input))
     }
-    if ( type == 'preprocess') {
+    if ( type == "preprocess" ) {
       return(c_preprocess(object, input))
     }
-    if ( type == 'cellID' ) {
+    if ( type == "cellID" ) {
       return(c_cellID(object, input))
     }
-    if ( type == 'finalize' ) {
+    if ( type == "finalize" ) {
       return(c_finalize(object, input))
     }
-    if ( type == 'ghmiter.diagObj' ) {
+    if ( type == "ghmiter.diagObj" ) {
       return(c_ghmiter_diag_obj(object, input))
     }
-    if ( type == 'ghmiter.calcInformation' ) {
+    if ( type == "ghmiter.calcInformation" ) {
       return(c_ghmiter_calc_info(object, input))
     }
-    if ( type == 'ghmiter.suppressQuader' ) {
+    if ( type == "ghmiter.suppressQuader" ) {
       return(c_ghmiter_suppress_quader(object, input))
     }
-    if ( type == 'ghmiter.selectQuader' ) {
+    if ( type == "ghmiter.selectQuader" ) {
       return(c_ghmiter_select_quader(object, input))
     }
-    if ( type == 'ghmiter.suppressAdditionalQuader') {
+    if ( type == "ghmiter.suppressAdditionalQuader" ) {
       return(c_ghmiter_supp_additional(object, input))
     }
-    if ( type == 'contributingIndices' ) {
+    if ( type == "contributingIndices" ) {
       return(c_contributing_indices(object, input))
     }
-    if ( type == 'reduceProblem' ) {
+    if ( type == "reduceProblem" ) {
       return(c_reduce_problem(object, input))
     }
-    if ( type == 'genStructuralCuts' ) {
+    if ( type == "genStructuralCuts" ) {
       return(c_gen_structcuts(object, input))
     }
   }
@@ -152,7 +151,7 @@ setMethod(f='calc.sdcProblem', signature=c('sdcProblem', 'character', 'list'),
 #' @rdname summary-method
 #' @export
 #' @docType methods
-setMethod(f='summary', signature='sdcProblem',
+setMethod(f="summary", signature="sdcProblem",
   definition=function(object, ...) {
     pI <- g_problemInstance(object)
     dO <- g_dataObj(object)
@@ -168,7 +167,7 @@ setMethod(f='summary', signature='sdcProblem',
     }
 
     nrcells <- g_nrVars(pI)
-    dim_names <- get.dimInfo(dI, type="varName")
+    dim_names <- g_varname(dI)
 
     cat("\nThe complete table to protect consists of",nrcells,"cells and has",length(dim_names),"spanning variables.")
 
@@ -219,7 +218,7 @@ setMethod("g_indicesDealtWith", signature="sdcProblem", definition=function(obje
 setMethod("g_innerAndMarginalCellInfo", signature="sdcProblem", definition=function(object) {
   pI <- g_problemInstance(object)
   strIDs <- g_strID(pI)
-  strInfo <- get.dimInfo(g_dimInfo(object), type='strInfo')
+  strInfo <- g_str_info(g_dimInfo(object))
 
   out <- lapply(1:length(strInfo), function(x) {
     sort(unique(mySplit(strIDs, strInfo[[x]][1]:strInfo[[x]][2])))[-1]
@@ -1455,7 +1454,7 @@ setMethod("c_ghmiter", signature=c("sdcProblem", "list"), definition=function(ob
 
   pI <- g_problemInstance(object)
   strIDs <- g_strID(pI)
-  strInfo <- get.dimInfo(g_dimInfo(object), type='strInfo')
+  strInfo <- g_str_info(g_dimInfo(object))
 
   sdcStatus <- g_sdcStatus(pI)
   cellsToProtect <- g_primSupps(pI)
@@ -1629,12 +1628,12 @@ setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(obj
   pI <- g_problemInstance(object)
   dimInfoObj <- g_dimInfo(object)
 
-  vNames <- get.dimInfo(dimInfoObj, type='varName')
-  vIndex <- get.dimInfo(dimInfoObj, type='posIndex')
+  vNames <- g_varname(dimInfoObj)
+  vIndex <- g_pos_index(dimInfoObj)
 
   indexVar <- match(para.names, vNames)
-  strInfo <- get.dimInfo(dimInfoObj, type='strInfo')
-  dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
+  strInfo <- g_str_info(dimInfoObj)
+  dimInfo <- g_dim_info(dimInfoObj)
 
   # calculate original codes
   codesDefault <- lapply(1:length(strInfo), function(x) {
@@ -1673,8 +1672,8 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
 
   pI <- g_problemInstance(object)
   dI <- g_dimInfo(object)
-  levelObj <- get.dimInfo(dI, type='dimInfo')
-  strInfo <- get.dimInfo(dI, type='strInfo')
+  levelObj <- g_dim_info(dI)
+  strInfo <- g_str_info(dI)
 
   sdcStatus <- g_sdcStatus(pI)
 
@@ -1691,7 +1690,7 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
     codesOriginal[[i]] <- c_match_orig_codes(object=levelObj[[i]], input=codesDefault)
   }
   out <- data.frame(codesOriginal);
-  colnames(out) <- get.dimInfo(dI, type='varName')
+  colnames(out) <- g_varname(dI)
   out$Freq <- g_freq(pI)
 
   numVars <- g_numVars(pI)
@@ -2069,7 +2068,7 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
   strID <- input[[1]]
   dataObj <- g_dataObj(object)
   dimInfoObj <- g_dimInfo(object)
-  dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
+  dimInfo <- g_dim_info(dimInfoObj)
   pI <- g_problemInstance(object)
 
   if ( !strID %in% g_strID(pI) ) {
@@ -2078,12 +2077,12 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
   dims <- lapply(dimInfo, function(x) {
     g_dims(x)
   })
-  indexVec <- which(get.dimInfo(dimInfoObj, type='strID')==strID)
+  indexVec <- which(g_str_id(dimInfoObj)==strID)
   # some (sub)totals need to be considered
   if( length(indexVec) == 0 ) {
     levInfo <- list()
     for ( z in 1:length(dimInfo) ) {
-      subLevel <- substr(strID, get.dimInfo(dimInfoObj, type='strInfo')[[z]][1], get.dimInfo(dimInfoObj, type='strInfo')[[z]][2])
+      subLevel <- substr(strID, g_str_info(dimInfoObj)[[z]][1], g_str_info(dimInfoObj)[[z]][2])
       if ( sum(as.numeric(subLevel)) == 0 ) {
         levInfo[[z]] <- sort(unique(unlist(dims[[z]])))
       } else {
@@ -2096,7 +2095,7 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
       }
     }
     cellIndex <- pasteStrVec(unlist(expand.grid(levInfo)), length(levInfo))
-    indexVec <- which(get.dimInfo(dimInfoObj, type='strID') %in% cellIndex)
+    indexVec <- which(g_str_id(dimInfoObj) %in% cellIndex)
   }
   return(indexVec)
 })
@@ -2107,7 +2106,7 @@ setMethod("c_reduce_problem", signature=c("sdcProblem", "list"), definition=func
 
   pI <- g_problemInstance(x)
   dimInfo <- g_dimInfo(x)
-  strInfo <- strInfoOrig <- get.dimInfo(dimInfo, type='strInfo')
+  strInfo <- strInfoOrig <- g_str_info(dimInfo)
 
   if ( length(y) < 1 ) {
     stop("c_reduce_problem:: length of argument 'y' < 1!\n")
@@ -2177,7 +2176,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
   dimInfoObj <- g_dimInfo(object)
   partition <- c_make_partitions(input=list(objectA=pI, objectB=dimInfoObj))
 
-  dimInfo <- get.dimInfo(dimInfoObj, type='dimInfo')
+  dimInfo <- g_dim_info(dimInfoObj)
   nrLevels <- length(dimInfo)
   nrVars <- g_nrVars(pI)
   primSupps <- g_primSupps(pI)
@@ -2185,7 +2184,7 @@ setMethod("c_gen_structcuts", signature=c("sdcProblem", "list"), definition=func
   indices <- partition$indices
   weights <- g_weight(pI)
   requiredCuts <- init.cutList(type='empty', input=list(nrCols=nrVars))
-  strInfo <- get.dimInfo(dimInfoObj, type='strInfo')
+  strInfo <- g_str_info(dimInfoObj)
   x <- rep(0, nrVars)
 
   for ( z in seq_along(primSupps) ) {

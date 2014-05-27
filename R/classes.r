@@ -107,16 +107,16 @@ setClass(
     posIndex=NULL
   ),
   validity=function(object) {
-    if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='posIndex')) ) {
+    if ( length(g_varname(object)) != length(g_pos_index(object)) ) {
       stop("dimInfo:: parameter 'vNames' and 'posIndex' differ in length!\n")
     }
-    if ( length(get.dimInfo(object, type='varName')) != length(get.dimInfo(object, type='dimInfo')) ) {
+    if ( length(g_varname(object)) != length(g_dim_info(object)) ) {
       stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
     }
-    if ( length(get.dimInfo(object, type='strInfo')) != length(get.dimInfo(object, type='varName')) ) {
+    if ( length(g_str_info(object)) != length(g_varname(object)) ) {
       stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
     }
-    if ( any(sapply(get.dimInfo(object, type='dimInfo'), "class") != "dimVar" ) ) {
+    if ( any(sapply(g_dim_info(object), "class") != "dimVar" ) ) {
       stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
     }
     return(TRUE)

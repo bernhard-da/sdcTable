@@ -573,8 +573,8 @@ performQuickSuppression <- function(object, input) {
 
   indices <- g_partition(object)$indices
   dimInfo <- g_dimInfo(object)
-  strInfo <- get.dimInfo(dimInfo, type="strInfo")
-  vNames <- get.dimInfo(dimInfo, type="varName")
+  strInfo <- g_str_info(dimInfo)
+  vNames <- g_varname(dimInfo)
 
   for ( i in seq_along(vNames) ) {
     dat[,vNames[i]] <- str_sub(dat$strID, strInfo[[i]][1], strInfo[[i]][2])
