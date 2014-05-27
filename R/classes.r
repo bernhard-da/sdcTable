@@ -172,10 +172,10 @@ setClass(
     dupsUp=NULL
   ),
   validity=function(object) {
-    if ( length(get.dimVar(object, type='codesOriginal')) != length(get.dimVar(object, type='codesDefault')) ) {
+    if ( length(g_original_codes(object)) != length(g_default_codes(object)) ) {
       stop("dimVar:: length of 'codesOriginal' and 'codesDefault' differ!\n")
     }
-    if ( length(get.dimVar(object, type='varName')) != 1 ) {
+    if ( length(g_varname(object)) != 1 ) {
       stop("dimVar:: length of 'vName' must equal 1!\n")
     }
     return(TRUE)

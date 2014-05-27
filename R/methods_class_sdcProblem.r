@@ -1642,7 +1642,7 @@ setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(obj
   })
   codesOrig <- list()
   for ( i in 1:length(codesDefault) ) {
-    codesOrig[[i]] <- calc.dimVar(object=dimInfo[[i]], type="matchCodeOrig", input=codesDefault[[i]])
+    codesOrig[[i]] <- c_match_orig_codes(object=dimInfo[[i]], input=codesDefault[[i]])
   }
 
   if ( length(input) != 3 ) {
@@ -1688,7 +1688,7 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
   strIDs <- g_strID(pI)
   for ( i in seq_along(levelObj) ) {
     codesDefault <- mySplit(strIDs, strInfo[[i]][1]:strInfo[[i]][2])
-    codesOriginal[[i]] <- calc.dimVar(object=levelObj[[i]], type='matchCodeOrig', input=codesDefault)
+    codesOriginal[[i]] <- c_match_orig_codes(object=levelObj[[i]], input=codesDefault)
   }
   out <- data.frame(codesOriginal);
   colnames(out) <- get.dimInfo(dI, type='varName')
@@ -1704,11 +1704,13 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
   out$sdcStatus <- g_sdcStatus(pI)
 
   # add duplicates
-  hasDups <- sapply(1:length(levelObj), function(x) { get.dimVar(levelObj[[x]], type='hasDuplicates') })
+  hasDups <- sapply(1:length(levelObj), function(x) {
+    g_has_dups(levelObj[[x]])
+  })
   if ( any(hasDups == TRUE) ) {
     for ( i in which(hasDups==TRUE) ) {
-      dups <- get.dimVar(levelObj[[i]], type='dups')
-      dupsUp <- get.dimVar(levelObj[[i]], type='dupsUp')
+      dups <- g_dups(levelObj[[i]])
+      dupsUp <- g_dups_up(levelObj[[i]])
 
       runInd <- TRUE
       while ( runInd ) {
@@ -2073,7 +2075,9 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
   if ( !strID %in% g_strID(pI) ) {
     stop("c_contributing_indices:: strID not found in the current problem!\n")
   }
-  dims <- lapply(dimInfo, function(x) { get.dimVar(x, type='dims') } )
+  dims <- lapply(dimInfo, function(x) {
+    g_dims(x)
+  })
   indexVec <- which(get.dimInfo(dimInfoObj, type='strID')==strID)
   # some (sub)totals need to be considered
   if( length(indexVec) == 0 ) {
@@ -2112,17 +2116,27 @@ setMethod("c_reduce_problem", signature=c("sdcProblem", "list"), definition=func
     stop("c_reduce_problem:: elements of indices y does not match with problem size!\n")
   }
 
-  newDims <- lapply(1:length(strInfo), function(x) { substr(g_strID(pI)[y], strInfo[[x]][1], strInfo[[x]][2]) } )
-  newDims2 <- lapply(1:length(newDims), function(x) { sort(unique(newDims[[x]])) } )
+  newDims <- lapply(1:length(strInfo), function(x) {
+    substr(g_strID(pI)[y], strInfo[[x]][1], strInfo[[x]][2])
+  })
+  newDims2 <- lapply(1:length(newDims), function(x) {
+    sort(unique(newDims[[x]]))
+  })
   newDimsOrigCodes <- lapply(1:length(newDims), function(k) {
-    calc.dimVar(object=dimInfo@dimInfo[[k]], type='matchCodeOrig', input=newDims2[[k]])
+    c_match_orig_codes(object=dimInfo@dimInfo[[k]], input=newDims2[[k]])
   })
 
   lenNewDims <- sapply(newDims2, length)-1
-  codesNew <- lapply(1:length(newDims), function(x) { c("@", rep("@@", lenNewDims[x])) } )
+  codesNew <- lapply(1:length(newDims), function(x) {
+    c("@", rep("@@", lenNewDims[x]))
+  })
 
-  dimInfoOld <- lapply(1:length(newDims2),  function(x) { init.dimVar(input=list(input=data.frame(codesNew[[x]], newDims2[[x]]), vName=paste('V',x,sep="")) ) } )
-  dimInfoNew <- lapply(1:length(newDims2),  function(x) { init.dimVar(input=list(input=data.frame(codesNew[[x]], newDimsOrigCodes[[x]]), vName=paste('V',x,sep="")) ) } )
+  dimInfoOld <- lapply(1:length(newDims2), function(x) {
+    init.dimVar(input=list(input=data.frame(codesNew[[x]], newDims2[[x]]), vName=paste('V',x,sep="")) )
+  })
+  dimInfoNew <- lapply(1:length(newDims2), function(x) {
+    init.dimVar(input=list(input=data.frame(codesNew[[x]], newDimsOrigCodes[[x]]), vName=paste('V',x,sep="")) )
+  })
 
   new.codes <- lapply(1:length(newDims), function(x) {
     dimInfoOld[[x]]@codesDefault[match(newDims[[x]], dimInfoOld[[x]]@codesOriginal)]

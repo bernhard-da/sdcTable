@@ -31,7 +31,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   strIDs <- g_strID(pI)
 
   ## create classes and groups
-  tmpDat <- expand.grid(lapply(1:length(dimInfo), function(x) { 1:get.dimVar(dimInfo[[x]], type='nrLevels') } ))
+  tmpDat <- expand.grid(lapply(1:length(dimInfo), function(x) { 1:g_nr_levels(dimInfo[[x]]) } ))
   groups <- apply(tmpDat, 1, function(x) { paste(x, collapse="-")})
   classes <- apply(tmpDat, 1, sum)
   sortOrder <- order(classes)
@@ -51,12 +51,12 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
     res <- list()
     for ( z in 1:length(dimInfo) ) {
       res[[z]] <- list()
-      index <- which(get.dimVar(dimInfo[[z]], type='levels') %in% c(levs[z], levs[z]-1))
-      codesDefault <- get.dimVar(dimInfo[[z]], type='codesDefault')[index]
+      index <- which(g_levels(dimInfo[[z]]) %in% c(levs[z], levs[z]-1))
+      codesDefault <- g_default_codes(dimInfo[[z]])[index]
       if ( levs[z] == 1 ) {
         res[[z]] <- codesDefault
       } else {
-        levOrig <- get.dimVar(dimInfo[[z]], type='levels')[index]
+        levOrig <- g_levels(dimInfo[[z]])[index]
         diffs <- c(0,diff(levOrig))
         checkInd <- which(diffs == 1)-1
         out <- data.frame(index=index, levOrig=levOrig, codesDefault=codesDefault, ind=NA)
@@ -116,12 +116,12 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
       f1 <- mySplitIndicesList(strID, keepList)
     }
 
-    dimlO <- get.dimVar(lO, type='dims')
+    dimlO <- g_dims(lO)
     if ( length(unique(f2)) != 1 ) {
       dimInd <- sapply(1:length(dimlO), function(x) { identical( sort(unique(f2)), dimlO[[x]]) } )
       if ( sum(dimInd) == 0 ) {
-        for ( j in 1:length(get.dimVar(lO, type='dims')) ) {
-          splitInd <- which(f2 %in% get.dimVar(lO, type='dims')[[j]])
+        for ( j in 1:length(g_dims(lO)) ) {
+          splitInd <- which(f2 %in% g_dims(lO)[[j]])
           spl <- split(splitInd, f1[splitInd])
           for ( z in 1:length(spl) ) {
             ind <- rep(1,length(spl[[z]]))
@@ -133,7 +133,7 @@ setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
           }
         }
       } else {
-        splitInd <- which(f2 %in% get.dimVar(lO, type='dims')[[which(dimInd==TRUE)]])
+        splitInd <- which(f2 %in% g_dims(lO)[[which(dimInd==TRUE)]])
         ## only 1 dimension
         if ( nrVars > 1 ) {
           spl <- split(splitInd, f1[splitInd])
@@ -217,17 +217,17 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   codes <- list(); length(codes) <- length(ind.dimvars)
   for ( i in 1:length(codes) ) {
     codes[[i]] <- rawData[[ind.dimvars[i]]]
-    cDefault <- get.dimVar(dimObj[[i]], type='codesDefault')
-    cOriginal <- get.dimVar(dimObj[[i]], type='codesOriginal')
-    cOriginalDups <- get.dimVar(dimObj[[i]], type='dups')
-    cOriginalDupsUp <- get.dimVar(dimObj[[i]], type='dupsUp')
+    cDefault <- g_default_codes(dimObj[[i]])
+    cOriginal <- g_original_codes(dimObj[[i]])
+    cOriginalDups <- g_dups(dimObj[[i]])
+    cOriginalDupsUp <- g_dups_up(dimObj[[i]])
     if ( all(codes[[i]] %in% c(cOriginal, cOriginalDups)) ) {
       mInd1 <- match(codes[[i]], cOriginalDups)
       mInd2 <- which(!is.na(mInd1))
       if ( length(mInd2) > 0 ) {
         codes[[i]][mInd2] <- cOriginalDupsUp[mInd1[mInd2]]
       }
-      codes[[i]] <- calc.dimVar(object=dimObj[[i]], type='matchCodeDefault', input=rawData[[ind.dimvars[i]]])
+      codes[[i]] <- c_match_default_codes(object=dimObj[[i]], input=rawData[[ind.dimvars[i]]])
     } else if ( all(codes[[i]] %in% cDefault) ) {
       # cat("no recoding necessary!\n")
     } else {
@@ -239,14 +239,14 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## if any combinations are missing (missing.codes), we have to set them to 0 later
   strID <- as.character(pasteStrVec(unlist(codes), length(codes)))
   exDims <- pasteStrVec(unlist(codes), length(codes))
-  possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { get.dimVar(x, type='minimalCodesDefault') }), vector=TRUE)), length(dimObj)))
+  possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { g_minimal_default_codes(x) }), vector=TRUE)), length(dimObj)))
   missing.codes <- setdiff(possDims, exDims)
 
   ## fill the table
   nrIndexvars <- length(ind.dimvars)
-  fullDims <- lapply(dimObj, get.dimVar, type='dims')
+  fullDims <- lapply(dimObj, g_dims)
 
-  allCodes <- expand(lapply(dimObj, get.dimVar, type='codesDefault'), vector=FALSE)
+  allCodes <- expand(lapply(dimObj, g_default_codes), vector=FALSE)
   fullTabObj <- data.table(ID=1:length(allCodes[[1]]))
   for ( i in 1:length(allCodes)) {
     fullTabObj[,colnames(rawData)[ind.dimvars][i]:=allCodes[[i]]]
@@ -256,7 +256,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   ## revert rawData codes to default codes
   for ( j in seq_along(ind.dimvars) ) {
-    v <- calc.dimVar(object=dimObj[[j]], type="matchCodeDefault", input=rawData[,get(names(dimObj)[j])])
+    v <- c_match_default_codes(object=dimObj[[j]], input=rawData[,get(names(dimObj)[j])])
     rawData[,names(dimObj)[j]:=v]
   }
   setkeyv(rawData, colnames(rawData)[ind.dimvars])

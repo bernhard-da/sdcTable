@@ -102,7 +102,9 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     }
 
     varNames <- g_var_name(inputData)
-    varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
+    varNamesInDims <- sapply(1:length(dimList), function(x) {
+      g_varname(dimList[[x]])
+    })
 
     if ( !all(varNamesInDims %in% varNames) ) {
       stop("makeProblem::doPrep() mismatch in variable names in 'inputData' and 'inputDims'!\n")
@@ -114,14 +116,18 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     vNamesInData <- g_var_name(inputData)
 
     # vNames in inputDims
-    vNamesInDimList <- sapply(1:length(inputDims), function(x) { get.dimVar(inputDims[[x]], type='varName') })
+    vNamesInDimList <- sapply(1:length(inputDims), function(x) {
+      g_varname(inputDims[[x]])
+    })
 
     # variables not used
     vNotUsed <- setdiff(vNamesInDimList, varNames)
     if ( length(vNotUsed) > 0 ) {
       removeIndex <- match(vNotUsed, vNamesInDimList)
       inputDims <- inputDims[-c(removeIndex)]
-      vNamesInDimList <- sapply(1:length(inputDims), function(x) { get.dimVar(inputDims[[x]], type='varName') })
+      vNamesInDimList <- sapply(1:length(inputDims), function(x) {
+        g_varname(inputDims[[x]])
+      })
 
       if ( any(vNamesInDimList != varNames) ) {
         stop("Error: Matching failed!\n")
@@ -147,10 +153,10 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     for ( i in seq_along(dimVarInd) ) {
       remove.vals <- FALSE
       remove_ind <- NULL
-      if ( !calc.dimVar(inputDims[[i]], type='hasDefaultCodes', input=rawData[[dimVarInd[i]]]) ) {
-        dups <- get.dimVar(inputDims[[i]], type='dups')
+      if ( !c_has_default_codes(inputDims[[i]], input=rawData[[dimVarInd[i]]]) ) {
+        dups <- g_dups(inputDims[[i]])
         if ( length(dups) > 0 ) {
-          dupsUp <- get.dimVar(inputDims[[i]], type='dupsUp')
+          dupsUp <- g_dups_up(inputDims[[i]])
           for ( k in length(dups):1 ) {
             ind <- which(rawData[[dimVarInd[i]]]==dups[k])
             if ( length(ind) > 0 ) {
@@ -167,7 +173,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
           }
           s_raw_data(inputData) <- list(rawData)
         }
-        ss[[i]] <- calc.dimVar(inputDims[[i]], type='standardize', input=rawData[[dimVarInd[i]]])
+        ss[[i]] <- c_standardize(inputDims[[i]], input=rawData[[dimVarInd[i]]])
       } else {
         ss[[i]] <- rawData[[dimVarInd[i]]]
       }
@@ -180,7 +186,9 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     }
     strID <- pasteStrVec(as.vector(unlist(ss)), length(posIndex))
 
-    info <- lapply(inputDims, function(x) {sum(get.dimVar(x, type='structure'))} )
+    info <- lapply(inputDims, function(x) {
+      sum(g_structure(x))
+    })
     strInfo <- list()
     for ( i in 1:length(inputDims) ) {
       sumCur <- info[[i]]
@@ -210,7 +218,9 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
   ## check if all variable names listed in inputDims exist in the
   ## specified dimensions of the input data
   varNames <- g_var_name(inputData)
-  varNamesInDims <- sapply(1:length(dimList), function(x) { get.dimVar(dimList[[x]], type='varName') })
+  varNamesInDims <- sapply(1:length(dimList), function(x) {
+    g_varname(dimList[[x]])
+  })
 
   if ( !all(varNamesInDims %in% varNames) ) {
     stop("makeProblem:: mismatch in variable names in 'inputData' and 'inputDims'!\n")
@@ -848,16 +858,20 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     varsNotUsed2 <- setdiff(1:length(vNames2), varsUsed2)
 
     ### for each common variable -> get original labels from dI
-    codesDefault1 <- lapply(1:length(strInfo1), function(x) { mySplit(g_strID(pI1), strInfo1[[x]][1]:strInfo1[[x]][2]) } )
-    codesDefault2 <- lapply(1:length(strInfo2), function(x) { mySplit(g_strID(pI2), strInfo2[[x]][1]:strInfo2[[x]][2]) } )
+    codesDefault1 <- lapply(1:length(strInfo1), function(x) {
+      mySplit(g_strID(pI1), strInfo1[[x]][1]:strInfo1[[x]][2])
+    })
+    codesDefault2 <- lapply(1:length(strInfo2), function(x) {
+      mySplit(g_strID(pI2), strInfo2[[x]][1]:strInfo2[[x]][2])
+    })
 
     codesOrig1 <-  list()
     for ( i in 1:length(codesDefault1) ) {
-      codesOrig1[[i]] <- calc.dimVar(object=get.dimInfo(dI1, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault1[[i]] )
+      codesOrig1[[i]] <- c_match_orig_codes(object=get.dimInfo(dI1, type='dimInfo')[[i]], input=codesDefault1[[i]] )
     }
     codesOrig2 <-  list()
     for ( i in 1:length(codesDefault2) ) {
-      codesOrig2[[i]] <- calc.dimVar(object=get.dimInfo(dI2, type='dimInfo')[[i]], type='matchCodeOrig', input=codesDefault2[[i]] )
+      codesOrig2[[i]] <- c_match_orig_codes(object=get.dimInfo(dI2, type='dimInfo')[[i]], input=codesDefault2[[i]] )
     }
 
     ### find matching indices
@@ -872,14 +886,14 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     # eliminate 'subtotals' from variables that are not used!
     if ( length(varsNotUsed1) > 0 ) {
       for ( i in seq_along(varsNotUsed1) )  {
-        subTotals <- get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesOriginal')[get.dimVar(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]], type='codesMinimal')==FALSE]
+        subTotals <- g_original_codes(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]])[g_minimal_codes(get.dimInfo(dI1, type='dimInfo')[[varsNotUsed1[i]]])==FALSE]
         commonInd1 <- setdiff(commonInd1, which(!codesOrig1[[varsNotUsed1[i]]] %in% subTotals))
       }
     }
 
     if ( length(varsNotUsed2) > 0 ) {
       for ( i in seq_along(varsNotUsed2) )  {
-        subTotals <- get.dimVar(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]], type='codesOriginal')[get.dimVar(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]], type='codesMinimal')==FALSE]
+        subTotals <- g_original_codes(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]])[g_minimal_codes(get.dimInfo(dI2, type='dimInfo')[[varsNotUsed2[i]]])==FALSE]
         commonInd2 <- setdiff(commonInd2, which(!codesOrig2[[varsNotUsed2[i]]] %in% subTotals))
       }
     }
