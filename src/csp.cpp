@@ -1358,7 +1358,7 @@ extern "C" {
     /* solve relaxation of master problem */
     is_int = solve_relaxation(mprob, aprob, constraint_pool, pinfo, xi);
     if ( info.verbose == true ) {
-      Rprintf("--> solved the relaxed master problem (%d constraints) and got a ");
+      Rprintf("--> solved the relaxed master problem (%d constraints) and got a ", glp_get_num_rows(mprob));
       if ( is_int ) {
         Rprintf("valid ");
       } else {
@@ -1405,5 +1405,9 @@ extern "C" {
       Rprintf("WARNING: no valid solution found. Please contact package maintainer\n");
       R_FlushConsole();
     }
+
+    /* deleting problem instances */
+    glp_delete_prob(aprob);
+    glp_delete_prob(mprob);
   }
 }
