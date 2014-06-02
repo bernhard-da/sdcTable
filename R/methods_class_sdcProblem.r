@@ -784,7 +784,7 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
         pI <- g_problemInstance(object)
         if ( any(g_sdcStatus(pI)[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
           if ( verbose ) {
-            cat("starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
+            cat("Starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
           }
           ### if we have cells with "u" or "x" we need to protect
           ### the corresponding subtable
@@ -896,7 +896,7 @@ setMethod("c_anon_worker", signature=c("sdcProblem", "list"), definition=functio
           # temporarily set secondary suppressions to "u"
           if ( any(g_sdcStatus(pI)[currentIndices] == "u") & length(currentIndices) > 1 ) {
             if ( verbose ) {
-              cat("starting to solve problem",j,"/",length(ind),"in group",j,"/",partition$nrGroups,"!\n")
+              cat("Starting to solve problem",j,"/",length(ind),"in group",j,"/",partition$nrGroups,"!\n")
             }
 
             ### if we have cells with "u",  we need to protect
@@ -1024,7 +1024,7 @@ setMethod("c_hitas_cpp", signature=c("sdcProblem", "list"), definition=function(
         pI <- g_problemInstance(object)
         if ( any(g_sdcStatus(pI)[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
           if ( verbose ) {
-            cat("starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
+            cat("Starting to solve problem",j,"/",length(ind),"in group",i,"/",partition$nrGroups,"!\n")
           }
           # if we have cells with "u" or "x" we need to protect
           # the corresponding subtable --> reduce problemInstance
@@ -1142,7 +1142,6 @@ setMethod("c_hitas_cpp", signature=c("sdcProblem", "list"), definition=function(
 
   ii <- which(sdcStatus %in% c("u", "x"))
   sdcStatus[ii] <- "x"
-  cat("length(primSuppsOrig):", length(primSuppsOrig),"\n")
   sdcStatus[primSuppsOrig] <- "u"
   s_sdcStatus(pI) <- list(index=1:g_nrVars(pI), vals=sdcStatus)
   s_problemInstance(object) <- pI
