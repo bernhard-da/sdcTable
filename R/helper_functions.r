@@ -452,7 +452,6 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     return(df)
   } else {
     if  ( res$is_ok != 0 ) {
-      warning("no valid solution was obtained!\n")
       return(NULL)
     } else {
       nr_vars <- g_nrVars(g_problemInstance(sdcProblem))
