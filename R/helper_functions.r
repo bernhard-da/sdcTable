@@ -679,6 +679,12 @@ hitas_cpp <- function(object, input) {
   allStrIDs <- g_strID(pI)
 
   partition <- g_partition(object)
+
+  # save protection levels
+  LPL.start <- g_LPL(pI)
+  UPL.start <- g_UPL(pI)
+  SPL.start <- g_SPL(pI)
+
   run_ind <- TRUE
   while ( run_ind ) {
     for ( i in 1:(partition$nrGroups) ) {
@@ -696,7 +702,7 @@ hitas_cpp <- function(object, input) {
         s_startJ(object) <- j
         currentIndices <- ind[[j]] # within complete table
 
-        ### cells with status 'u' or 'x' exist
+        # cells with status "u" or "x" exist
         pI <- g_problemInstance(object)
         if ( any(g_sdcStatus(pI)[currentIndices] %in% c("u","x")) & length(currentIndices) > 1 ) {
           if ( verbose ) {
@@ -708,22 +714,20 @@ hitas_cpp <- function(object, input) {
           pI.new <- g_problemInstance(probNew)
 
           # is it necessary to protect the table??
-          currentPrimSupps <- primSupps[!is.na(match(primSupps, currentIndices ))]
+          currentPrimSupps <- primSupps[!is.na(match(primSupps, currentIndices))]
 
           # indices that have already been inner cells in tables dealt earlier
-          # FIXME: save indexpool somehow
-          indicesDealtWith <- which(currentIndices %in% indexPool) #in current current subproblem
+          indicesDealtWith <- which(currentIndices %in% indexPool) # in current current subproblem
 
-          ### fix marginal-cells
-          ### --> its-suppression state must not change!
+          # we have to fix marginal-cells: --> their suppression status must not change!
           currentPattern <- g_sdcStatus(g_problemInstance(probNew))
 
           introducedSupps <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "x")]
           if ( length(introducedSupps) > 0 ) {
-            ### secondary suppressions from upper tables
+            # secondary suppressions from upper tables
             s_sdcStatus(pI.new) <- list(index=introducedSupps, vals=rep("u", length(introducedSupps)))
 
-            ### temporarily change LPL, UPL, SPL for these cells
+            # temporarily change LPL, UPL, SPL for these cells
             LPL.current <- g_LPL(pI.new)[introducedSupps]
             UPL.current <- g_UPL(pI.new)[introducedSupps]
             SPL.current <- g_SPL(pI.new)[introducedSupps]
@@ -733,7 +737,7 @@ hitas_cpp <- function(object, input) {
             s_SPL(pI.new) <- list(index=introducedSupps, vals=rep(0.1, length(introducedSupps)))
           }
 
-          ### force non-suppression of cells that have already been dealt with
+          # force non-suppression of cells that have already been dealt with
           indForced <- indicesDealtWith[which(currentPattern[indicesDealtWith] == "s")]
           if ( length(indForced) > 0 ) {
             s_sdcStatus(pI.new) <- list(index=indForced, vals=rep("z", length(indForced)))
@@ -783,7 +787,7 @@ hitas_cpp <- function(object, input) {
             break
           }
 
-          ### update sdcStatus
+          # update sdcStatus
           status <- g_sdcStatus(g_problemInstance(probNew))
 
           pI <- g_problemInstance(object)
@@ -804,12 +808,25 @@ hitas_cpp <- function(object, input) {
       if ( !is_ok ) {
         break
       }
-      ### update indices that we have already dealt with
+      # update indices that we have already dealt with
       s_indicesDealtWith(object) <- unique(c(indexPool, currentIndices))
     }
     if ( is_ok ) {
       run_ind <- FALSE
     }
   }
+
+  pI <- g_problemInstance(object)
+  s_LPL(pI) <- list(index=1:g_nrVars(pI), vals=LPL.start)
+  s_UPL(pI) <- list(index=1:g_nrVars(pI), vals=UPL.start)
+  s_SPL(pI) <- list(index=1:g_nrVars(pI), vals=SPL.start)
+  sdcStatus <- g_sdcStatus(pI)
+
+  ii <- which(sdcStatus %in% c("u", "x"))
+  sdcStatus[ii] <- "x"
+  cat("length(primSuppsOrig):", length(primSuppsOrig),"\n")
+  sdcStatus[primSuppsOrig] <- "u"
+  s_sdcStatus(pI) <- list(index=1:g_nrVars(pI), vals=sdcStatus)
+  s_problemInstance(object) <- pI
   invisible(object)
 }
