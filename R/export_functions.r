@@ -411,14 +411,14 @@ protectTable <- function(object, method, ...) {
   }
 
   if ( method == 'SIMPLEHEURISTIC' ) {
-    out <- performQuickSuppression(object, input=paraList)
+    out <- c_quick_suppression(object, input=paraList)
   } else {
     if ( paraList$useC ) {
       if ( method == "OPT" ) {
-        out <- opt_cpp(object=object, input=paraList)
+        out <- c_opt_cpp(object=object, input=paraList)
       }
       if ( method == "HITAS" ) {
-        out <- hitas_cpp(object=object, input=paraList)
+        out <- c_hitas_cpp(object=object, input=paraList)
       }
     } else {
       out <- c_anon_worker(object, input=paraList)
