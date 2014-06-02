@@ -1335,7 +1335,7 @@ extern "C" {
         R_FlushConsole();
       }
     } else {
-      Rprintf("it was not possible to calculate a valid heuristic solution!\n");
+      Rprintf("Error: Due to some constraints it was not possible to calculate a valid heuristic solution!\n");
       return;
     }
 
@@ -1345,22 +1345,13 @@ extern "C" {
     //}
 
     bool test_heursol= is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
-    if ( info.verbose == true ) {
-      Rprintf("testing heuristic solution ...");
-      if ( test_heursol == true ) {
-        Rprintf("ok [done]\n");
-      } else {
-        Rprintf("problem [done]\n");
-      }
-      R_FlushConsole();
-    }
 
     /* solve relaxation of master problem */
     is_int = solve_relaxation(mprob, aprob, constraint_pool, pinfo, xi);
     if ( info.verbose == true ) {
       Rprintf("--> solved the relaxed master problem (%d constraints) and got a ", glp_get_num_rows(mprob));
       if ( is_int ) {
-        Rprintf("valid ");
+        Rprintf("valid, integer ");
       } else {
         Rprintf("fractional ");
       }
