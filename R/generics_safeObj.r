@@ -42,7 +42,7 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('get.safeObj', function(object, type, input) {standardGeneric('get.safeObj')})
+setGeneric("get.safeObj", function(object, type, input) { standardGeneric("get.safeObj")})
 
 setGeneric("g_dimInfo", function(object) { standardGeneric("g_dimInfo") })
 setGeneric("g_elapsedTime", function(object) { standardGeneric("g_elapsedTime") })
