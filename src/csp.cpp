@@ -378,7 +378,8 @@ int solve_att_prob(glp_prob *aprob, glp_prob *mprob, list<mprob_constraint>& con
   vector<double> betas_tot(nr_real_variables+1);
 
   vector<int> constraint_indices(nr_real_variables+1);
-  double constraint_val, len;
+  double constraint_val = 0.0;
+  double len = 0.0;
   double zmin = 0.0;
   double zmax = 0.0;
   double check_max, check_min = 0.0;
@@ -1344,7 +1345,7 @@ extern "C" {
     //  Rprintf("### cell=%d | LPL=%d | UPL=%d | SPL=%d ###\n", x, info.LPL[x], info.UPL[x], info.SPL[x]);
     //}
 
-    bool test_heursol= is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
+    //bool test_heursol= is_valid_solution(aprob, mprob, constraint_pool, &info, xi);
 
     /* solve relaxation of master problem */
     is_int = solve_relaxation(mprob, aprob, constraint_pool, pinfo, xi);
