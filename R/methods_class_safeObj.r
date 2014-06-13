@@ -45,10 +45,10 @@ setMethod(f="get.safeObj", signature=c("safeObj", "character", "list"),
 #"
 #" extract and show information stored in \code{\link{safeObj-class}} objects
 #"
-#" @aliases summary,safeObj-method
-#" @rdname summary-method
 #" @export
 #" @docType methods
+#" @rdname summary-method
+#' @aliases summary,safeObj-method
 setMethod(f="summary", signature="safeObj",
   definition=function (object, ...) {
     cat("\n######################################################\n")

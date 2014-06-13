@@ -143,11 +143,11 @@ setMethod(f="calc.sdcProblem", signature=c("sdcProblem", "character", "list"),
   }
 )
 
-#' summarize \code{\link{sdcProblem-class}} objects
+#' summarize object of class \code{\link{sdcProblem-class}} or \code{\link{safeObj-class}}.
 #'
-#' extract and show relevant information stored in \code{\link{sdcProblem-class}} objects
+#' extract and show relevant information stored in object ofs class \code{\link{sdcProblem-class}} or \code{\link{safeObj-class}}.
 #'
-#' @aliases summary,sdcProblem-method
+#' @aliases summary,sdcProblem-method summary,safeObj-method
 #' @rdname summary-method
 #' @export
 #' @docType methods

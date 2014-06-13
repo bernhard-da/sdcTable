@@ -39,6 +39,7 @@
 #' @export
 #' @docType methods
 #' @rdname get.safeObj-method
+#' @aliases get.safeObj,safeObj,character,list-method
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
