@@ -749,6 +749,7 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' @return a list of length 2 with each list-element being an \code{\link{safeObj-class}} object
 #'
 #' @examples
+#' \dontrun{
 #' # load micro data for further processing
 #' sp <- searchpaths()
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/microData2.RData", sep="")
@@ -826,6 +827,7 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' result.tab2 <- result[[2]]
 #' summary(result.tab1)
 #' summary(result.tab2)
+#' }
 #'
 #' @rdname protectLinkedTables
 #' @export protectLinkedTables
