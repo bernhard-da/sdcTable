@@ -4,7 +4,7 @@ Date: 2014-06-13
 Title: Methods for statistical disclosure control in tabular data
 Description: Implementation of methods for statistical disclosure control in
     tabular data
-Author: Bernhard Meindl
+Author: Bernhard Meindl, Andrew Makhorin, Timothy A. Davis, Niklas Sorensson, Mark Adler, Jean-loup Gailly
 Maintainer: Bernhard Meindl
     <bernhard.meindl@statistik.gv.at>
 Depends:
@@ -18,5 +18,5 @@ Suggests:
     testthat (>= 0.3)
 LazyLoad: yes
 LinkingTo: Rcpp
-License: GPL-2
+License: GPL-3
 URL: http://www.statistik.at
