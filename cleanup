@@ -1,8 +1,4 @@
 #! /bin/sh
-(cd src/GLPK; 
-  if test -f Makefile; then
-    make distclean || true
-    make distclean SUBDIRS= || true
-  fi)
-rm -f config.* autom4te.cache src/GLPK.ts src/Makevars
+
+rm -rf config.* autom4te.cache src/Makevars src/config.h src/*.o
 exit 0
