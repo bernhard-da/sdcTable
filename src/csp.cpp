@@ -1318,11 +1318,9 @@ extern "C" {
       R_FlushConsole();
     }
 
+    bool testsol;
     if ( attackonly[0] == 1 ) {
-      bool testsol = is_valid_solution(aprob, mprob, constraint_pool, pinfo, xi);
-      if ( testsol==true & info.verbose==true ) {
-        Rprintf("The pattern is valid!\n");
-      }
+      testsol = is_valid_solution(aprob, mprob, constraint_pool, pinfo, xi);
       for ( int i=0; i<info.len_prim; ++i ) {
         bounds_min[i] = info.att_min[i];
         bounds_max[i] = info.att_max[i];
