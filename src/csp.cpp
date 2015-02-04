@@ -1320,7 +1320,7 @@ extern "C" {
 
     if ( attackonly[0] == 1 ) {
       bool testsol = is_valid_solution(aprob, mprob, constraint_pool, pinfo, xi);
-      if ( testsol==false ) {
+      if ( !testsol ) {
         if ( info.verbose == true ) {
           Rprintf("Info: not a valid solution!\n");
         }
