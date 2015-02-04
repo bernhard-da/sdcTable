@@ -1,7 +1,9 @@
 *.o
-
 *.so
 *.dll
 *.a
 .project
 man
+*.Rproj
+.Rproj.user/*
+.Rproj.user

@@ -161,15 +161,16 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
             ind <- which(rawData[[dimVarInd[i]]]==dups[k])
             if ( length(ind) > 0 ) {
               if ( length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0 ) {
-                rawData <- rawData[-ind,]
-                if ( i > 1 ) {
-                  remove.vals <- TRUE
-                  remove_ind <- c(remove_ind, ind)
-                }
+                remove.vals <- TRUE
+                remove_ind <- c(remove_ind, ind)
               } else {
                 rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
               }
             }
+          }
+          if ( remove.vals ) {
+            rawData <- rawData[-remove_ind,]
+            inputDims[[i]]
           }
           s_raw_data(inputData) <- list(rawData)
         }
@@ -179,8 +180,12 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
       }
       # remove entries in ss[[1]...ss[[i-1]]
       if ( remove.vals ) {
-        for ( z in 1:(i-1)) {
-          ss[[z]] <- ss[[z]][-remove_ind]
+        if ( i == 1 ) {
+          ss[[1]] <- ss[[1]][-remove_ind]
+        } else {
+          for ( z in 1:(i-1)) {
+            ss[[z]] <- ss[[z]][-remove_ind]
+          }
         }
       }
     }
@@ -192,10 +197,11 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     strInfo <- list()
     for ( i in 1:length(inputDims) ) {
       sumCur <- info[[i]]
-      if ( i == 1 )
+      if ( i == 1 ) {
         strInfo[[i]] <- c(1, sumCur)
-      else
+      } else {
         strInfo[[i]] <- c(1+max(strInfo[[c(i-1)]]), max(strInfo[[c(i-1)]])+sumCur)
+      }
     }
 
     dimInfoObj <- new("dimInfo",
