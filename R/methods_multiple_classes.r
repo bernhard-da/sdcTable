@@ -261,41 +261,32 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## revert rawData codes to default codes
   for ( j in seq_along(ind.dimvars) ) {
     v <- c_match_default_codes(object=dimObj[[j]], input=rawData[,get(names(dimObj)[j])])
-    rawData[,names(dimObj)[j]:=v]
+    set(rawData, NULL, names(dimObj)[j], v)
   }
   setkeyv(rawData, colnames(rawData)[ind.dimvars])
 
   ## replace NAs in rawData by 0 (required for aggregation)
   cols <- colnames(rawData)[(length(dimObj)+1):ncol(rawData)]
-  ind.na <- list(); length(ind.na) <- length(cols)
-  for ( i in 1:length(cols) ) {
-    ind.na[[i]] <- which(is.na(rawData[,cols[i],with=FALSE]))
-    if ( length(ind.na[[i]]) > 0 ) {
-      rawData[ind.na[[i]], cols[i]:=0]
-    }
-  }
+  ind.na <- list(); length(ind.na) <- length(cols); k <- 1
+  for ( j in cols ) {
+    ind.na[[k]] <- which(is.na(rawData[[j]]))
+    set(rawData, ind.na[[k]], j, 0)
+    k <- k+1
+  }; rm(k)
 
   ## merge minDat to fullDat
   fullTabObj <- merge(fullTabObj, rawData, all.x=TRUE)
-
-  ## missing dimensions in raw data are filled up with zeros
-  ind <- which(is.na(rawData$freq))
-  if ( length(ind) > 0 ) {
-    for ( k in 1:length(cols) ) {
-      rawData[ind, cols[k]:=0]
-    }
-  }
 
   ## set missing combinations of lowest levels to 0
   ## problematic are all levels that should exist, but do not exist
   ## they are filled with 0 so that we can aggregate
   dim.vars <- colnames(fullTabObj)[ind.dimvars]
-  strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
+  strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,paste0, collapse="")
 
   if ( length(missing.codes) > 0 ) {
     index <- which(strID%in%missing.codes)
     for ( i in 1:length(cols) ) {
-      fullTabObj[index, cols[i]:=0]
+      set(fullTabObj, index, cols[i], 0)
     }
   }
 
@@ -311,22 +302,18 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
         setkeyv(fullTabObj, dim.vars[1])
       }
 
-      dat <- copy(fullTabObj) # we need to copy!
-
       cur.dim <- dimObj[[i]]@dims
       for ( j in length(cur.dim):1 ) {
         cur.levs <-  cur.dim[[j]]
-        out <- dat[dat[[ind.dimvars[i]]] %in% cur.levs[-1],]
+        out <- fullTabObj[fullTabObj[[ind.dimvars[i]]] %in% cur.levs[-1],]
         if ( length(dim.vars)==1 ) {
           out <- out[,lapply(.SD,sum), .SDcols=col.names]
         } else {
           out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
         }
-
         row.ind <- which(fullTabObj[[ind.dimvars[i]]] == cur.levs[1])
-        for ( z in 1:length(col.names) ) {
-          v <- out[,col.names[z], with=FALSE]
-          fullTabObj[row.ind, col.names[z]:=v]
+        for ( j in col.names ) {
+          set(fullTabObj, row.ind, j, out[[j]])
         }
       }
     }
@@ -337,7 +324,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   nrV <- nrow(fullTabObj)
   f <- fullTabObj[[ind.freq]]
-  strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,str_c, collapse="")
+  strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,paste0, collapse="")
   w <- numVarsList <- NULL
   w.ind <- g_weightvar_ind(x)
   if ( !is.null(w.ind) ) {
@@ -358,7 +345,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## replace 0 in rawData by NA if they have been replaced earlier
   for ( i in 1:length(ind.na) ) {
     if ( length(ind.na[[i]]) > 0 ) {
-      rawData[ind.na[[i]], cols[i]:=NA]
+      set(rawData, ind.na[[i]], cols[i], NA)
     }
   }
   s_raw_data(x) <- list(datO)
