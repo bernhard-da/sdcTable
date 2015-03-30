@@ -44,6 +44,19 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   final <- list()
   final$groups <- as.list(groups)
   final$indices <- list()
+
+  # default_codes and levels
+  default_codes <- lapply(1:length(dimInfo), function(x) {
+    g_default_codes(dimInfo[[x]])
+  })
+  dim_levels <- lapply(1:length(dimInfo), function(x) {
+    g_levels(dimInfo[[x]])
+  })
+
+  # data.table to merge on
+  df <- data.table(N=1:length(strIDs), strIDs=strIDs)
+  setkey(df, strIDs)
+
   for ( i in 1:length(groups) ) {
     final$indices[[i]] <- list()
     levs <- as.integer(unlist(sapply(groups[[i]], strsplit, "-")))
@@ -52,11 +65,11 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
     for ( z in 1:length(dimInfo) ) {
       res[[z]] <- list()
       index <- which(g_levels(dimInfo[[z]]) %in% c(levs[z], levs[z]-1))
-      codesDefault <- g_default_codes(dimInfo[[z]])[index]
+      codesDefault <- default_codes[[z]][index]
       if ( levs[z] == 1 ) {
         res[[z]] <- codesDefault
       } else {
-        levOrig <- g_levels(dimInfo[[z]])[index]
+        levOrig <- dim_levels[[z]][index]
         diffs <- c(0,diff(levOrig))
         checkInd <- which(diffs == 1)-1
         out <- data.frame(index=index, levOrig=levOrig, codesDefault=codesDefault, ind=NA)
@@ -84,10 +97,17 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
       }
     }
     final$indices[[i]] <- list()
-    combs <- expand.grid(lapply(1:length(res), function(x) { 1:length(res[[x]]) } ))
+    combs <- expand.grid(lapply(1:length(res), function(x) {
+      1:length(res[[x]])
+    }))
+
+    final$indices[[i]] <- list();
+    length(final$indices[[i]]) <- nrow(combs)
     for ( m in 1:nrow(combs) ) {
       final.strIDs <- pasteStrVec(expand(lapply(1:ncol(combs), function(x) { res[[x]][[combs[m,x]]] })), ncol(combs))
-      final$indices[[i]][[m]] <- which(strIDs %in% final.strIDs)
+      df2 <- data.table(strIDs=final.strIDs)
+      setkey(df2, strIDs)
+      final$indices[[i]][[m]] <- merge(df, df2)$N
     }
   }
   final$nrGroups <- length(groups)
@@ -355,7 +375,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
     w=w,
     numVars=numVarsList,
     lb=rep(0, nrV),
-    ub=sapply(f, function(x) { max(2*x, 5)}),
+    ub=pmax(2*f, 5),
     LPL=rep(1, nrV),
     UPL=rep(1, nrV),
     SPL=rep(0, nrV),
