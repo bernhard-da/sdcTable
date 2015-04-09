@@ -7,6 +7,8 @@
 #'
 #' @aliases print,dimVar-method
 #' @rdname print-method
+#' @param x An object of class \code{\link{dimVar-class}}
+#' @param ... currently not used
 #' @export
 #' @docType methods
 setMethod(f="print", signature= "dimVar",

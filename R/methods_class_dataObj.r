@@ -127,8 +127,8 @@ setMethod(f='init.dataObj', signature=c('list'),
         xx <- datO[,lapply(.SD, sum), by=key(datO), .SDcols=cols]
         rawData <- merge(rawData, xx)
       }
-    }
     numVarInd <- (c.start+1):ncol(rawData)
+    }
 
     ## weight var
     if ( !is.null(weightInd) ) {

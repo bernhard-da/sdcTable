@@ -149,6 +149,8 @@ setMethod(f="calc.sdcProblem", signature=c("sdcProblem", "character", "list"),
 #'
 #' @aliases summary,sdcProblem-method summary,safeObj-method
 #' @rdname summary-method
+#' @param object Objects of either class \code{\link{sdcProblem-class}} or \code{\link{safeObj-class}}.
+#' @param ... currently not used.
 #' @export
 #' @docType methods
 setMethod(f="summary", signature="sdcProblem",
