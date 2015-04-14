@@ -83,6 +83,7 @@ getBranchingVariable <- function(sol, alreadyBranched, primSupps) {
 }
 
 my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bounds = NULL, verbose = FALSE) {
+  get.simpleTriplet <- sdcTable::get.simpleTriplet
   if ( !identical(max, TRUE) && !identical(max, FALSE) ) {
     stop("'Argument 'max' must be either TRUE or FALSE!\n")
   }

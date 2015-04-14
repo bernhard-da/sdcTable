@@ -1695,7 +1695,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
       pruneReason <- unique(pruneReason) # remove eventually 2-'Bs'
       if ( length(pruneReason) == 2 ) {
         if ( pruneReason[1] == "V" & pruneReason[2]=="B" ) {
-          #cat("Integer-Lösung gefunden, aber es gibt bereits eine bessere -> Pruning by Bounds!\n")
+          #cat("found worse-than optimal integer-solution -> pruning by bounds!\n")
           if ( masterObj < currentBestBoundUp ) {
             pruneReason <- "V"
           } else {
@@ -1727,7 +1727,7 @@ setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=func
         cat("pruning the current node: reason=",pruneReason,"!. Still",length(problemPool),"nodes in the pool!\n")
       }
     } else {
-      ## 2) Branching: wir erweitern den ProblemPool und löschen dann den aktuellen Node
+      ## 2) Branching: we extend the problemPool and remove the current node afterwards
       branchedVars <- g_col_ind(g_constraints(problemPool[[selectInd]]))
       branchVar <- getBranchingVariable(xi, branchedVars, noBranchVars)
 

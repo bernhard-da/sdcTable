@@ -1,9 +1,10 @@
 Package: sdcTable
 Version: 0.18.0
 Date: 2015-04-09
-Title: Methods for statistical disclosure control in tabular data
-Description: Implementation of methods for statistical disclosure control in
-    tabular data
+Title: Methods for Statistical Disclosure Control in Tabular Data
+Description: Methods for statistical disclosure control in
+    tabular data such as primary and secondary cell suppression are covered in
+    this package.
 Author: Bernhard Meindl
 Maintainer: Bernhard Meindl <bernhard.meindl@statistik.gv.at>
 Depends: stringr, methods, Rcpp (>= 0.11.0), Rglpk, lpSolveAPI,
