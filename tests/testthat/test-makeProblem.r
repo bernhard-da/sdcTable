@@ -8,6 +8,7 @@ dim.gender <- data.frame(levels=c('@','@@','@@'), codes=c('Total', 'male','femal
 dimList <- list(region=dim.region, gender=dim.gender)
 dimVarInd <- c(1,2)
 freqVarInd <- numVarInd <- weightInd <- sampWeightInd <- NULL
+
 problem <- makeProblem(
   data=microData,
   dimList=dimList,

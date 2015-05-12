@@ -74,8 +74,8 @@ setMethod(f='init.dataObj', signature=c('list'),
 
     ## aggregate data, use data.table
     datO <- data.table(inputData, key=colnames(inputData)[dimVarInd])
-    rawData <- datO[, .N, by=key(datO)]
-    N <- rawData$N;
+    rawData <- datO[, list(N=.N), by=key(datO)]
+    N <- rawData$N
     rawData$N <- NULL
 
     if ( any(N != 1)  ) {
@@ -109,6 +109,7 @@ setMethod(f='init.dataObj', signature=c('list'),
         sw <- datO[,list(sw=sum(get(colnames(datO)[sampWeightInd]))), by=key(datO)]$sw
       }
       set(rawData, NULL, colnames(datO)[sampWeightInd], sw)
+
       sampWeightInd <- ncol(rawData)
       set(rawData, NULL, "freq", as.numeric(sw*rawData$freq))
     }
@@ -127,7 +128,7 @@ setMethod(f='init.dataObj', signature=c('list'),
         xx <- datO[,lapply(.SD, sum), by=key(datO), .SDcols=cols]
         rawData <- merge(rawData, xx)
       }
-    numVarInd <- (c.start+1):ncol(rawData)
+      numVarInd <- (c.start+1):ncol(rawData)
     }
 
     ## weight var
@@ -149,13 +150,13 @@ setMethod(f='init.dataObj', signature=c('list'),
     setkeyv(rawData, colnames(rawData)[dimVarInd])
 
     out <- new("dataObj",
-               rawData=rawData,
-               dimVarInd=dimVarInd,
-               freqVarInd=freqVarInd,
-               numVarInd=numVarInd,
-               weightVarInd=weightInd,
-               sampWeightInd=sampWeightInd,
-               isMicroData=isMicroData
+      rawData=rawData,
+      dimVarInd=dimVarInd,
+      freqVarInd=freqVarInd,
+      numVarInd=numVarInd,
+      weightVarInd=weightInd,
+      sampWeightInd=sampWeightInd,
+      isMicroData=isMicroData
     )
     return(out)
   }
