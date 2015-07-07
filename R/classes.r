@@ -5,6 +5,11 @@
 #' @import "stringr"
 #' @import "lpSolveAPI"
 #' @import "data.table"
+#' @importFrom "stats" "na.omit"
+#' @importFrom "utils" "combn"
+#' @importFrom "utils" "tail"
+#' @importFrom "utils" "read.table"
+#' @importFrom "utils" "str"
 
 setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
 setClassUnion('numericOrNULL', c('numeric', 'NULL'))
