@@ -447,23 +447,13 @@ setMethod(f="c_has_default_codes", signature=c("dimVar", "character"), definitio
 setMethod(f="c_match_orig_codes", signature=c("dimVar", "character"), definition=function(object, input) {
   d <- g_default_codes(object)
   o <- g_original_codes(object)
-
-  out <- rep(NA, length(input))
-  for ( i in 1:length(d) ) {
-    out[which(input==d[i])] <- o[i]
-  }
-  return(out)
+  o[match(input, d)]
 })
 
 setMethod(f="c_match_default_codes", signature=c("dimVar", "character"), definition=function(object, input) {
   d <- g_default_codes(object)
   o <- g_original_codes(object)
-
-  out <- rep(NA, length(input))
-  for ( i in 1:length(d) ) {
-    out[which(input==o[i])] <- d[i]
-  }
-  return(out)
+  d[match(input, o)]
 })
 
 setMethod(f="c_standardize", signature=c("dimVar", "character"), definition=function(object, input) {
