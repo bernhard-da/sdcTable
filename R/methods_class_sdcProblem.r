@@ -1161,9 +1161,12 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   if ( verbose ) {
     cat("calculating subIndices (this may take a while) ...")
   }
-  dat <- g_df(object)
-  dat$id <- 1:nrow(dat)
-  dat <- dat[,c(vNames, "id","freq","sdcStatus"),with=F]
+
+  dat <- as.data.table(cpp_splitByIndices(g_strID(pI), strInfo))
+  setnames(dat, vNames)
+  dat[,id:=1:nrow(dat)]
+  dat[,freq:=g_freq(pI)]
+  dat[,sdcStatus:=g_sdcStatus(pI)]
 
   dimVars <- match(vNames, names(dat))
   nDims <- length(dimVars)
