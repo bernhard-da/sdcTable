@@ -248,9 +248,9 @@ setMethod("g_df", signature="sdcProblem", definition=function(object) {
   strInfo <- g_str_info(dI)
   dimObj <- g_dim_info(dI)
   vNames <- g_varname(dI)
-	res <- as.data.table(cpp_splitByIndices(g_strID(pI), strInfo))
-	setnames(res, vNames)
-	dt <- cbind(dt, res)
+  res <- as.data.table(cpp_splitByIndices(g_strID(pI), strInfo))
+  setnames(res, vNames)
+  dt <- cbind(dt, res)
   for ( i in 1:length(strInfo) ) {
     v <- paste0(vNames[i],"_o",sep="")
     dt[[v]] <- c_match_orig_codes(object=dimObj[[i]], input=dt[[vNames[i]]])
@@ -1954,24 +1954,24 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
     codesDefault <- mySplit(strIDs, strInfo[[i]][1]:strInfo[[i]][2])
     codesOriginal[[i]] <- c_match_orig_codes(object=levelObj[[i]], input=codesDefault)
   }
-  out <- data.frame(codesOriginal);
-  colnames(out) <- g_varname(dI)
-  out$Freq <- g_freq(pI)
+  out <- as.data.table(codesOriginal)
+  setnames(out, g_varname(dI))
+  out[,Freq:=g_freq(pI)]
 
   numVars <- g_numVars(pI)
   if ( !is.null(numVars) ) {
     data.obj <- g_dataObj(object)
-    nV <- as.data.frame(numVars)
-    colnames(nV) <- colnames(g_raw_data(data.obj))[g_numvar_ind(data.obj)]
+    nV <- as.data.table(numVars)
+    setnames(nV, colnames(g_raw_data(data.obj))[g_numvar_ind(data.obj)])
     out <- cbind(out, nV)
   }
-  out$sdcStatus <- g_sdcStatus(pI)
+  out[,sdcStatus:=g_sdcStatus(pI)]
 
   # add duplicates
   hasDups <- sapply(1:length(levelObj), function(x) {
     g_has_dups(levelObj[[x]])
   })
-  if ( any(hasDups == TRUE) ) {
+  if ( any(hasDups) ) {
     for ( i in which(hasDups==TRUE) ) {
       dups <- g_dups(levelObj[[i]])
       dupsUp <- g_dups_up(levelObj[[i]])
@@ -1979,9 +1979,9 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
       runInd <- TRUE
       while ( runInd ) {
         for ( j in 1:length(dups) ) {
-          sub <- subset(out, out[,i]==dupsUp[j])
+          sub <- subset(out, out[[i]]==dupsUp[j])
           if ( nrow(sub) > 0 ) {
-            sub[,i] <- dups[j]
+            sub[[i]] <- dups[j]
             out <- rbind(out, sub)
             dups <- dups[-j]
             dupsUp <- dupsUp[-j]
@@ -1992,10 +1992,9 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
       }
     }
   }
-  rownames(out) <- NULL
   safeObj <- new("safeObj",
     finalData=out,
-    dimInfo=g_dimInfo(object),
+    dimInfo=dI,
     nrNonDuplicatedCells=nrNonDuplicatedCells,
     nrPrimSupps=nrPrimSupps,
     nrSecondSupps=nrSecondSupps,
