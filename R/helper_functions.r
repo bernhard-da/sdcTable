@@ -39,8 +39,8 @@ mySplit <- function(strVec, keepIndices) {
   if ( min(keepIndices) < 1 | max(keepIndices) > nchar(strVec[1]) ) {
     stop("indices must be in 1:",nchar(strVec[1]),"!\n")
   }
-  keepIndices <- unique(keepIndices)-1 # required because of indexing in c++
-  return(.Call( "mySplitFn", as.character(strVec), as.numeric(keepIndices), PACKAGE = "sdcTable"))
+  keepIndices <- unique(keepIndices)
+  return(cpp_mySplit(as.character(strVec), as.integer(keepIndices)))
 }
 
 #strs <- rep(paste(LETTERS[1:6],collapse=""), 10000)

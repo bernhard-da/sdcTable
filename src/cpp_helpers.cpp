@@ -62,3 +62,29 @@ CharacterVector cpp_myPaste(CharacterVector stringvec, int nrKeyVars, CharacterV
   }
   return outVec;
 }
+
+/*
+  This function takes a CharacterVector returns a CharacterVector containing
+  only the chars specified in input-argument 'indices'
+*/
+
+// [[Rcpp::export]]
+CharacterVector cpp_mySplit(CharacterVector stringvec, IntegerVector indices) {
+  CharacterVector result(stringvec.size());
+
+  int lenStr = result.size();
+  int lenIndices = indices.size();
+
+  std::string str;
+  std::string a;
+  for (int i=0; i<lenStr; i++) {
+    str.clear();
+    a.clear();
+    a = stringvec[i];
+    for (int j=0; j<lenIndices; j++) {
+      str.append(a.substr(indices[j]-1, 1));
+    }
+    result[i]=str;
+  }
+  return result;
+}
