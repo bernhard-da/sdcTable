@@ -5,6 +5,43 @@
 
 using namespace Rcpp;
 
+// cpp_splitByIndices
+List cpp_splitByIndices(std::vector<std::string> strings, List strInfo);
+RcppExport SEXP sdcTable_cpp_splitByIndices(SEXP stringsSEXP, SEXP strInfoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type strings(stringsSEXP);
+    Rcpp::traits::input_parameter< List >::type strInfo(strInfoSEXP);
+    __result = Rcpp::wrap(cpp_splitByIndices(strings, strInfo));
+    return __result;
+END_RCPP
+}
+// cpp_myPaste
+CharacterVector cpp_myPaste(CharacterVector stringvec, int nrKeyVars, CharacterVector seperator);
+RcppExport SEXP sdcTable_cpp_myPaste(SEXP stringvecSEXP, SEXP nrKeyVarsSEXP, SEXP seperatorSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type stringvec(stringvecSEXP);
+    Rcpp::traits::input_parameter< int >::type nrKeyVars(nrKeyVarsSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type seperator(seperatorSEXP);
+    __result = Rcpp::wrap(cpp_myPaste(stringvec, nrKeyVars, seperator));
+    return __result;
+END_RCPP
+}
+// cpp_mySplit
+CharacterVector cpp_mySplit(CharacterVector stringvec, IntegerVector indices);
+RcppExport SEXP sdcTable_cpp_mySplit(SEXP stringvecSEXP, SEXP indicesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< CharacterVector >::type stringvec(stringvecSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type indices(indicesSEXP);
+    __result = Rcpp::wrap(cpp_mySplit(stringvec, indices));
+    return __result;
+END_RCPP
+}
 // greedyMultDimSuppression
 List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, IntegerVector dimVars, bool verbose);
 RcppExport SEXP sdcTable_greedyMultDimSuppression(SEXP datSEXP, SEXP indicesSEXP, SEXP subIndicesSEXP, SEXP dimVarsSEXP, SEXP verboseSEXP) {
