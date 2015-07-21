@@ -2,11 +2,10 @@
 pasteStrVec <- function(strVec, nrVars, coll=NULL) {
   if(length(strVec) %% nrVars != 0)
     stop("Wrong Dimensions!\n")
-
   if ( is.null(coll) ) {
-    .Call( "myPaste", as.character(strVec), nrVars, PACKAGE = "sdcTable")
+    return(cpp_myPaste(as.character(strVec), as.integer(nrVars)[1], NA))
   } else {
-    .Call( "myPasteWithSep", as.character(strVec), nrVars, coll, PACKAGE = "sdcTable")
+    return(cpp_myPaste(as.character(strVec), as.integer(nrVars)[1], as.character(coll[1])))
   }
 }
 
@@ -58,7 +57,7 @@ mySplitIndicesList <- function(strVec, keepList, coll="-") {
   for ( i in 1:length(keepList) ) {
     out[[i]] <- mySplit(strVec, keepList[[i]])
   }
-  out <- .Call( "myPasteWithSep", as.character(unlist(out)), length(out), coll, PACKAGE = "sdcTable")
+  out <- cpp_myPaste(as.character(unlist(out)), as.integer(length(out)), coll)
 }
 # mySplitIndicesList("112233444", list(1:3, 5:6, 7:8))
 
@@ -252,7 +251,7 @@ genParaObj <- function(selection, ...) {
     }
 
     #if ( any(sapply(paraObj, length)!=1) ) {
-    #	stop("genPara (type=='control.primary'): arguments for primary suppression are not valid!\n")
+    # stop("genPara (type=='control.primary'): arguments for primary suppression are not valid!\n")
     #}
     if ( !is.logical(paraObj$allowZeros) ) {
       stop("genPara (type=='control.primary'): argument 'allowZeros' must be logical!\n")

@@ -30,33 +30,35 @@ List cpp_splitByIndices(std::vector<std::string> strings, List strInfo) {
   return(out);
 }
 
+/*
+  This function takes a CharacterVector and combines it, eventually
+  using a seperator. If seperator equals NA, no seperator is used
+*/
 // [[Rcpp::export]]
 CharacterVector cpp_myPaste(CharacterVector stringvec, int nrKeyVars, CharacterVector seperator) {
-	CharacterVector stringVec(stringvec);
-	int nrRows = stringVec.size();
-	int by = nrRows / nrKeyVars;
-	CharacterVector outVec(by);
-	std::string str;
-	
-	
-	LogicalVector na_sep=is_na(seperator);
-	bool have_sep=true;
-	if ( na_sep[0]==true ) {
-		have_sep=false;
-	}
-	std::string sep;
-	if ( have_sep ) {		
-		sep=seperator[0];
-	}
-	for (int i=0; i<by; i++) {
-		str.clear() ;
-		for(int j=0; j<nrKeyVars; j++) {
-			str.append(stringVec[i+by*j]);
-			if ( j < (nrKeyVars-1) and (have_sep) ) {
-				str.append(sep);
-			}
-		}
-		outVec[i]=str;
-	}
-	return outVec;
+  CharacterVector stringVec(stringvec);
+  int nrRows = stringVec.size();
+  int by = nrRows / nrKeyVars;
+  CharacterVector outVec(by);
+  std::string str;
+  LogicalVector na_sep=is_na(seperator);
+  bool have_sep=true;
+  if ( na_sep[0]==true ) {
+    have_sep=false;
+  }
+  std::string sep;
+  if ( have_sep ) {
+    sep=seperator[0];
+  }
+  for (int i=0; i<by; i++) {
+    str.clear() ;
+    for(int j=0; j<nrKeyVars; j++) {
+      str.append(stringVec[i+by*j]);
+      if ( j < (nrKeyVars-1) and (have_sep) ) {
+        str.append(sep);
+      }
+    }
+    outVec[i]=str;
+  }
+  return outVec;
 }
