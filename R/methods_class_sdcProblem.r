@@ -1151,6 +1151,7 @@ setMethod("c_hitas_cpp", signature=c("sdcProblem", "list"), definition=function(
 })
 
 setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=function(object, input) {
+  freq <- id <- sdcStatus <- NULL
   verbose <- input$verbose
   pI <- g_problemInstance(object)
   indices <- g_partition(object)$indices
@@ -1933,6 +1934,7 @@ setMethod("c_cellID", signature=c("sdcProblem", "list"), definition=function(obj
 })
 
 setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(object, input) {
+  Freq <- NULL
   time.start <- proc.time()
 
   pI <- g_problemInstance(object)
