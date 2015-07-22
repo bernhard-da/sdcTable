@@ -278,8 +278,8 @@ setClass(
     if ( any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
     }
-    if ( !all(g_sdcStatus(object) %in% c('s','u','x','z')) ) {
-      stop("problemInstance:: valid codes for sdcStatus are 'z', 's', 'x' or 'u'!\n")
+    if ( !all(g_sdcStatus(object) %in% c('w','s','u','x','z')) ) {
+      stop("problemInstance:: valid codes for sdcStatus are 'w', 'z', 's', 'x' or 'u'!\n")
     }
     return(TRUE)
   }

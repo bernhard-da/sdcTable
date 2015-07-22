@@ -8,7 +8,7 @@
 #' \item freq: vector of frequencies
 #' \item w: a vector of weights used in the linear problem (or NULL)
 #' \item numVars: a list containing numeric vectors containing values for numerical variables for each table cell (or NULL)
-#' \item sdcStatus: a vector containing the suppression state for each cell (possible values are 'u': primary suppression, 'x': secondary suppression, 'z': forced for publication, 's': publishable cell
+#' \item sdcStatus: a vector containing the suppression state for each cell (possible values are 'u': primary suppression, 'x': secondary suppression, 'z': forced for publication, 's': publishable cell, 'w': dummy cells that are considered only when applying the simple greedy heuristic to protect the table)
 #' \item lb: lower bound assumed to be known by attackers for each table cell
 #' \item ub: upper bound assumed to be known by attackers for each table cell
 #' \item LPL: lower protection level required to protect table cells

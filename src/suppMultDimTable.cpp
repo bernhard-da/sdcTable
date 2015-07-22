@@ -7,6 +7,7 @@ using namespace Rcpp;
  * 1: primary suppression ("u")
  * 2: secondary suppression ("x")
  * 3: non-applicable ("z")
+ * 4: dummy-cells ("w")
  */
 IntegerVector convert_sdcStatus_to_num(CharacterVector sdcStatus) {
   int n=sdcStatus.size();
@@ -23,6 +24,9 @@ IntegerVector convert_sdcStatus_to_num(CharacterVector sdcStatus) {
     }
     if ( sdcStatus[i]=="z" ) {
       result[i] = 3;
+    }
+    if ( sdcStatus[i]=="w" ) {
+      result[i] = 4;
     }
   }
   return(result);
@@ -113,6 +117,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
               int nr_supps=0;
               int nCells=cur_freq.size();
               int upVal=max(cur_freq)+1;
+              int nr_dummycells=0;
               for ( int kk=0; kk<nCells; kk++ ) {
                 if ( (cur_sdcStatus[kk] == 1) or (cur_sdcStatus[kk]==2) ) {
                   nr_supps = nr_supps+1;
@@ -121,14 +126,18 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 if ( cur_sdcStatus[kk] == 3 ) {
                   cur_freq[kk]=upVal;
                 }
+                if ( cur_sdcStatus[kk] == 4 ) {
+                  nr_dummycells=nr_dummycells+1;
+                }
               }
 
               /*
                 we have at least 1 observation in the current
-                simple table but only a single suppressed cell
+                simple table but only a single suppressed cell and
+                the number of dummy-cells (which should never be published) is 0
               */
               ind_x[0]=-1;
-              if ( (nCells > 1) & (nr_supps == 1) ) {
+              if ( (nCells > 1) & (nr_supps == 1) & (nr_dummycells==0) ) {
                 /* show output on current simple table */
                 if ( debug == true ) {
                   Rcout << "--> one suppression in simpleTable " << j+1 << "|" << nrSimpleTables << " and dim " << i+1 << std::endl;
