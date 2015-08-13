@@ -1172,7 +1172,12 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   dimVars <- match(vNames, names(dat))
   nDims <- length(dimVars)
   freqInd <- match("freq", colnames(dat))
-  combs <- combn(vNames, length(vNames)-1)
+  if ( length(vNames)==1 ) {
+    combs <- combn(vNames, 1)
+  } else {
+    combs <- combn(vNames, length(vNames)-1)
+  }
+
   tmpIndices <- rep(NA, length(vNames))
 
   nrGroups <- length(indices)
@@ -1184,12 +1189,18 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
     length(subIndices[[group]]) <- nrTabs
     for (tab in 1:nrTabs) {
       subDat <- dat[indices[[group]][[tab]],]
-      for ( i in 1:ncol(combs)) {
-        setkeyv(subDat, combs[,i])
-        cn <- paste0("ind_",i,"_tmp")
-        expr <- parse(text = paste0(cn, ":=.GRP"))
-        subDat[,eval(expr), by=key(subDat)]
-        tmpIndices[i] <- ncol(subDat)
+      # only one dimension!
+      if ( ncol(combs) == 1 ) {
+        subDat$ind_1_tmp <- 1
+        tmpIndices[1] <- ncol(subDat)
+      } else {
+        for ( i in 1:ncol(combs)) {
+          setkeyv(subDat, combs[,i])
+          cn <- paste0("ind_",i,"_tmp")
+          expr <- parse(text = paste0(cn, ":=.GRP"))
+          subDat[,eval(expr), by=key(subDat)]
+          tmpIndices[i] <- ncol(subDat)
+        }
       }
       setkeyv(subDat, vNames)
       subIndices[[group]][[tab]] <- as.list(subDat[,tmpIndices, with=F])
