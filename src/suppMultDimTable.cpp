@@ -150,7 +150,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                   }
                 }
 
-                ind_x=which_min(cur_freq);
+                ind_x[0]=which_min(cur_freq);
                 if ( cur_sdcStatus[ind_x[0]]!=0 ) {
                   /*
                     In this case, it is not possible to find a suppression
@@ -182,7 +182,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                     }
                     */
                   }
-                  ind_x = which_min(cur_freq);
+                  ind_x[0] = which_min(cur_freq);
                   if ( ind_x.size()==0 ) {
                     stop("Something went horribly wrong!\n");
                   }
