@@ -1,19 +1,19 @@
-Package: sdcTable
-Version: 0.19.5
-Date: 2015-09-15
-Title: Methods for Statistical Disclosure Control in Tabular Data
-Description: Methods for statistical disclosure control in
-    tabular data such as primary and secondary cell suppression are covered in
-    this package.
-Author: Bernhard Meindl
-Maintainer: Bernhard Meindl <bernhard.meindl@statistik.gv.at>
-URL: https://github.com/bernhard-da/sdcTable
-BugReports: https://github.com/bernhard-da/sdcTable/issues
-Depends: stringr, methods, Rcpp (>= 0.11.0), Rglpk, lpSolveAPI
-Imports: data.table
-Suggests: testthat (>= 0.3)
-LazyLoad: yes
-LinkingTo: Rcpp
-License: GPL (>= 2)
-URL: http://www.statistik.at
-SystemRequirements: GLPK library, including -dev or -devel part
+Package: sdcTable 
+Version: 0.19.6 
+Date: 2015-09-15 
+Title: Methods for Statistical Disclosure Control in Tabular Data 
+Description: Methods for statistical disclosure control in 
+    tabular data such as primary and secondary cell suppression are covered in 
+    this package. 
+Author: Bernhard Meindl 
+Maintainer: Bernhard Meindl <bernhard.meindl@statistik.gv.at> 
+URL: https://github.com/bernhard-da/sdcTable 
+BugReports: https://github.com/bernhard-da/sdcTable/issues 
+Depends: stringr, methods, Rcpp (>= 0.11.0), Rglpk, lpSolveAPI 
+Imports: data.table 
+Suggests: testthat (>= 0.3) 
+LazyLoad: yes 
+LinkingTo: Rcpp 
+License: GPL (>= 2) 
+URL: http://www.statistik.at 
+SystemRequirements: GLPK library, including -dev or -devel part 
