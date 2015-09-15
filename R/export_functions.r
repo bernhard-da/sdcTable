@@ -395,6 +395,7 @@ protectTable <- function(object, method, ...) {
 
   if ( method == 'SIMPLEHEURISTIC' ) {
     out <- c_quick_suppression(object, input=paraList)
+    out <- out$object
   } else {
     if ( paraList$useC ) {
       if ( method == "OPT" ) {
