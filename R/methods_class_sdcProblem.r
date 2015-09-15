@@ -1218,7 +1218,7 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   if ( verbose ) {
     cat("[done]\n")
   }
-  invisible(object)
+  invisible(list(object=object, zstatus=res$status_z))
 })
 
 setMethod("c_cut_and_branch", signature=c("sdcProblem", "list"), definition=function(object, input) {
@@ -1979,6 +1979,7 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
     out <- cbind(out, nV)
   }
   out[,sdcStatus:=g_sdcStatus(pI)]
+  out[sdcStatus=="z", sdcStatus:="s"]
 
   # add duplicates
   hasDups <- sapply(1:length(levelObj), function(x) {

@@ -149,44 +149,21 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
       }
     }
 
-    ss <- list()
+    # remove duplicates, standardize and calculate strID
+    dt <- rawData[,dimVarInd, with=F]
     for ( i in seq_along(dimVarInd) ) {
-      remove.vals <- FALSE
-      remove_ind <- NULL
-      if ( !c_has_default_codes(inputDims[[i]], input=rawData[[dimVarInd[i]]]) ) {
-        dups <- g_dups(inputDims[[i]])
-        if ( length(dups) > 0 ) {
-          dupsUp <- g_dups_up(inputDims[[i]])
-          for ( k in length(dups):1 ) {
-            ind <- which(rawData[[dimVarInd[i]]]==dups[k])
-            if ( length(ind) > 0 ) {
-              if ( length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0 ) {
-                remove.vals <- TRUE
-                remove_ind <- c(remove_ind, ind)
-              } else {
-                rawData[[dimVarInd[i]]][ind] <- dupsUp[k]
-              }
-            }
-          }
-          if ( remove.vals ) {
-            rawData <- rawData[-remove_ind,]
-            inputDims[[i]]
-          }
-          s_raw_data(inputData) <- list(rawData)
-        }
-        ss[[i]] <- c_standardize(inputDims[[i]], input=rawData[[dimVarInd[i]]])
-      } else {
-        ss[[i]] <- rawData[[dimVarInd[i]]]
+      dups <- g_dups(inputDims[[i]])
+      if ( length(dups) > 0 ) {
+        cmd <- paste0("dt <- dt[!",names(dt)[i],"%in% c('",paste(dups, collapse="','"),"')]")
+        eval(parse(text=cmd))
       }
-      # remove entries in ss[[1]...ss[[i-1]]
-      if ( remove.vals ) {
-        if ( i == 1 ) {
-          ss[[1]] <- ss[[1]][-remove_ind]
-        } else {
-          for ( z in 1:(i-1)) {
-            ss[[z]] <- ss[[z]][-remove_ind]
-          }
-        }
+    }
+    ss <- list()
+    for ( i in 1:ncol(dt) ) {
+      if ( !c_has_default_codes(inputDims[[i]], input=dt[[i]]) ) {
+        ss[[i]] <- c_standardize(inputDims[[i]], input=dt[[dimVarInd[i]]])
+      } else {
+        ss[[i]] <- dt[[i]]
       }
     }
     strID <- pasteStrVec(as.vector(unlist(ss)), length(posIndex))

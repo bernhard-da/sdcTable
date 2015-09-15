@@ -35,11 +35,13 @@ IntegerVector convert_sdcStatus_to_num(CharacterVector sdcStatus) {
 // [[Rcpp::export]]
 List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, IntegerVector dimVars, bool verbose) {
   bool debug=false;
+  bool zcells_changed=false;
   Function cpp_print("print");
 
   int nrDims=dimVars.size();
-  Rcout << "we are going to protect an " << nrDims << " dimensional dataset!" << std::endl;
-
+  if ( verbose == true ) {
+    Rcout << "we are going to protect an " << nrDims << " dimensional dataset!" << std::endl;
+  }
   List subList;
 
   /* extracting input data from list */
@@ -152,6 +154,10 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
 
                 ind_x[0]=which_min(cur_freq);
                 if ( cur_sdcStatus[ind_x[0]]!=0 ) {
+                  if ( debug ) {
+                    Rcout << "not possible to find a 's'-cell!" << std::endl;
+                  }
+                  zcells_changed=true;
                   /*
                     In this case, it is not possible to find a suppression
                     pattern with only 's'-cells.
@@ -161,7 +167,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                   IntegerVector xx=seq_along(cur_sdcStatus);
                   IntegerVector ind_x2=xx[(cur_sdcStatus==3) & (cur_freq>0)];
                   if ( ind_x2.size()==0 ) {
-                    stop("cannot find suitable suppression pattern! (no cells with status=3 > freq>0 available!)\n");
+                    stop("cannot find suitable suppression pattern! (no cells with status=3 and Freq>0 available!)\n");
                   }
                   int ii=0;
                   for ( int z=0; z<ind_x2.size(); z++ ) {
@@ -272,5 +278,6 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
     Rcpp::Named("id")=id,
     Rcpp::Named("freq")=freq,
     Rcpp::Named("sdcStatus")=sdcStatus,
-    Rcpp::Named("total_new_supps")=total_new_suppsv);
+    Rcpp::Named("total_new_supps")=total_new_suppsv,
+    Rcpp::Named("status_z")=zcells_changed);
  }
