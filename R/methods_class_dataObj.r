@@ -139,7 +139,7 @@ setMethod(f='init.dataObj', signature=c('list'),
         w <- datO[,list(w=sum(get(colnames(datO)[weightInd]))), by=key(datO)]$w
       }
       set(rawData, NULL, colnames(datO)[weightInd], as.numeric(w))
-      weightVarInd <- ncol(rawData)
+      weightInd <- ncol(rawData)
     }
 
     ## do not use factors
