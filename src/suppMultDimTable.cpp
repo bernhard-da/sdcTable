@@ -153,7 +153,9 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                      In this case, it is not possible to find a pattern with only 's'-cells.
                      we need to relax 'z' (code 3) cells to 's' (code 0) and try again
                      */
-                    Rcout << "we need to set 'z'-cells to 's'!" << std::endl;
+                    if ( verbose == true ) {
+                      Rcout << "we need to set 'z'-cells to 's'!" << std::endl;
+                    }
                     zcells_changed=true;
                     override=true;
                     LogicalVector ii=(cur_sdcStatus==3) & (cur_freq>0);
