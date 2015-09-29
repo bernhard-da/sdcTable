@@ -1167,8 +1167,8 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   setnames(dat, vNames)
   dat[,id:=1:nrow(dat)]
   dat[,freq:=g_freq(pI)]
+  dat[,weights:=g_weight(pI)]
   dat[,sdcStatus:=g_sdcStatus(pI)]
-
   dimVars <- match(vNames, names(dat))
   nDims <- length(dimVars)
   freqInd <- match("freq", colnames(dat))

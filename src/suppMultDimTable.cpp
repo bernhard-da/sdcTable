@@ -40,28 +40,27 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
 
   int nrDims=dimVars.size();
   if ( verbose == true ) {
-    Rcout << "we are going to protect an " << nrDims << " dimensional dataset!" << std::endl;
+    Rcout << "We have to protect an " << nrDims << " dimensional dataset!" << std::endl;
   }
-  List subList;
-
   /* extracting input data from list */
   IntegerVector freq=dat["freq"];
+  NumericVector weights=dat["weights"];
   CharacterVector sdcStatus=dat["sdcStatus"];
   IntegerVector sdcStatus_num=convert_sdcStatus_to_num(sdcStatus);
   IntegerVector id=dat["id"];
-
-  IntegerVector current_indices;
-
-  IntegerVector st_freq;
+  IntegerVector current_indices,st_freq,st_sdcStatus_num,st_id;
+  NumericVector st_weights;
   CharacterVector st_sdcStatus;
-  IntegerVector st_sdcStatus_num;
-  IntegerVector st_id;
-  List st_subIndices;
+  List st_subIndices, subList;
   int nrGroups=indices.size();
-  IntegerVector ind_x(1);
+  int ind_x=-1;
   bool runInd=true;
+  int counter=1;
   int total_new_supps=0; /* total number of required secondary supps */
   while (runInd==true ) {
+    if ( verbose ) {
+      Rcout << "Start of run " << counter << std::endl;
+    }
     bool override=false;
     for ( int group=0; group<nrGroups; group++ ) {
       List subList=indices[group];
@@ -72,15 +71,10 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
         List subList=indices[group];
         current_indices=subList[tab];
         int n_st=current_indices.size();
-        //if ( verbose ) {
-        //  Rcout << "Group " << group+1 <<"|" << nrGroups;
-        //  Rcout << " | subTable " << tab+1 <<"|" << nrTabs;
-        //  Rcout << " | nrElements: " << n_st;
-        //  R_FlushConsole();
-        //}
 
         /* Select freqs and suppression pattern of current subtable */
         st_freq=freq[current_indices-1];
+        st_weights=weights[current_indices-1];
         st_sdcStatus=sdcStatus[current_indices-1];
         st_sdcStatus_num=sdcStatus_num[current_indices-1];
         st_id=id[current_indices-1]; /* ids in entire dataset, c-style (starting with 0!) */
@@ -110,26 +104,37 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
 
               /* extract values of current simple table */
               IntegerVector cur_freq=st_freq[ind_c];
-              IntegerVector cur_freq_o=clone(cur_freq);
+              NumericVector cur_weights=st_weights[ind_c];
+              NumericVector cur_weights_o=clone(cur_weights);
               IntegerVector cur_sdcStatus=st_sdcStatus_num[ind_c];
               IntegerVector cur_id=st_id[ind_c];
               IntegerVector cur_sub_ids=sub_ids[ind_c];
 
+              LogicalVector isCandidate(cur_freq.size());
+
               /* calculating the number of suppressed cells */
               int nr_supps=0;
               int nCells=cur_freq.size();
-              int upVal=max(cur_freq)+1;
+              int upVal=max(cur_weights)+1.0;
               int nr_dummycells=0;
+              int nr_zcells=0;
               for ( int kk=0; kk<nCells; kk++ ) {
                 if ( (cur_sdcStatus[kk] == 1) or (cur_sdcStatus[kk]==2) ) {
                   nr_supps = nr_supps+1;
-                  cur_freq[kk]=upVal;
+                  cur_weights[kk]=upVal;
                 }
                 if ( cur_sdcStatus[kk] == 3 ) {
-                  cur_freq[kk]=upVal;
+                  cur_weights[kk]=upVal;
                 }
                 if ( cur_sdcStatus[kk] == 4 ) {
                   nr_dummycells=nr_dummycells+1;
+                }
+                if ( (cur_sdcStatus[kk]==0) & (cur_freq[kk]>0) ) {
+                  isCandidate[kk]=true;
+                }
+                /* we only count 'z' cells with frequency > 0 */
+                if ( (cur_sdcStatus[kk] == 3) & (cur_freq[kk] > 0) ) {
+                  nr_zcells=nr_zcells+1;
                 }
               }
 
@@ -138,74 +143,71 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 simple table but only a single suppressed cell and
                 the number of dummy-cells (which should never be published) is 0
               */
-              ind_x[0]=-1;
               if ( (nCells > 1) & (nr_supps == 1) & (nr_dummycells==0) ) {
-                /* show output on current simple table */
-                if ( debug == true ) {
-                  Rcout << "--> one suppression in simpleTable " << j+1 << "|" << nrSimpleTables << " and dim " << i+1 << std::endl;
-                  for ( int m=0; m<nCells; m++) {
-                    Rcout << "--> index: " << cur_id[m];
-                    Rcout << " (freq:" << cur_freq_o[m];
-                    Rcout << " | status: " << cur_sdcStatus[m];
-                    Rcout << " | sub_ids: " << cur_sub_ids[m] << ")" << std::endl;
-                    R_FlushConsole();
-                  }
-                }
-
-                ind_x[0]=which_min(cur_freq);
-                if ( cur_sdcStatus[ind_x[0]]!=0 ) {
-                  if ( debug ) {
-                    Rcout << "not possible to find a 's'-cell!" << std::endl;
-                  }
-                  zcells_changed=true;
-                  /*
-                    In this case, it is not possible to find a suppression
-                    pattern with only 's'-cells.
-                    we need to relax 'z' (code 3) cells to 's' (code 0) and try again
-                  */
-                  override=true;
-                  IntegerVector xx=seq_along(cur_sdcStatus);
-                  IntegerVector ind_x2=xx[(cur_sdcStatus==3) & (cur_freq>0)];
-                  if ( ind_x2.size()==0 ) {
-                    stop("cannot find suitable suppression pattern! (no cells with status=3 and Freq>0 available!)\n");
-                  }
-                  int ii=0;
-                  for ( int z=0; z<ind_x2.size(); z++ ) {
-                    ii = ind_x2[z]-1;
-                    if ( cur_freq_o[ii] > 0 ) {
-                      cur_freq[ii] = cur_freq_o[ii]; // reset st_freq to original value
-                      cur_sdcStatus[ii] = 0; // set cur_sdcStatus temporarily to 's' (0)
-                    }
-
+                int nrCandidates=sum(isCandidate);
+                if ( nrCandidates==0 ) {
+                  if ( nr_zcells==0 ) {
+                    stop("Unfortunately, it is not possible to find a suppression pattern!");
+                  } else {
                     /*
+                     In this case, it is not possible to find a pattern with only 's'-cells.
+                     we need to relax 'z' (code 3) cells to 's' (code 0) and try again
+                     */
+                    Rcout << "we need to set 'z'-cells to 's'!" << std::endl;
+                    zcells_changed=true;
+                    override=true;
+                    LogicalVector ii=(cur_sdcStatus==3) & (cur_freq>0);
+                    cur_weights[ii] = cur_weights_o[ii]; // reset to original value
+                    cur_sdcStatus[ii] = 0; // set cur_sdcStatus temporarily to 's' (0)
                     if ( debug ) {
-                      Rcout << "ii: " << ii;
-                      Rcout << " | cur_freq: " << cur_freq[ii];
-                      Rcout << " | cur_freq_o: " << cur_freq_o[ii];
-                      Rcout << " | cur_sdcStatus: " << cur_sdcStatus[ii];
-                      Rcout << " | sub_ids: " << cur_sub_ids[ii] << std::endl;
-                      R_FlushConsole();
+                      Rcout << "ii: " << ii << std::endl;
+                      Rcout << "cur_freq: " << cur_freq << std::endl;
+                      Rcout << "cur_weights: " << cur_weights << std::endl;
+                      Rcout << "cur_weights_o: " << cur_weights_o << std::endl;
+                      Rcout << "cur_sdcStatus: " << cur_sdcStatus << std::endl;
+                      Rcout << "cur_sub_ids: " << cur_sub_ids << std::endl;
                     }
-                    */
-                  }
-                  ind_x[0] = which_min(cur_freq);
-                  if ( ind_x.size()==0 ) {
-                    stop("Something went horribly wrong!\n");
+                    isCandidate=(cur_sdcStatus==0);
                   }
                 }
-              }
-              if ( ind_x[0]!=-1 ) {
-                int finalIndex=cur_id[ind_x[0]]; // c-indices
-                int final_stIndex=cur_sub_ids[ind_x[0]];
+
+                /* show output on current simple table */
+                if ( debug==true ) {
+                  Rcout << "### simpleTable " << j+1 << "|" << nrSimpleTables << " | dim " << i+1 << " ###" << std::endl;
+                }
+                if ( debug == true ) {
+                  Rcout << "--> id: " << cur_id << std::endl;
+                  Rcout << "--> freq: " << cur_freq << std::endl;
+                  Rcout << "--> sdcStatus: " << cur_sdcStatus << std::endl;
+                  Rcout << "--> candidates: " << isCandidate << std::endl;
+                  Rcout << "--> weights: " << cur_weights << std::endl;
+                  R_FlushConsole();
+                }
+
+                /* Restrict to candidate cells */
+                cur_id=cur_id[isCandidate];
+                cur_freq=cur_freq[isCandidate];
+                cur_weights=cur_weights[isCandidate];
+                cur_sub_ids=cur_sub_ids[isCandidate];
+                cur_sdcStatus=cur_sdcStatus[isCandidate];
+                ind_x=which_min(cur_weights);
+
+                int finalIndex=cur_id[ind_x]; // c-indices
+                int final_stIndex=cur_sub_ids[ind_x];
 
                 /* print info about newly suppressed cell */
                 if ( debug ) {
-                  Rcout << "--> Suppression found | x_ind: " << ind_x[0];
-                  Rcout << " | freq: " << freq[finalIndex];
+                  //Rcout << "--> Suppression found | x_ind: " << ind_x;
+                  Rcout << "--> Suppression found | freq: " << freq[finalIndex];
+                  Rcout << " | weight: " << weights[finalIndex];
                   Rcout << " | finalIndex: " << finalIndex;
-                  Rcout << " | sdcStatus_num: " << sdcStatus_num[finalIndex];
-                  Rcout << " | final_stIndex: " << final_stIndex << std::endl;
+                  Rcout << " | sdcStatus_num: " << sdcStatus_num[finalIndex] << std::endl;
                 }
+                if ( debug ) {
+                  Rcout << "--> suppressing cell "<< finalIndex << " with freq=" << freq[finalIndex];
+                  Rcout << " and weight=" << weights[finalIndex] << "." << std::endl;
+                }
+
                 additional_supps=additional_supps+1;
 
                 /* check if suppressed cell is > 0! */
@@ -221,13 +223,18 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
               }
             } /* end j-loop (simple tables) */
           } /* end i-loop for groups */
+
           if ( additional_supps == 0 ) {
             /* we can stop the inner loop and move to the next subtable */
-            if ( (verbose==true) & (suppsAdded >0 ) ) {
-              Rcout << "Group " << group+1 <<"|" << nrGroups;
-              Rcout << " | subTable " << tab+1 <<"|" << nrTabs;
-              Rcout << " | nrElements: " << n_st;
-              Rcout << " | additional supp: " << suppsAdded << std::endl;
+            if ( verbose == true ) {
+              Rcout << "Check of group " << group+1 <<"|" << nrGroups << ": ";
+              Rcout << "subTable " << tab+1 <<"|" << nrTabs;
+              Rcout << " | nrCells: " << n_st;
+              if ( suppsAdded == 0 ) {
+                Rcout << " | everything ok/nothing todo." << std::endl;
+              } else {
+                Rcout << " | additionally suppressed cells: " << suppsAdded << std::endl;
+              }
               R_FlushConsole();
             }
             newSuppsAdded=false;
@@ -254,23 +261,20 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
     if ( override==false ) {
       runInd=false;
     } else {
+      counter=counter+1;
       /* we need to set all 'z' cells back to to 's' */
-      for ( int i=0; i<freq.size(); i++) {
-        if ( (sdcStatus_num[i]==0) or (sdcStatus_num[i]==3) ) {
-          if ( freq[i]>0 ) {
-            sdcStatus_num[i]=0;
-            sdcStatus[i]="s";
-          } else {
-            sdcStatus_num[i]=3;
-            sdcStatus[i]="z";
-          }
-        }
-      }
+      LogicalVector vv1=((sdcStatus_num==0) | (sdcStatus_num==3)) & (freq > 0);
+      sdcStatus_num[vv1]=0;
+      sdcStatus[vv1]="s";
+
+      LogicalVector vv2=((sdcStatus_num==0) | (sdcStatus_num==3)) & (freq <= 0);
+      sdcStatus_num[vv2]=3;
+      sdcStatus[vv2]="z";
     }
   }
 
   if ( verbose ) {
-    Rcout << "Finished. Total Suppressions: " << total_new_supps << std::endl;
+    Rcout << "Finished. Total number of new suppressions: " << total_new_supps << std::endl;
   }
   IntegerVector total_new_suppsv(1);
   total_new_suppsv[0]=total_new_supps;
