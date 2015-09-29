@@ -348,8 +348,8 @@ setMethod(f='init.dimVar', signature=c('list'),
     }
 
     inputList <- list()
-    inputList$levels <- nchar(as.character(input[,1]))
-    inputList$codes <- as.character(input[,2])
+    inputList$levels <- nchar(as.character(input[[1]]))
+    inputList$codes <- as.character(input[[2]])
 
     # get complete level-structure
     infoComplete <- calcInfo(inputList)
