@@ -192,8 +192,15 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 cur_weights=cur_weights[isCandidate];
                 cur_sub_ids=cur_sub_ids[isCandidate];
                 cur_sdcStatus=cur_sdcStatus[isCandidate];
-                ind_x=which_min(cur_weights);
 
+                /* find the index with lowest weights but take the
+                 * highest index if multiple obs exist!
+                 * This helps to prevent suppressing marginal cells
+                */
+                double minVal=min(cur_weights);
+                IntegerVector v=seq(0, cur_weights.size()-1);
+                IntegerVector tmpres=v[cur_weights==minVal];
+                ind_x=max(tmpres);
                 int finalIndex=cur_id[ind_x]; // c-indices
                 int final_stIndex=cur_sub_ids[ind_x];
 
