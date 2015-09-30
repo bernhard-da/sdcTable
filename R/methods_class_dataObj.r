@@ -138,8 +138,14 @@ setMethod(f='init.dataObj', signature=c('list'),
       } else {
         w <- datO[,list(w=sum(get(colnames(datO)[weightInd]))), by=key(datO)]$w
       }
-      set(rawData, NULL, colnames(datO)[weightInd], as.numeric(w))
-      weightInd <- ncol(rawData)
+      # we set this column only, if weightInd does not already exist in rawData
+      # this could be the case, if a variable also used as numVar is specified as weightVar
+      cnW <- colnames(datO)[weightInd]
+      weightInd <- match(cnW, names(rawData))
+      if ( is.na(weightInd) ) {
+        set(rawData, NULL, colnames(datO)[weightInd], as.numeric(w))
+        weightInd <- ncol(rawData)
+      }
     }
 
     ## do not use factors
