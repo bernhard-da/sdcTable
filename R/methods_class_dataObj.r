@@ -69,7 +69,10 @@ setMethod(f='init.dataObj', signature=c('list'),
     numVarInd <- input$numVarInd
     weightInd <- input$weightInd
     sampWeightInd <- input$sampWeightInd
-
+    wExists <- FALSE
+    if ( !is.null(weightInd)) {
+      wExists <- ifelse(weightInd==freqVarInd | weightInd %in% numVarInd, TRUE, FALSE)
+    }
     isMicroData <- FALSE
 
     ## aggregate data, use data.table
@@ -140,11 +143,14 @@ setMethod(f='init.dataObj', signature=c('list'),
       }
       # we set this column only, if weightInd does not already exist in rawData
       # this could be the case, if a variable also used as numVar is specified as weightVar
-      cnW <- colnames(datO)[weightInd]
-      weightInd <- match(cnW, names(rawData))
-      if ( is.na(weightInd) ) {
+      if ( !wExists ) {
         set(rawData, NULL, colnames(datO)[weightInd], as.numeric(w))
         weightInd <- ncol(rawData)
+      } else {
+        weightInd <- match(colnames(datO)[weightInd], names(rawData))
+        if ( is.na(weightInd)) {
+          weightInd <- match("freq", names(rawData))
+        }
       }
     }
 
