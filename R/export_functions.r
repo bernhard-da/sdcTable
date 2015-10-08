@@ -728,7 +728,7 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #'
 #' @param objectA a \code{\link{sdcProblem-class}} object
 #' @param objectB a \code{\link{sdcProblem-class}} object
-#' @param commonCells a list object defining common cells in code{objectA} and \code{objectB}. For each variable that has one or more common codes in both tables, a list element needs to be specified.
+#' @param commonCells a list object defining common cells in \code{objectA} and \code{objectB}. For each variable that has one or more common codes in both tables, a list element needs to be specified.
 #' \itemize{
 #' \item List-elements of length 3: Variable has exact same levels and structure in both tables
 #' \itemize{
