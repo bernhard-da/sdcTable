@@ -1,6 +1,6 @@
 Package: sdcTable
-Version: 0.19.8
-Date: 2015-09-30
+Version: 0.19.9
+Date: 2015-10-19
 Title: Methods for Statistical Disclosure Control in Tabular Data
 Description: Methods for statistical disclosure control in
     tabular data such as primary and secondary cell suppression are covered in

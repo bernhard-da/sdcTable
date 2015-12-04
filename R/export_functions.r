@@ -839,79 +839,63 @@ cellInfo <- function(object, characteristics, varNames, verbose=FALSE) {
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   f.calcCommonCellIndices <- function(input1, input2, commonCells) {
-    pI1 <- g_problemInstance(input1)
-    pI2 <- g_problemInstance(input2)
-
-    commonInd1 <- 1:g_nrVars(pI1)
-    commonInd2 <- 1:g_nrVars(pI2)
-
+    id1 <- id2 <- NULL
+    dat1 <- g_df(input1); dat1$id1 <- 1:nrow(dat1)
+    dat2 <- g_df(input2); dat2$id2 <- 1:nrow(dat2)
+    dat1$strID <- dat1$sdcStatus <- NULL
+    dat2$strID <- dat2$sdcStatus <- NULL
     dI1 <- g_dimInfo(input1)
     dI2 <- g_dimInfo(input2)
 
-    strInfo1 <- g_str_info(dI1)
-    strInfo2 <- g_str_info(dI2)
-
-    vNames1 <- g_varname(dI1)
-    vNames2 <- g_varname(dI2)
-
-    varsUsed1 <- as.character(sapply(commonCells, function(x) x[[1]]))
-    varsUsed2 <- as.character(sapply(commonCells, function(x) x[[2]]))
-
-    varsUsed1 <- which(vNames1 %in% varsUsed1)
-    varsUsed2 <- which(vNames2 %in% varsUsed2)
-
-    varsNotUsed1 <- setdiff(1:length(vNames1), varsUsed1)
-    varsNotUsed2 <- setdiff(1:length(vNames2), varsUsed2)
-
-    ### for each common variable -> get original labels from dI
-    codesDefault1 <- lapply(1:length(strInfo1), function(x) {
-      mySplit(g_strID(pI1), strInfo1[[x]][1]:strInfo1[[x]][2])
-    })
-    codesDefault2 <- lapply(1:length(strInfo2), function(x) {
-      mySplit(g_strID(pI2), strInfo2[[x]][1]:strInfo2[[x]][2])
-    })
-
-    codesOrig1 <-  list()
-    for ( i in 1:length(codesDefault1) ) {
-      codesOrig1[[i]] <- c_match_orig_codes(object=g_dim_info(dI1)[[i]], input=codesDefault1[[i]] )
+    # restrict to totals in non-overlapping variables in dataset1
+    totvars <- setdiff(dI1@vNames, sapply(commonCells, function(x) x[[1]] ))
+    if ( length(totvars) > 0 ) {
+      for ( i in 1:length(totvars)) {
+        cmd <- paste0("dat1 <- dat1[",totvars[i],"=='",dI1@dimInfo[[totvars[i]]]@codesDefault[1],"']")
+        eval(parse(text=cmd))
+      }
     }
-    codesOrig2 <-  list()
-    for ( i in 1:length(codesDefault2) ) {
-      codesOrig2[[i]] <- c_match_orig_codes(object=g_dim_info(dI2)[[i]], input=codesDefault2[[i]] )
-    }
-
-    ### find matching indices
-    for ( i in 1:length(commonCells) ) {
-      # it is not the same variable --> different characterisics
-      if ( length(commonCells[[i]]) != 3 ) {
-        commonInd1 <- setdiff(commonInd1, which(!codesOrig1[[varsUsed1[i]]] %in% commonCells[[i]][[3]]))
-        commonInd2 <- setdiff(commonInd2, which(!codesOrig2[[varsUsed2[i]]] %in% commonCells[[i]][[4]]))
+    # restrict to totals in non-overlapping variables in dataset2
+    totvars <- setdiff(dI2@vNames, sapply(commonCells, function(x) x[[2]] ))
+    if ( length(totvars) > 0 ) {
+      for ( i in 1:length(totvars)) {
+        cmd <- paste0("dat2 <- dat2[",totvars[i],"=='",dI2@dimInfo[[totvars[i]]]@codesDefault[1],"']")
+        eval(parse(text=cmd))
       }
     }
 
-    # eliminate 'subtotals' from variables that are not used!
-    if ( length(varsNotUsed1) > 0 ) {
-      for ( i in seq_along(varsNotUsed1) )  {
-        subTotals <- g_original_codes(g_dim_info(dI1)[[varsNotUsed1[i]]])[g_minimal_codes(g_dim_info(dI1)[[varsNotUsed1[i]]])==FALSE]
-        commonInd1 <- setdiff(commonInd1, which(!codesOrig1[[varsNotUsed1[i]]] %in% subTotals))
+    for ( i in 1:length(commonCells)) {
+      if ( length(commonCells[[i]]) == 4 ) {
+        cmd1 <- paste0("dat1 <- dat1[,tmpxxx_V",i,":=",commonCells[[i]][[1]],"_o]")
+        cmd2 <- paste0("dat2 <- dat2[,tmpxxx_V",i,":=",commonCells[[i]][[2]],"_o]")
+        eval(parse(text=cmd1))
+        eval(parse(text=cmd2))
+
+        # recode different codes to those of dataset1
+        codes <- commonCells[[i]][[4]]
+        codesX <- commonCells[[i]][[3]]
+        for  ( z in 1:length(codes)) {
+          if ( codes[z] != codesX[z] ) {
+            cmd <- paste0("dat2 <- dat2[tmpxxx_V",i,"=='",codes[z],"',tmpxxx_V",i,":='",codesX[z],"']")
+            eval(parse(text=cmd))
+          }
+        }
+      } else {
+        # nothing to do, codes are the same!
+        cmd1 <- paste0("dat1[,tmpxxx_V",i,":=",commonCells[[i]][[1]],"_o]")
+        cmd2 <- paste0("dat2[,tmpxxx_V",i,":=",commonCells[[i]][[2]],"_o]")
+        eval(parse(text=cmd1))
+        eval(parse(text=cmd2))
       }
     }
 
-    if ( length(varsNotUsed2) > 0 ) {
-      for ( i in seq_along(varsNotUsed2) )  {
-        subTotals <- g_original_codes(g_dim_info(dI2)[[varsNotUsed2[i]]])[g_minimal_codes(g_dim_info(dI2)[[varsNotUsed2[i]]])==FALSE]
-        commonInd2 <- setdiff(commonInd2, which(!codesOrig2[[varsNotUsed2[i]]] %in% subTotals))
-      }
-    }
-
-    if ( length(commonInd1) != length(commonInd2) ) {
-      stop("Error: length of common cell indices must be equal!\n")
-    }
-
-    if ( any(g_freq(pI1)[commonInd1] != g_freq(pI2)[commonInd2]) ) {
+    kV1 <- names(dat1)[grep("tmpxxx", names(dat1))]; setkeyv(dat1, kV1)
+    kV2 <- names(dat2)[grep("tmpxxx", names(dat2))]; setkeyv(dat2, kV2)
+    mm <- merge(dat1, dat2); setkey(mm, id1)
+    if ( any(mm$freq.x != mm$freq.y) ) {
       stop("Error: common cells must have same values!\n")
     }
-    return(list(commonInd1=commonInd1, commonInd2=commonInd2))
+    return(list(commonInd1=mm$id1, commonInd2=mm$id2))
   }
 
   f.checkCommonCells <- function(suppPattern1, suppPattern2, commonCellIndices) {
@@ -922,15 +906,31 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   }
 
   ### arguments ###
-  if ( !method %in% c('HITAS', 'OPT', 'HYPERCUBE') ) {
-    stop("valid methods are 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
+  if ( !method %in% c('HITAS', 'OPT', 'SIMPLEHEURISTIC') ) {
+    stop("valid methods are 'HITAS', 'OPT' or 'SIMPLEHEURISTIC'!\n")
   }
 
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
 
   ### first run
-  outA <- c_anon_worker(objectA, input=paraList)
-  outB <- c_anon_worker(objectB, input=paraList)
+  if ( method == "SIMPLEHEURISTIC" ) {
+    outA <- c_quick_suppression(objectA, input=paraList)$object
+    outB <- c_quick_suppression(objectB, input=paraList)$object
+  } else {
+    if ( paraList$useC ) {
+      if ( method == "OPT" ) {
+        outA <- c_opt_cpp(object=objectA, input=paraList)
+        outB <- c_opt_cpp(object=objectB, input=paraList)
+      }
+      if ( method == "HITAS" ) {
+        outA <- c_hitas_cpp(object=objectA, input=paraList)
+        outB <- c_hitas_cpp(object=objectB, input=paraList)
+      }
+    } else {
+      outA <- c_anon_worker(object=objectA, input=paraList)
+      outB <- c_anon_worker(object=objectB, input=paraList)
+    }
+  }
 
   pI.A <- g_problemInstance(outA)
   pI.B <- g_problemInstance(outB)
