@@ -346,7 +346,9 @@ setMethod(f='init.dimVar', signature=c('list'),
         stop('"@" must be listed in first row and first column in input!\n')
       }
     }
-
+    if ( sum(input[,1]=="@") != 1 ) {
+      stop(paste0('Error in input for dimension "',vName,'". There can be only one overall total coded with "@"!\n'))
+    }
     inputList <- list()
     inputList$levels <- nchar(as.character(input[[1]]))
     inputList$codes <- as.character(input[[2]])
