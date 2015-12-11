@@ -1151,7 +1151,7 @@ setMethod("c_hitas_cpp", signature=c("sdcProblem", "list"), definition=function(
 })
 
 setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=function(object, input) {
-  freq <- id <- sdcStatus <- NULL
+  freq <- id <- sdcStatus <- weights <- NULL
   verbose <- input$verbose
   pI <- g_problemInstance(object)
   indices <- g_partition(object)$indices
