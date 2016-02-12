@@ -587,6 +587,12 @@ getInfo <- function(object, type) {
 #'
 #' # we can verify this:
 #' print(getInfo(problem, type='sdcStatus')[index.tot])
+#' 
+#' # changing slot 'UPL' for all cells
+#' inp <- data.frame(strID=getInfo(problem,'strID'), UPL_old=getInfo(problem,'UPL'))
+#' inp$UPL_new <- inp$UPL_old+1
+#' problem <- setInfo(problem, type='UPL', index=1:nrow(inp), input=inp$UPL_new)
+#' 
 #' @rdname setInfo
 #' @export setInfo
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
