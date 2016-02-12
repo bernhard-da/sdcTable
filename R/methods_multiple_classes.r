@@ -312,10 +312,16 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   ## fill up missing dimensions
   not.finished <- TRUE
+  
+  # which indexvars have any hierarchy (not just the total?)
+  # these indiecs specify the dim-variables we loop over
+  useInds <- which(sapply(y@dimInfo, function(x) {
+    length(x@codesOriginal)>1
+  }))  
   while ( not.finished ) {
     cols <- (nrIndexvars+1):ncol(fullTabObj)
     col.names <- colnames(fullTabObj)[cols]
-    for ( i in 1:nrIndexvars ) {
+    for ( i in useInds ) {
       if ( length(dim.vars) > 1 ) {
         setkeyv(fullTabObj, dim.vars[-i])
       } else {
