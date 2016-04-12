@@ -159,6 +159,18 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                     zcells_changed=true;
                     override=true;
                     LogicalVector ii=(cur_sdcStatus==3) & (cur_freq>0);
+                    /* this is possible required, but not sure if cur_weights[ii] = cur_weights_o[ii] really works */
+                    /*
+                    for ( int zz=0; zz < ii.size(); zz++) {
+                      if ( ii[zz]==true ) {
+                        Rcout << "zz: " << zz << " | ii[zz]: " << ii[zz] << std::endl;
+                        cur_weights[zz] = cur_weights_o[zz]; // reset to original value
+                        cur_sdcStatus[zz] = 0; // set cur_sdcStatus temporarily to 's' (0)
+                      } else {
+                        cur_sdcStatus[zz] = 3;
+                      }
+                    }
+                    */
                     cur_weights[ii] = cur_weights_o[ii]; // reset to original value
                     cur_sdcStatus[ii] = 0; // set cur_sdcStatus temporarily to 's' (0)
                     if ( debug ) {
@@ -207,7 +219,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 /* print info about newly suppressed cell */
                 if ( debug ) {
                   //Rcout << "--> Suppression found | x_ind: " << ind_x;
-                  Rcout << "--> Suppression found | freq: " << freq[finalIndex];
+                  Rcout << "--> Suppression found! freq: " << freq[finalIndex];
                   Rcout << " | weight: " << weights[finalIndex];
                   Rcout << " | finalIndex: " << finalIndex;
                   Rcout << " | sdcStatus_num: " << sdcStatus_num[finalIndex] << std::endl;
