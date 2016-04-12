@@ -331,7 +331,7 @@ setMethod(f='init.dimVar', signature=c('list'),
       if ( ncol(input) > 2 ) {
         stop('input must only have 2 columns!\n')
       }
-      if ( nchar(as.character(input[1,1])) != 1 ) {
+      if ( nchar(as.character(input[[1]][1])) != 1 ) {
         stop('"@" must be listed in first row and first column in input!\n')
       }
     } else {
@@ -342,11 +342,12 @@ setMethod(f='init.dimVar', signature=c('list'),
       if ( ncol(input) > 2 ) {
         stop('input must only have 2 columns!\n')
       }
-      if ( nchar(as.character(input[1,1])) != 1 ) {
+      if ( nchar(as.character(input[[1]][1])) != 1 ) {
         stop('"@" must be listed in first row and first column in input!\n')
       }
+      input <- as.data.table(input)
     }
-    if ( sum(input[,1]=="@") != 1 ) {
+    if ( sum(input[[1]]=="@") != 1 ) {
       stop(paste0('Error in input for dimension "',vName,'". There can be only one overall total coded with "@"!\n'))
     }
     inputList <- list()
