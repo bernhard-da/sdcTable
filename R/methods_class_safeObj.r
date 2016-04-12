@@ -41,14 +41,15 @@ setMethod(f="get.safeObj", signature=c("safeObj", "character", "list"),
   }
 )
 
-#" summarize \code{\link{safeObj-class}} objects
-#"
-#" extract and show information stored in \code{\link{safeObj-class}} objects
-#"
-#" @export
-#" @docType methods
-#" @rdname summary-method
+#' summarize \code{\link{safeObj-class}} objects
+#'
+#' extract and show information stored in \code{\link{safeObj-class}} objects
+#' @param object an object of class \code{\link{safeObj-class}}
+#' @param ... additional arguments, currently ignored
+#' @export
+#' @docType methods
 #' @aliases summary,safeObj-method
+#' @rdname summary.safeObj-method
 setMethod(f="summary", signature="safeObj",
   definition=function (object, ...) {
     cat("\n######################################################\n")
@@ -72,14 +73,14 @@ setMethod(f="summary", signature="safeObj",
   }
 )
 
-#" show \code{\link{safeObj-class}} objects
-#"
-#" extract and show information stored in \code{\link{safeObj-class}} objects
-#"
-#" @aliases show,safeObj-method
-#" @rdname show-method
-#" @export
-#" @docType methods
+#' show \code{\link{safeObj-class}} objects
+#'
+#' extract and show information stored in \code{\link{safeObj-class}} objects
+#' @param object an object of class \code{\link{safeObj-class}}
+#' @export
+#' @docType methods
+#' @aliases show,safeObj-method
+#' @rdname show.safeObj-method
 setMethod(f="show", signature="safeObj",
   definition=function (object) { print(str(object)) }
 )

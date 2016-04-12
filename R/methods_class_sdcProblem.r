@@ -147,8 +147,8 @@ setMethod(f="calc.sdcProblem", signature=c("sdcProblem", "character", "list"),
 #'
 #' extract and show relevant information stored in object ofs class \code{\link{sdcProblem-class}} or \code{\link{safeObj-class}}.
 #'
-#' @aliases summary,sdcProblem-method summary,safeObj-method
-#' @rdname summary-method
+#' @aliases summary,sdcProblem-method
+#' @rdname summary.sdcProblem-method
 #' @param object Objects of either class \code{\link{sdcProblem-class}} or \code{\link{safeObj-class}}.
 #' @param ... currently not used.
 #' @export
@@ -182,6 +182,52 @@ setMethod(f="summary", signature="sdcProblem",
 
     nr_tables <- g_partition(object)$nrTables
     cat("\nIf this table is protected with heuristic methods, a total of",nr_tables,"has (sub)tables must be considered!\n")
+  }
+)
+
+
+#' print objects of class \code{\link{sdcProblem-class}}.
+#'
+#' print some useful information instead of just displaying the entire object (which may be large)
+#'
+#' @aliases print,sdcProblem-method
+#' @rdname print.sdcProblem-method
+#' @param x an objects of class \code{\link{sdcProblem-class}}
+#' @param ... currently not used.
+#' @export
+#' @docType methods
+setMethod("print", signature="sdcProblem",
+  definition=function(x, ...) {
+    dims <- x@dimInfo@dimInfo
+    nrDims <- length(dims)
+    nrCells <- length(x@problemInstance@strID)
+    cat(paste("The object is an 'sdcProblem' with",nrCells,"cells in",nrDims, "dimension(s)!\n"))
+    cat("\nThe dimensions are:\n")
+    for ( i in 1:nrDims ) {
+      nrCodes <- length(dims[[i]]@codesOriginal)
+      nrAggregates <- sum(dims[[i]]@codesMinimal==FALSE)
+      maxHier <- length(dims[[i]]@structure)
+      cat(paste0("\t- ",names(dims)[i]," (",maxHier," levels; ",nrCodes," codes; of these being ",nrAggregates," aggregates)\n"))
+    }
+    cat("\nCurrent suppression pattern:\n")
+    cat("\t- Primary suppressions:",sum(x@problemInstance@sdcStatus=="u"),"\n")
+    cat("\t- Secondary suppressions:",sum(x@problemInstance@sdcStatus=="x"),"\n")
+    cat("\t- Publishable cells:",sum(x@problemInstance@sdcStatus%in% c("s","z")),"\n")
+  }
+)
+
+#' show objects of class \code{\link{sdcProblem-class}}.
+#'
+#' just calls the corresponding print-method
+#'
+#' @aliases show,sdcProblem-method
+#' @rdname show.sdcProblem-method
+#' @param object an objects of class \code{\link{sdcProblem-class}}
+#' @export
+#' @docType methods
+setMethod("show", signature="sdcProblem",
+  definition=function(object) {
+    print(object)
   }
 )
 
@@ -237,7 +283,8 @@ setMethod("g_innerAndMarginalCellInfo", signature="sdcProblem", definition=funct
   return(list(innerCells=innerCells, totCells=totCells, indexInnerCells=indexInnerCells, indexTotCells=indexTotCells))
 })
 
-setMethod("g_df", signature="sdcProblem", definition=function(object) {
+setMethod("g_df", signature="sdcProblem", definition=function(object, addDups=FALSE) {
+  xx <- strID <- NULL
   pI <- g_problemInstance(object)
   dt <- data.table(
     strID=g_strID(pI),
@@ -255,7 +302,29 @@ setMethod("g_df", signature="sdcProblem", definition=function(object) {
     v <- paste0(vNames[i],"_o",sep="")
     dt[[v]] <- c_match_orig_codes(object=dimObj[[i]], input=dt[[vNames[i]]])
   }
-  setkeyv(dt, "strID")
+
+  if ( addDups ) {
+    dims <- g_dim_info(dI)
+    for ( i in seq_along(dims) ) {
+      if ( g_has_dups(dims[[i]]) ) {
+        dU <- dims[[i]]@dupsUp
+        dL <- dims[[i]]@dups
+        vName <- paste0(dims[[i]]@vName,"_o")
+        for ( j in 1:length(dL) ) {
+          cmd <- paste0("xx <- dt[",vName,"=='",dU[j],"']")
+          eval(parse(text=cmd))
+          if ( !is.numeric(dt[[vName]]) ) {
+            cmd <- paste0("xx[,",vName,":='",dL[j],"']")
+          } else {
+            cmd <- paste0("xx[,",vName,":=",dL[j],"]")
+          }
+          eval(parse(text=cmd))
+          dt <- rbind(dt, xx); rm(xx)
+        }
+      }
+    }
+  }
+  setkey(dt, strID)
   return(dt)
 })
 

@@ -181,7 +181,7 @@ setGeneric("g_startI", function(object) { standardGeneric("g_startI") })
 setGeneric("g_startJ", function(object) { standardGeneric("g_startJ") })
 setGeneric("g_indicesDealtWith", function(object) { standardGeneric("g_indicesDealtWith") })
 setGeneric("g_innerAndMarginalCellInfo", function(object) { standardGeneric("g_innerAndMarginalCellInfo") })
-setGeneric("g_df", function(object) { standardGeneric("g_df") })
+setGeneric("g_df", function(object, ...) { standardGeneric("g_df") })
 
 # set-methods
 setGeneric("s_problemInstance<-", function(object, value) standardGeneric("s_problemInstance<-"))
