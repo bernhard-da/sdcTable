@@ -263,7 +263,9 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## if any combinations are missing (missing.codes), we have to set them to 0 later
   strID <- as.character(pasteStrVec(unlist(codes), length(codes)))
   exDims <- pasteStrVec(unlist(codes), length(codes))
-  possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { g_minimal_default_codes(x) }), vector=TRUE)), length(dimObj)))
+  possDims <- sort(pasteStrVec(as.character(expand(lapply(dimObj, function(x) { 
+    g_minimal_default_codes(x) 
+  }), vector=TRUE)), length(dimObj)))
   missing.codes <- setdiff(possDims, exDims)
 
   ## fill the table

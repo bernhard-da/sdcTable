@@ -437,7 +437,12 @@ setMethod(f="g_has_dups", signature=c("dimVar"), definition=function(object) {
 setMethod(f="g_nr_levels", signature=c("dimVar"), definition=function(object) {
   return (length(g_structure(object)))
 })
-setMethod(f="g_minimal_default_codes", signature=c("dimVar"), definition=function(object) {
+setMethod(f="g_minimal_default_codes", signature=c("dimVar"), 
+definition=function(object) {
+  codes_default <- g_default_codes(object)
+  if (length(codes_default)==1) {
+    return(codes_default)
+  }
   return(g_default_codes(object)[g_minimal_codes(object)==TRUE])
 })
 setMethod(f="c_has_default_codes", signature=c("dimVar", "character"), definition=function(object, input) {
