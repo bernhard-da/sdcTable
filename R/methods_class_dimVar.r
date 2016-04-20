@@ -170,22 +170,21 @@ setMethod(f='init.dimVar', signature=c('list'),
     input <- input$input
 
     calcInfo <- function(inputList) {
-      genLevel <- function(level, dimStructure) {
-        cums <- cumsum(dimStructure)
-        lenStructure <- length(dimStructure)
-        if( as.integer(substr(level, 1, cums[lenStructure])) == 0 )
-          out <- 1
-        else if( as.integer(substr(level, cums[lenStructure-1]+1, cums[lenStructure])) != 0 )
-          out <- lenStructure
-        else {
-          for( i in (2:(lenStructure-1)) ) {
-            if( as.integer(substr(level, cums[i-1]+1, cums[i]))!=0 & as.integer(substr(level, cums[i]+1, cums[lenStructure])) == 0 )
-              out <- i
-          }
+      genLevel <- function(strIDs, dimStructure) {
+        cs <- c(0,cumsum(dimStructure))
+        dt <- data.table(strID=strIDs, levels=1)
+        for ( i in 1:(length(cs)-1)) {
+          cmd <- paste0("dt[substr(strID,",cs[i]+1,",",cs[i+1],")!='",paste0(rep(0,dimStructure[i]), collapse=""),"'")
+          cmd <- paste0(cmd, ",level:=",i,"]")
+          #cat(cmd,"\n")
+          eval(parse(text=cmd))
         }
-        out
+        dt[as.numeric(strID)==0, level:=1]
+        if ( any(is.na(dt))) {
+          stop("error while calculating the levels!\n")
+        }
+        return(as.integer(dt$level))
       }
-
 
       # define variables
       removeInd <- NULL
@@ -281,8 +280,7 @@ setMethod(f='init.dimVar', signature=c('list'),
 
       # combine existing and possible new characteristics
       allDims <- unique(unlist(c(codes, newDims)))
-      levels <- as.integer(sapply(allDims, genLevel, nrDigits))
-
+      levels <- genLevel(allDims, nrDigits)
       dimensions <- list()
       if ( nrLevels == 1 ) {
         dimensions[[1]] <- codes
@@ -437,7 +435,7 @@ setMethod(f="g_has_dups", signature=c("dimVar"), definition=function(object) {
 setMethod(f="g_nr_levels", signature=c("dimVar"), definition=function(object) {
   return (length(g_structure(object)))
 })
-setMethod(f="g_minimal_default_codes", signature=c("dimVar"), 
+setMethod(f="g_minimal_default_codes", signature=c("dimVar"),
 definition=function(object) {
   codes_default <- g_default_codes(object)
   if (length(codes_default)==1) {
