@@ -283,7 +283,7 @@ setMethod("g_innerAndMarginalCellInfo", signature="sdcProblem", definition=funct
   return(list(innerCells=innerCells, totCells=totCells, indexInnerCells=indexInnerCells, indexTotCells=indexTotCells))
 })
 
-setMethod("g_df", signature="sdcProblem", definition=function(object, addDups=FALSE) {
+setMethod("g_df", signature="sdcProblem", definition=function(object, addDups=FALSE, addNumVars=FALSE) {
   xx <- strID <- NULL
   pI <- g_problemInstance(object)
   dt <- data.table(
@@ -291,6 +291,9 @@ setMethod("g_df", signature="sdcProblem", definition=function(object, addDups=FA
     freq=g_freq(pI),
     sdcStatus=g_sdcStatus(pI)
   )
+  if (addNumVars & !is.null(pI@numVars) ) {
+    dt <- cbind(dt, as.data.table(pI@numVars))
+  }
   dI <- g_dimInfo(object)
   strInfo <- g_str_info(dI)
   dimObj <- g_dim_info(dI)
