@@ -169,7 +169,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
             }
           }
           if ( remove.vals ) {
-            rawData <- rawData[-remove_ind]
+            rawData <- rawData[-unique(remove_ind)]
           }
           s_raw_data(inputData) <- list(rawData)
         }
