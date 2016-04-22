@@ -171,8 +171,9 @@ setMethod(f='init.dimVar', signature=c('list'),
 
     calcInfo <- function(inputList) {
       genLevel <- function(strIDs, dimStructure) {
+        strID <- level <- NULL
         cs <- c(0,cumsum(dimStructure))
-        dt <- data.table(strID=strIDs, levels=1)
+        dt <- data.table(strID=strIDs, level=1)
         for ( i in 1:(length(cs)-1)) {
           cmd <- paste0("dt[substr(strID,",cs[i]+1,",",cs[i+1],")!='",paste0(rep(0,dimStructure[i]), collapse=""),"'")
           cmd <- paste0(cmd, ",level:=",i,"]")
