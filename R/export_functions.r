@@ -409,7 +409,9 @@ protectTable <- function(object, method, ...) {
   }
 
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
-  if ( length(g_primSupps(object@problemInstance)) == 0 ) {
+  supps_u <- length(g_primSupps(object@problemInstance))
+  supps_x <- length(g_secondSupps(object@problemInstance))
+  if ( supps_u + supps_x == 0 ) {
     return(c_finalize(object=object, input=paraList))
   }
 
