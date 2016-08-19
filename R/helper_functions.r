@@ -125,7 +125,9 @@ my.Rglpk_solve_LP <- function(obj, mat, dir, rhs, types = NULL, max = FALSE, bou
     bounds[,1L],
     bounds[,2L],
     bounds[,3L],
-    verb
+    verb,
+    presolve=TRUE,
+    time_limit=0
   )
   solution <- x$lp_objective_vars_values
   solution[integers | binaries] <- round(solution[integers | binaries])
