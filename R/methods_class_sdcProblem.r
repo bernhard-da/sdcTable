@@ -2057,24 +2057,30 @@ setMethod("c_finalize", signature=c("sdcProblem", "list"), definition=function(o
   hasDups <- sapply(1:length(levelObj), function(x) {
     g_has_dups(levelObj[[x]])
   })
-  if ( any(hasDups) ) {
-    for ( i in which(hasDups==TRUE) ) {
+  if (any(hasDups)) {
+    for (i in which(hasDups==TRUE)) {
       dups <- g_dups(levelObj[[i]])
       dupsUp <- g_dups_up(levelObj[[i]])
-
       runInd <- TRUE
-      while ( runInd ) {
-        for ( j in 1:length(dups) ) {
-          sub <- subset(out, out[[i]]==dupsUp[j])
-          if ( nrow(sub) > 0 ) {
-            sub[[i]] <- dups[j]
-            out <- rbind(out, sub)
-            dups <- dups[-j]
-            dupsUp <- dupsUp[-j]
+      while (runInd) {
+        add <- list(); length(add) <- length(dups)
+        for (j in 1:length(dups)) {
+          if (!is.na(dups[j])) {
+            cmd <- paste0("sub <- out[",names(out)[i],"=='",dupsUp[j],"',]")
+            eval(parse(text=cmd))
+
+            if (nrow(sub) > 0) {
+              sub[[i]] <- dups[j]
+              add[[j]] <- sub
+              dups[j] <- dupsUp[j] <- NA
+            }
           }
         }
-        if ( length(dups) == 0 )
+        add <- rbindlist(add)
+        out <- rbind(out, add); rm(add)
+        if (all(is.na(dups))) {
           runInd <- FALSE
+        }
       }
     }
   }

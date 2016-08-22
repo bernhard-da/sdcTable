@@ -23,7 +23,6 @@ setMethod(f='calc.multiple', signature=c('character', 'list'),
   }
 )
 
-
 setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   pI <- input$objectA
   dimInfoObj <- input$objectB
@@ -57,16 +56,16 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
   df <- data.table(N=1:length(strIDs), strIDs=strIDs)
   setkey(df, strIDs)
 
-  for ( i in 1:length(groups) ) {
+  for (i in 1:length(groups)) {
     final$indices[[i]] <- list()
     levs <- as.integer(unlist(sapply(groups[[i]], strsplit, "-")))
 
     res <- list()
-    for ( z in 1:length(dimInfo) ) {
+    for (z in 1:length(dimInfo)) {
       res[[z]] <- list()
       index <- which(g_levels(dimInfo[[z]]) %in% c(levs[z], levs[z]-1))
       codesDefault <- default_codes[[z]][index]
-      if ( levs[z] == 1 ) {
+      if (levs[z] == 1) {
         res[[z]] <- codesDefault
       } else {
         levOrig <- dim_levels[[z]][index]
@@ -86,7 +85,7 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
         }
         spl <- split(index, splitVec)
         counter <- 1
-        for ( k in 1:length(spl) ) {
+        for (k in 1:length(spl)) {
           rowInd <- match(spl[[k]], out$index)
           tmp <- out[rowInd,]
           if ( any(tmp[,"levOrig"]==levs[z]) ) {
@@ -103,15 +102,18 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
 
     final$indices[[i]] <- list();
     length(final$indices[[i]]) <- nrow(combs)
-    for ( m in 1:nrow(combs) ) {
-      final.strIDs <- pasteStrVec(expand(lapply(1:ncol(combs), function(x) { res[[x]][[combs[m,x]]] })), ncol(combs))
-      df2 <- data.table(strIDs=final.strIDs)
-      setkey(df2, strIDs)
-      final$indices[[i]][[m]] <- merge(df, df2)$N
+    for (m in 1:nrow(combs)) {
+      final.strIDs <- pasteStrVec(expand(lapply(1:ncol(combs), function(x) {
+        res[[x]][[combs[m,x]]]
+      })), ncol(combs))
+      df2 <- data.table(strIDs=final.strIDs, key="strIDs")
+      final$indices[[i]][[m]] <- df[df2]$N
     }
   }
   final$nrGroups <- length(groups)
-  final$nrTables <- sum(sapply(1:final$nrGroups, function(x) { length(final$indices[[x]]) } ))
+  final$nrTables <- sum(sapply(1:final$nrGroups, function(x) {
+    length(final$indices[[x]])
+  }))
   return(final)
 })
 
@@ -222,7 +224,7 @@ setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
 })
 
 setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
-  .SD <- ID <- NULL
+  .SD <- ID <- id <- NULL
   x <- input$objectA
   y <- input$objectB
   time.start <- proc.time()
@@ -303,9 +305,19 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## problematic are all levels that should exist, but do not exist
   ## they are filled with 0 so that we can aggregate
   dim.vars <- colnames(fullTabObj)[ind.dimvars]
-  strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,paste0, collapse="")
+  # performance improvement
+  cmd <- paste0("fullTabObj[,strID:=paste0(",dim.vars[1])
+  if (length(dim.vars)>1) {
+    for (i in 2:length(dim.vars)) {
+      cmd <- paste0(cmd, ", ",dim.vars[i])
+    }
+  }
+  cmd <- paste0(cmd,")]")
+  eval(parse(text=cmd))
+  strID <- fullTabObj$strID
+  fullTabObj[,strID:=NULL]
 
-  if ( length(missing.codes) > 0 ) {
+  if (length(missing.codes) > 0) {
     index <- which(strID%in%missing.codes)
     for ( i in 1:length(cols) ) {
       set(fullTabObj, index, cols[i], 0)
@@ -320,39 +332,60 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   useInds <- which(sapply(y@dimInfo, function(x) {
     length(x@codesOriginal)>1
   }))
-  while ( not.finished ) {
-    cols <- (nrIndexvars+1):ncol(fullTabObj)
-    col.names <- colnames(fullTabObj)[cols]
-    for ( i in useInds ) {
-      if ( length(dim.vars) > 1 ) {
+
+  fullTabObj[,id:=.I]
+  cols <- (nrIndexvars+1):(ncol(fullTabObj)-1)
+  col.names <- names(fullTabObj)[cols]
+  while (not.finished) {
+    for (i in useInds) {
+      if (length(dim.vars) > 1) {
         setkeyv(fullTabObj, dim.vars[-i])
       } else {
         setkeyv(fullTabObj, dim.vars[1])
       }
 
       cur.dim <- dimObj[[i]]@dims
-      for ( j in length(cur.dim):1 ) {
+      for (j in length(cur.dim):1) {
         cur.levs <-  cur.dim[[j]]
-        out <- fullTabObj[fullTabObj[[ind.dimvars[i]]] %in% cur.levs[-1],]
+        cmd <- paste0("out <- fullTabObj[",dim.vars[i],"%in% cur.levs[-1],]")
+        eval(parse(text=cmd))
         if ( length(dim.vars)==1 ) {
           out <- out[,lapply(.SD,sum), .SDcols=col.names]
         } else {
           out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
         }
-        row.ind <- which(fullTabObj[[ind.dimvars[i]]] == cur.levs[1])
-        for ( j in col.names ) {
-          set(fullTabObj, row.ind, j, out[[j]])
+        cmd <- paste0("row.ind <- fullTabObj[",dim.vars[i],"==cur.levs[1],id]")
+        eval(parse(text=cmd))
+        for ( z in col.names ) {
+          cmd <- paste0("fullTabObj[id %in% row.ind,",z,":=out[[z]]]")
+          eval(parse(text=cmd))
         }
       }
     }
-    if ( !is.na(fullTabObj[1,ind.freq,with=FALSE]) ) {
+    if (!is.na(fullTabObj[1,ind.freq,with=FALSE])) {
       not.finished <- FALSE
+    } else {
+      cat("nrMissings:",sum(is.na(fullTabObj$freq)),"\n")
     }
   }
+  fullTabObj[,id:=NULL]
 
   nrV <- nrow(fullTabObj)
   f <- fullTabObj[[ind.freq]]
   strID <- apply(fullTabObj[,dim.vars,with=FALSE],1,paste0, collapse="")
+
+  # performance improvement
+  cmd <- paste0("fullTabObj[,strID:=paste0(",dim.vars[1])
+  if (length(dim.vars)>1) {
+    for (i in 2:length(dim.vars)) {
+      cmd <- paste0(cmd, ", ",dim.vars[i])
+    }
+  }
+  cmd <- paste0(cmd,")]")
+  eval(parse(text=cmd))
+  strID <- fullTabObj$strID
+  fullTabObj[,strID:=NULL]
+
   w <- numVarsList <- NULL
   w.ind <- g_weightvar_ind(x)
   if ( !is.null(w.ind) ) {
