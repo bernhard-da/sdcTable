@@ -147,6 +147,16 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 int nrCandidates=sum(isCandidate);
                 if ( nrCandidates==0 ) {
                   if ( nr_zcells==0 ) {
+                    if (debug) {
+                      Rcout << "nCells: " << nCells << std::endl;
+                      Rcout << "nr_supps: " << nr_supps << std::endl;
+                      Rcout << "nr_dummycells: " << nr_dummycells << std::endl;
+                      Rcout << "id: " << cur_id << std::endl;
+                      Rcout << "cur_freq: " << cur_freq << std::endl;
+                      Rcout << "cur_weights: " << cur_weights << std::endl;
+                      Rcout << "cur_weights_o: " << cur_weights_o << std::endl;
+                      Rcout << "cur_sdcStatus: " << cur_sdcStatus << std::endl;
+                    }
                     stop("Unfortunately, it is not possible to find a suppression pattern!");
                   } else {
                     /*
