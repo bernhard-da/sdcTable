@@ -16,4 +16,4 @@ LazyLoad: yes
 LinkingTo: Rcpp
 License: GPL (>= 2)
 SystemRequirements: GLPK library, including -dev or -devel part
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
