@@ -27,10 +27,8 @@
 #'
 #' @examples
 #' # loading micro data
-#' sp <- searchpaths()
-#' fn <- paste(sp[grep("sdcTable", sp)], "/data/microData1.RData", sep="")
-#' microData <- get(load(fn))
-#'
+#' data("microData1", package="sdcTable")
+#' microData <- microData1; rm(microData1)
 #' # having a look at the data structure
 #' str(microData)
 #'
