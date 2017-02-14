@@ -13,6 +13,9 @@ check_int <- function(x) {
 check_numeric <- function(inp) {
   is.numeric(inp)
 }
+check_character <- function(inp) {
+  is.character(inp)
+}
 check_len <- function(inp, len=1) {
   length(inp)==len
 }
@@ -28,6 +31,59 @@ check_pos_number <- function(inp, v_min=1, v_max=100, default=1) {
     return(default)
   }
 }
+
+# check variable input for batch-file
+check_varinput <- function(obj, responsevar, shadowvar, costvar) {
+  if (!class(obj)=="sdcProblem") {
+    stop("argument 'obj' must be of class 'sdcProblem'!\n")
+  }
+
+  df <- g_df(obj, addNumVars=TRUE)
+  vNames <- get.sdcProblem(obj, "dimInfo")@vNames
+  vNames_o <- paste0(vNames,"_o")
+  # "allowed" variables
+  cn <- setdiff(names(df), c("strID", vNames, vNames_o,"sdcStatus"))
+  if (responsevar!="<freq>") {
+    if (!check_character(responsevar) | !check_len(responsevar, 1)) {
+      stop("argument 'responsevar' must be a character vector with 1 element!\n")
+    }
+    if (!responsevar %in% cn) {
+      stop("non-valid variable selected for choice 'responsevar'.\n")
+    }
+  }
+
+  if (!is.null(shadowvar)) {
+    if (!check_character(shadowvar) | !check_len(shadowvar, 1)) {
+      stop("argument 'shadowvar' must be a character vector with 1 element!\n")
+    }
+    if (!shadowvar %in% cn) {
+      stop("non-valid variable selected for choice 'shadowvar'.\n")
+    }
+  } else {
+    shadowvar <- ""
+  }
+  if (!is.null(costvar)) {
+    if (!check_character(costvar) | !check_len(costvar, 1)) {
+      stop("argument 'costvar' must be a character vector with 1 element!\n")
+    }
+    if (!costvar %in% cn) {
+      stop("non-valid variable selected for choice 'costvar'.\n")
+    }
+  } else {
+    costvar <- ""
+  }
+  list(responsevar=responsevar, shadowvar=shadowvar, costvar=costvar)
+}
+
+# check suppression-method
+check_suppmethod <- function(method) {
+  if (!check_len(method, len=1) | !method %in% c("OPT","GH","MOD")) {
+    stop("argument 'method' must be either 'OPT', 'MOD' or 'GH'!\n")
+  }
+  method
+}
+
+
 
 ###############################################################################################################
 ##### helper-functions that are used to create hierarchy-files for tau-argus using an sdcProblem-instance #####
@@ -516,44 +572,29 @@ read_ArgusSolution <- function(path) {
 ###########################################################
 ##### helper-functions to create tau_BatchObj-objects #####
 ###########################################################
+
 ## based on microdata input
 tauBatchInput_microdata <- function(obj,
     path=getwd(),
     solver="FREE",
     method,
     primSuppRules,
-    responsevar=NULL,
+    responsevar="<freq>",
     shadowvar=NULL,
     costvar=NULL, ...) {
-  batchObj <- tau_BatchObj()
-
-  # todo: check if valid-choice for responsevar
-  if (!is.null(responsevar)) {
-  } else {
-    responsevar <- "<freq>"
-  }
-
-  # todo: check if valid-choice for shadowvar
-  if (!is.null(shadowvar)) {
-  } else {
-    shadowvar <- ""
-  }
-
-  # todo: check if valid-choice for costvar
-  if (!is.null(costvar)) {
-  } else {
-    costvar <- ""
-  }
-
-  ## check argument 'method'
-  if (length(method)!=1) {
-    stop("argument 'method' has more than 1 element!\n")
-  }
-  if (!method %in% c("OPT","GH","MOD")) {
-    stop("argument 'method' must be either 'OPT', 'MOD' or 'GH'!\n")
-  }
 
   args = list(...)
+
+  # create and check variable-input
+  vars <- check_varinput(responsevar, shadowvar, costvar)
+  responsevar <- vars$responsevar
+  shadowvar <- vars$shadowvar
+  costvar <- vars$costvar
+
+  ## check argument 'method'
+  method <- check_suppmethod(method)
+
+  batchObj <- tau_BatchObj()
   batchID <- paste(sample(c(letters, LETTERS, 0:9), 10, replace=TRUE), collapse="")
   batchObj <- setId(batchObj, batchID)
   batchObj <- setObj(batchObj, obj)
@@ -645,29 +686,20 @@ tauBatchInput_table <- function(obj,
     path=getwd(),
     solver="FREE",
     method,
-    responsevar=NULL,
+    responsevar="<freq>",
     shadowvar=NULL,
     costvar=NULL, ...) {
 
   args = list(...)
 
-  # todo: check if valid-choice for responsevar
-  if (!is.null(responsevar)) {
-  } else {
-    responsevar <- "<freq>"
-  }
+  # create and check variable-input
+  vars <- check_varinput(responsevar, shadowvar, costvar)
+  responsevar <- vars$responsevar
+  shadowvar <- vars$shadowvar
+  costvar <- vars$costvar
 
-  # todo: check if valid-choice for shadowvar
-  if (!is.null(shadowvar)) {
-  } else {
-    shadowvar <- ""
-  }
-
-  # todo: check if valid-choice for costvar
-  if (!is.null(costvar)) {
-  } else {
-    costvar <- ""
-  }
+  # check argument 'method'
+  method <- check_suppmethod(method)
 
   batchObj <- tau_BatchObj()
   batchObj <- setIs_table(batchObj, TRUE)
