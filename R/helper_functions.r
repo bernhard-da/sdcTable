@@ -293,6 +293,9 @@ genParaObj <- function(selection, ...) {
     paraObj$suppMethod <- "minSupps"
     paraObj$suppAdditionalQuader <- FALSE
 
+    # SIMPLEHEURISTIC - parameter
+    paraObj$detectSingletons <- FALSE
+
     # protectLinkedTables
     paraObj$maxIter <- 5
 
@@ -459,4 +462,71 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
     }
   }
 }
+
+# singketon detection procedure in the spirit of tau-argus
+# can only be used for SIMPLEHEURISTIC
+singletonDetectionProcedure <- function(dat, indices, subIndices) {
+  sdcStatus <- NULL
+  nrAddSupps <- 0
+  suppIds <- c()
+  for (i in 1:length(indices)) {
+    sI <- subIndices[[i]]
+    for (j in 1:length(sI)) {
+      sJ <- sI[[j]]
+      for (z in 1:length(sJ)) {
+        poss <- sJ[[z]]
+        mm <- max(poss)
+        for (k in 1:mm) {
+          ii <- which(poss==k)
+          # only if we have a real subtable
+          if (length(ii) > 1) {
+            # tau-argus strategy
+            ind_u <- which(dat$sdcStatus[ii]=="u")
+
+            if (length(ind_u)==2) {
+              ff <- dat$freq[ii[ind_u]]
+              # at least one cell of two supps is a singleton
+              # 1. If on a row or column of a subtable there are only two singletons and no other
+              # primary suppressions.
+              # 2. If there is only one singleton and one multiple primary unsafe cell.
+              # one or two singletons
+              if (any(ff==1)) {
+                # we have two singletons, we need to add one additional suppression
+                ss <- dat[ii]
+                ss <- ss[sdcStatus=="s"]
+                suppId <- ss$id[which.min(ss$freq)]
+                if (length(suppId)==0) {
+                  stop("error finding an additional primary suppression (1)\n")
+                }
+                dat[suppId, sdcStatus:="u"]
+                nrAddSupps <- nrAddSupps + 1
+                suppIds <- c(suppIds, suppId)
+              }
+            }
+            # 3. If a frequency rule is used, it could happen that two cells on a row/column are
+            # primary unsafe, but the sum of the two cells could still be unsafe. In that case
+            # it should be prevented that these two cells protect each other.
+            if (length(ind_u)==3) {
+              # the sum is primary suppressed, thus the other two primary suppressions are within the row/col
+              if (dat$sdcStatus[ii[1]]=="u") {
+                # we need to find an additional suppression
+                ss <- dat[ii]
+                ss <- ss[sdcStatus=="s"]
+                suppId <- ss$id[which.min(ss$freq)]
+                if (length(suppId)==0) {
+                  stop("error finding an additional primary suppression (2)\n")
+                }
+                dat[suppId, sdcStatus:="u"]
+                nrAddSupps <- nrAddSupps + 1
+                suppIds <- c(suppIds, suppId)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return(list(dat=dat, nrAddSupps=nrAddSupps, suppIds=suppIds))
+}
+
 

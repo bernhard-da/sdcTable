@@ -1225,13 +1225,14 @@ setMethod("c_hitas_cpp", signature=c("sdcProblem", "list"), definition=function(
 setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=function(object, input) {
   freq <- id <- sdcStatus <- weights <- NULL
   verbose <- input$verbose
+  detectSingletons <- input$detectSingletons
   pI <- g_problemInstance(object)
   indices <- g_partition(object)$indices
   dimInfo <- g_dimInfo(object)
   strInfo <- g_str_info(dimInfo)
   vNames <- g_varname(dimInfo)
 
-  if ( verbose ) {
+  if (verbose) {
     cat("calculating subIndices (this may take a while) ...")
   }
 
@@ -1244,7 +1245,7 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   dimVars <- match(vNames, names(dat))
   nDims <- length(dimVars)
   freqInd <- match("freq", colnames(dat))
-  if ( length(vNames)==1 ) {
+  if (length(vNames)==1) {
     combs <- combn(vNames, 1)
   } else {
     combs <- combn(vNames, length(vNames)-1)
@@ -1255,18 +1256,18 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
   nrGroups <- length(indices)
   subIndices <- list(); length(subIndices) <- nrGroups
 
-  for ( group in 1:nrGroups ) {
+  for (group in 1:nrGroups) {
     nrTabs <- length(indices[[group]])
     subIndices[[group]] <- list()
     length(subIndices[[group]]) <- nrTabs
     for (tab in 1:nrTabs) {
       subDat <- dat[indices[[group]][[tab]],]
       # only one dimension!
-      if ( ncol(combs) == 1 ) {
+      if (ncol(combs) == 1) {
         subDat$ind_1_tmp <- 1
         tmpIndices[1] <- ncol(subDat)
       } else {
-        for ( i in 1:ncol(combs)) {
+        for (i in 1:ncol(combs)) {
           setkeyv(subDat, combs[,i])
           cn <- paste0("ind_",i,"_tmp")
           expr <- parse(text = paste0(cn, ":=.GRP"))
@@ -1278,16 +1279,24 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
       subIndices[[group]][[tab]] <- as.list(subDat[,tmpIndices, with=F])
     }
   }
-  if ( verbose ) {
+  if (verbose) {
     cat("[done]\n");
   }
-  res <- greedyMultDimSuppression(dat,indices,subIndices,dimVars,verbose=verbose)
-  if ( verbose ) {
+
+  if (verbose==TRUE & detectSingletons==TRUE) {
+    cat("start singleton detection procedure!\n")
+    res <- singletonDetectionProcedure(dat=dat, indices=indices, subIndices=subIndices)
+    cat("singleton-detection procedure finished with",res$nrAddSupps,"additional suppressions!\n")
+    dat <- res$dat; rm(res)
+  }
+
+  res <- greedyMultDimSuppression(dat, indices, subIndices, dimVars, verbose=verbose)
+  if (verbose) {
     cat("finishing output...")
   }
   s_sdcStatus(pI) <- list(index=res$id, vals=res$sdcStatus)
   s_problemInstance(object) <- pI
-  if ( verbose ) {
+  if (verbose) {
     cat("[done]\n")
   }
   invisible(list(object=object, zstatus=res$status_z))

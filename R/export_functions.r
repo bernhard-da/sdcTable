@@ -209,6 +209,11 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     return(list(inputData=inputData, dimInfoObj=dimInfoObj))
   }
 
+  reserved <- c("id","freq","Freq","sdcStatus")
+  if (any(reserved %in% names(dimList))) {
+    stop("please do not use either 'id','freq','Freq' or 'sdcStatus' as names for dimensional variables!\n")
+  }
+
   for ( i in seq_along(dimList) ) {
     dimList[[i]] <- init.dimVar(input=list(input=dimList[[i]], vName=names(dimList)[i]))
   }
@@ -345,6 +350,11 @@ primarySuppression <- function(object, type, ...) {
 #' parameters that have been set. Additional parameters that are used to control
 #' the protection algorithm are set using parameter \code{...}.
 #'
+#' The implemented methods may have bugs that yield in not-fully protected tables. Especially
+#' the usage of \code{OPT}, \code{HITAS} and \code{HYPERCUBE} in production is not
+#' suggested as these methods may eventually be removed completely. In case you encounter any problems,
+#' please report it or use Tau-Argus (\url{http://neon.vb.cbs.nl/casc/tau.htm}).
+#'
 #' @param object a \code{\link{sdcProblem-class}} object that has created using \code{\link{makeProblem}} and has been modified by \code{\link{primarySuppression}}
 #' @param method a character vector of length 1 specifying the algorithm that should be used to protect the primary sensitive table cells. Allowed values are:
 #' \itemize{
@@ -380,6 +390,9 @@ primarySuppression <- function(object, type, ...) {
 #' \item parameter used for protectLinkedTables():
 #' \itemize{
 #' \item \code{maxIter}: numeric vector of length 1 specifying the maximal number of interations that should be make while trying to protect common cells of two different tables. The default value of parameter \code{maxIter} is 10}
+#' \item parameters used for SIMPLEHEURISTIC procedure:
+#' \itemize{
+#' \item \code{detectSingletons}: logical, should a singleton-detection procedure be run before protecting the data, defaults to \code{FALSE}.}
 #' }
 #'
 #' @return an \code{\link{safeObj-class}} object
