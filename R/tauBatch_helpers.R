@@ -38,6 +38,9 @@ check_varinput <- function(obj, responsevar, shadowvar, costvar) {
     stop("argument 'obj' must be of class 'sdcProblem'!\n")
   }
 
+  if (is.null(responsevar)) {
+    responsevar <- "<freq>"
+  }
   df <- g_df(obj, addNumVars=TRUE)
   vNames <- get.sdcProblem(obj, "dimInfo")@vNames
   vNames_o <- paste0(vNames,"_o")
@@ -586,7 +589,7 @@ tauBatchInput_microdata <- function(obj,
   args = list(...)
 
   # create and check variable-input
-  vars <- check_varinput(responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
@@ -693,7 +696,7 @@ tauBatchInput_table <- function(obj,
   args = list(...)
 
   # create and check variable-input
-  vars <- check_varinput(responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
