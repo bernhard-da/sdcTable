@@ -1,4 +1,4 @@
-#' @useDynLib sdcTable
+#' @useDynLib sdcTable, .registration=TRUE
 #' @import "methods"
 #' @import "Rcpp"
 #' @import "Rglpk"
