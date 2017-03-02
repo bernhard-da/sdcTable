@@ -118,28 +118,20 @@ hrc <- function(obj) {
 }
 
 ## write to file (microdata)
-write_hrc <- function(inp, fOut) {
+write_hrc <- function(inp, fOut, nr_digits) {
   out <- l <- codes <- NULL
   unique_vals <- unique(inp$l)
   inp[,out:=""]
   for (vv in unique_vals) {
     if (vv=="") {
-      maxn <- max(nchar(inp$codes))
-      inp[l==vv, out:=str_pad(codes, width=maxn, side="left")]
+      inp[l==vv, out:=str_pad(codes, width=nr_digits, side="left")]
     } else {
-      inp[l==vv, out:=paste0(l, str_pad(codes, max(nchar(codes))))]
+      inp[l==vv, out:=paste0(l, str_pad(codes, nr_digits))]
     }
   }
   inp[,codes:=NULL]
   write.table(inp[,out], file=fOut, sep=" ", row.names=FALSE, col.names=FALSE, quote=FALSE,  eol="\r\n")
 }
-
-## write to file (tabular)
-write_hrc_tab <- function(inp, fOut) {
-  codes <- NULL
-  write.table(inp[,codes], file=fOut, sep=" ", row.names=FALSE, col.names=FALSE, quote=FALSE,  eol="\r\n")
-}
-
 
 ###################################################################################################################
 #### helper-function to write data-files and metadata files required for tau-argus based on sdcProblem-objects ####
@@ -199,20 +191,19 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd()) {
   f_hrcs <- c()
   for (i in seq_along(dim_vars)) {
     vv <- dim_vars[i]
-    # write hiercode-file
-    #f_hrc <- file.path(path, paste0(vv,".hrc"))
-
-    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
-    f_hrcs <- c(f_hrcs, f_hrc)
-    write_hrc(inp=hiercodes[[vv]], fOut=f_hrc)
 
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
 
+    # write hierachy-files
+    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
+    f_hrcs <- c(f_hrcs, f_hrc)
+    write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=cur_dig)
+
     cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
-    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", gsub("/data/home/meindl","Y:", f_hrc)))
+    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", f_hrc))
     cmds <- append(cmds, paste(bl, "<HIERLEADSTRING> @"))
     cmds <- append(cmds, paste(bl, "<HIERARCHICAL>"))
 
@@ -329,11 +320,6 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd()) {
     eval(parse(text=cmd))
 
     vv <- dim_vars[i]
-    # write hiercode-file
-    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
-    f_hrcs <- c(f_hrcs, f_hrc)
-    write_hrc_tab(inp=hiercodes[[vv]], fOut=f_hrc)
-
     startpos <- sum(required_digits)+i
 
     tot_code <- get.sdcProblem(obj, "dimInfo")@dimInfo[[i]]@codesOriginal[1]
@@ -343,10 +329,15 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd()) {
     cur_dig <- max(cur_dig, nch_tot)
     required_digits <- c(required_digits, cur_dig)
 
+    # write hiercode-file
+    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
+    f_hrcs <- c(f_hrcs, f_hrc)
+    write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=0)
+
     cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
     cmds <- append(cmds, paste(bl, "<TOTCODE>", dQuote(tot_code)))
-    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(gsub("/data/home/meindl","Y:", f_hrc))))
+    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
     cmds <- append(cmds, paste(bl, "<HIERLEADSTRING>", dQuote("@")))
     cmds <- append(cmds, paste(bl, "<HIERARCHICAL>"))
 
@@ -679,8 +670,7 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  f_tab_win <- gsub("/data/home/meindl","Y:", file.path(path, f_tab))
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab_win),")"))
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
   invisible(batchObj)
 }
 
@@ -783,8 +773,7 @@ tauBatchInput_table <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  f_tab_win <- gsub("/data/home/meindl","Y:", file.path(path, f_tab))
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab_win),")"))
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
   invisible(batchObj)
 }
 
