@@ -650,7 +650,7 @@ tauBatchInput_microdata <- function(obj,
     SingleSingle <- check_pos_number(inp=args$SingleSingle, default=1, v_min=0, v_max=1)
     SingleMultiple <- check_pos_number(inp=args$SingleMultiple, default=1, v_min=0, v_max=1)
     MinFreq <- check_pos_number(inp=args$MinFreq, default=1, v_min=0, v_max=1)
-    suppstr <- paste0("OPT(1,",MaxTimePerSubtable,",",SingleSingle,",",SingleMultiple,",",MinFreq,")")
+    suppstr <- paste0("MOD(1,",MaxTimePerSubtable,",",SingleSingle,",",SingleMultiple,",",MinFreq,")")
   }
   # hypercube
   if (method=="GH") {
@@ -753,7 +753,7 @@ tauBatchInput_table <- function(obj,
     SingleSingle <- check_pos_number(inp=args$SingleSingle, default=1, v_min=0, v_max=1)
     SingleMultiple <- check_pos_number(inp=args$SingleMultiple, default=1, v_min=0, v_max=1)
     MinFreq <- check_pos_number(inp=args$MinFreq, default=1, v_min=0, v_max=1)
-    suppstr <- paste0("OPT(1,",MaxTimePerSubtable,",",SingleSingle,",",SingleMultiple,",",MinFreq,")")
+    suppstr <- paste0("MOD(1,",MaxTimePerSubtable,",",SingleSingle,",",SingleMultiple,",",MinFreq,")")
   }
   # hypercube
   if (method=="GH") {
