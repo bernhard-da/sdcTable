@@ -163,7 +163,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                      In this case, it is not possible to find a pattern with only 's'-cells.
                      we need to relax 'z' (code 3) cells to 's' (code 0) and try again
                      */
-                    if ( verbose == true ) {
+                    if ( debug == true ) {
                       Rcout << "we need to set 'z'-cells to 's'!" << std::endl;
                     }
                     zcells_changed=true;
