@@ -17,7 +17,8 @@
 #' }
 #' \item list-element is full path to a .csv-file with two columns seperated by semicolons (;) having the same structure as the data.frame described above
 #' }
-#' @param dimVarInd numeric vector (or NULL) defining the column-indices of dimensional variables (defining the table) within argument \code{data}
+#' @param dimVarInd numeric vector (or NULL) defining the column-indices of dimensional variables (defining the table) within argument \code{data}. If \code{NULL},
+#' the names of argument \code{dimList} are used to calculate the indices of the dimensional variables within \code{data} internally.
 #' @param freqVarInd numeric vector (or NULL) defining the column-indices of a variable holding counts within argument \code{data}
 #' @param numVarInd numeric vector (or NULL) defining the column-indices of additional numeric variables available in argument \code{data}
 #' @param weightInd numeric vector of length 1 (or NULL) defining the column-index of a variable holding weights that should be used during as objective coefficients during the cut and branch algorithm to protect primary sensitive cells within argument \code{data}
@@ -87,7 +88,7 @@
 #' @rdname makeProblem
 #' @export makeProblem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NULL, weightInd=NULL,sampWeightInd=NULL) {
+makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarInd=NULL, weightInd=NULL,sampWeightInd=NULL) {
   # returns an object of class 'sdcProblem'
   # 'doPrep()' is the old function 'newDimInfo()'
   # since it also recodes inputData eventually, it was renamed
@@ -214,7 +215,22 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     stop("please do not use either 'id','freq','Freq' or 'sdcStatus' as names for dimensional variables!\n")
   }
 
-  for ( i in seq_along(dimList) ) {
+  # check/calculate dimVarInd
+  if (!all(names(dimList) %in% names(data))) {
+    stop("For at least one dimensional variable specified in 'dimList', we do not have a corresponding variable in 'data'!\n")
+  }
+
+  if (is.null(dimVarInd)) {
+    # we need to calculate dimVarInd from names in dimList
+    dimVarInd <- match(names(dimList), names(data))
+  } else {
+    # we just need to check the names match
+    if (!all(names(dimList) == names(data)[dimVarInd])) {
+      stop("Names of dimensional variables specified in 'dimList' do not match with variables names in 'data' specified in 'dimVarInd'!\n")
+    }
+  }
+
+  for (i in seq_along(dimList)) {
     dimList[[i]] <- init.dimVar(input=list(input=dimList[[i]], vName=names(dimList)[i]))
   }
 
@@ -228,7 +244,7 @@ makeProblem <- function(data, dimList, dimVarInd, freqVarInd=NULL, numVarInd=NUL
     g_varname(dimList[[x]])
   })
 
-  if ( !all(varNamesInDims %in% varNames) ) {
+  if (!all(varNamesInDims %in% varNames)) {
     stop("makeProblem:: mismatch in variable names in 'inputData' and 'inputDims'!\n")
   }
 
