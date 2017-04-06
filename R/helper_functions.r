@@ -463,12 +463,16 @@ csp_cpp <- function(sdcProblem, attackonly=FALSE, verbose) {
   }
 }
 
-# singketon detection procedure in the spirit of tau-argus
-# can only be used for SIMPLEHEURISTIC
 singletonDetectionProcedure <- function(dat, indices, subIndices) {
-  sdcStatus <- NULL
+  id <- freq <- sdcStatus <- NULL
   nrAddSupps <- 0
   suppIds <- c()
+
+  # temporarily recode primary suppressions and check, if they are really singletons
+  id_changed <- dat[sdcStatus=="u" & freq>1, id]
+  if (length(id_changed)>0) {
+    dat[id_changed, sdcStatus:="x"]
+  }
   for (i in 1:length(indices)) {
     sI <- subIndices[[i]]
     for (j in 1:length(sI)) {
@@ -477,7 +481,7 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
         poss <- sJ[[z]]
         mm <- max(poss)
         for (k in 1:mm) {
-          ii <- which(poss==k)
+          ii <- indices[[i]][[j]][which(poss==k)]
           # only if we have a real subtable
           if (length(ii) > 1) {
             # tau-argus strategy
@@ -490,7 +494,7 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
               # primary suppressions.
               # 2. If there is only one singleton and one multiple primary unsafe cell.
               # one or two singletons
-              if (any(ff==1)) {
+              if (any(ff==1) & sum(dat$sdcStatus[ii]=="x")==0 & sum(dat$freq[ii]>0)>2) {
                 # we have two singletons, we need to add one additional suppression
                 ss <- dat[ii]
                 ss <- ss[sdcStatus=="s"]
@@ -498,7 +502,11 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
                 if (length(suppId)==0) {
                   stop("error finding an additional primary suppression (1)\n")
                 }
-                dat[suppId, sdcStatus:="u"]
+                if (dat[suppId, freq]==1) {
+                  dat[suppId, sdcStatus:="u"]
+                } else {
+                  dat[suppId, sdcStatus:="x"]
+                }
                 nrAddSupps <- nrAddSupps + 1
                 suppIds <- c(suppIds, suppId)
               }
@@ -508,7 +516,7 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
             # it should be prevented that these two cells protect each other.
             if (length(ind_u)==3) {
               # the sum is primary suppressed, thus the other two primary suppressions are within the row/col
-              if (dat$sdcStatus[ii[1]]=="u") {
+              if (dat$sdcStatus[ii[1]]=="u" & sum(dat$freq[ii]>0)>3) {
                 # we need to find an additional suppression
                 ss <- dat[ii]
                 ss <- ss[sdcStatus=="s"]
@@ -516,7 +524,11 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
                 if (length(suppId)==0) {
                   stop("error finding an additional primary suppression (2)\n")
                 }
-                dat[suppId, sdcStatus:="u"]
+                if (dat[suppId, freq]==1) {
+                  dat[suppId, sdcStatus:="u"]
+                } else {
+                  dat[suppId, sdcStatus:="x"]
+                }
                 nrAddSupps <- nrAddSupps + 1
                 suppIds <- c(suppIds, suppId)
               }
@@ -526,7 +538,13 @@ singletonDetectionProcedure <- function(dat, indices, subIndices) {
       }
     }
   }
-  return(list(dat=dat, nrAddSupps=nrAddSupps, suppIds=suppIds))
+
+  # reset primary suppressions
+  if (length(id_changed)>0) {
+    dat[id_changed, sdcStatus:="u"]
+  }
+  #if (length(nrAddSupps)>0) {
+  #  dat[suppIds, sdcStatus:="u"]
+  #}
+  invisible(list(dat=dat, nrAddSupps=nrAddSupps, suppIds=suppIds))
 }
-
-

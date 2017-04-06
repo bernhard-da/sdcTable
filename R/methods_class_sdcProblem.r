@@ -1283,10 +1283,14 @@ setMethod("c_quick_suppression", signature=c("sdcProblem", "list"), definition=f
     cat("[done]\n");
   }
 
-  if (verbose==TRUE & detectSingletons==TRUE) {
-    cat("start singleton detection procedure!\n")
+  if (detectSingletons==TRUE) {
+    if (verbose) {
+      cat("start singleton detection procedure!\n")
+    }
     res <- singletonDetectionProcedure(dat=dat, indices=indices, subIndices=subIndices)
-    cat("singleton-detection procedure finished with",res$nrAddSupps,"additional suppressions!\n")
+    if (verbose) {
+      cat("singleton-detection procedure finished with",res$nrAddSupps,"additional suppressions!\n")
+    }
     dat <- res$dat; rm(res)
   }
 
