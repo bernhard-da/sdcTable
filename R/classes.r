@@ -1,4 +1,4 @@
-#' @useDynLib sdcTable
+#' @useDynLib sdcTable, .registration=TRUE
 #' @import "methods"
 #' @import "Rcpp"
 #' @import "Rglpk"
@@ -11,7 +11,7 @@
 #' @importFrom "utils" "tail"
 #' @importFrom "utils" "read.table"
 #' @importFrom "utils" "str"
-
+#' @importFrom "utils" "write.table"
 
 setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
 setClassUnion('numericOrNULL', c('numeric', 'NULL'))
