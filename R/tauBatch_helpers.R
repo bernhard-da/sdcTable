@@ -553,11 +553,9 @@ recode_sdcStati <- function(status_in, is_argus=TRUE) {
 ##### helper-function to read in tau-argus solution #####
 #########################################################
 ## reads an solution written to file from tau-argus into R
-read_ArgusSolution <- function(path) {
-  f <- list.files(path, pattern="tabout", full.names=TRUE)
-  f <- f[grep("txt", f)]
-  if (length(f)!=1) {
-    stop(paste("no output from argus found in",dQuote(path),"\n"))
+read_ArgusSolution <- function(fIn) {
+  if (!file.exists(fIn)) {
+    stop("Output file",dQuote(fIn),"does not exist!\n")
   }
   fread(f)
 }
@@ -829,3 +827,20 @@ combineInputs <- function(obj=NULL, res_argus, batchF) {
   orig[,sdcStatus_argus:=recode_sdcStati(sdcStatus_argus, is_argus=TRUE)]
   orig
 }
+
+# read file-path from batch-files
+infoFromBatch <- function(batchF, typ="LOGBOOK") {
+  inp <- readLines(batchF)
+  inp <- inp[grep(typ, inp)]
+  if (length(inp)==0) {
+    stop(paste(dQuote(typ),"not found in batch-file",dQuote(batchF),"\n"))
+  }
+  filepath <- tail(unlist(strsplit(inp, " ")),1)
+  filepath <- gsub('\"', "", filepath)
+
+  if (typ=="WRITETABLE") {
+    filepath <- gsub(")", "", filepath)
+  }
+  filepath
+}
+

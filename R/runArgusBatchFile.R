@@ -32,17 +32,22 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe") {
     if (substr(inp, 1, 27)!="<WRITETABLE> (1, 3, AS+FL+,") {
       stop("The <WRITETABLE> directive must start with '<WRITETABLE> (1, 3, AS+FL+,'!\n")
     }
-
-    inp <- inpO[grep("LOGBOOK", inpO)]
-    if (length("inp")!=1) {
-      stop("the provided batch-input file must contain a single <LOGBOOK> section!\n")
-    }
-    inp <- unlist(strsplit(inp, ' '))[2]
-    logf <- gsub('\"', "", inp)
+    logf <- infoFromBatch(batchF, typ="LOGBOOK")
   }
 
   if (!file.exists(exe)) {
     stop("the supplied patch to the tau-argus executable does not exist!\n")
+  }
+
+  basedir_tauexe <- dirname(exe)
+  logf <- infoFromBatch(batchF, typ="LOGBOOK")
+  if (dirname(logf)==".") {
+    logf <- file.path(basedir_tauexe, logf)
+  }
+  outtab <- infoFromBatch(batchF, typ="WRITETABLE")
+  # relativPath
+  if (dirname(outtab)==".") {
+    outtab <- file.path(basedir_tauexe, outtab)
   }
 
   ## run and check for success
@@ -50,20 +55,13 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe") {
   res <- suppressWarnings(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=FALSE))
   s <- attributes(res)$status
   if (!is.null(s) && s!=0) {
-    logf <- file.path(dirname(batchF), logf)
     stop(paste0("An error has occured. Please have a look at the logfile located at ", dQuote(logf),".\n"))
   }
 
   ## everything ok, we can read the actual output from argus
-  out <- read_ArgusSolution(dirname(batchF))
+  out <- read_ArgusSolution(outtab)
   if (!is.null(out)) {
     out <- combineInputs(obj=obj, out, batchF=batchF)
-  }
-
-  ## remove temporarily created files if we have a successful run!
-  res <- unlink(dirname(batchF), recursive=TRUE)
-  if (res!=0) {
-    cat("input files could not be deleted!\n")
   }
   return(out[])
 }
