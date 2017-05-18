@@ -557,7 +557,7 @@ read_ArgusSolution <- function(fIn) {
   if (!file.exists(fIn)) {
     stop("Output file",dQuote(fIn),"does not exist!\n")
   }
-  fread(f)
+  fread(fIn)
 }
 
 
