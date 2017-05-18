@@ -154,7 +154,7 @@ definition=function(obj) {
 
   is_table <- obj@is_table
   path <- obj@path
-  
+
   cmds <- list()
 
   ## metainformation
@@ -177,7 +177,7 @@ definition=function(obj) {
   cmds <- append(cmds, paste("<SUPPRESS>", obj@suppress))
   cmds <- append(cmds, paste("<WRITETABLE>", obj@writetable))
 
-  fBatch <- generateStandardizedNames(path=obj@path, lab="batch", ext=".arb")
+  fBatch <- generateStandardizedNames(path=obj@path, lab=paste0("batch_",obj@id), ext=".arb")
   #cat("writing batch-file",shQuote(fBatch),"\n")
   cat(unlist(cmds), sep="\n", file=fBatch)
   invisible(fBatch)
