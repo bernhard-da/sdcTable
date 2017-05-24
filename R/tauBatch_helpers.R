@@ -137,9 +137,9 @@ write_hrc <- function(inp, fOut, nr_digits) {
 #### helper-function to write data-files and metadata files required for tau-argus based on sdcProblem-objects ####
 ###################################################################################################################
 ## using microdata
-create_microdata_and_metadata <- function(obj, digits=2, path=getwd()) {
-  f1 <- generateStandardizedNames(path=NULL, lab="metadata", ext=".rda")
-  f2 <- generateStandardizedNames(path=NULL, lab="microdata", ext=".asc")
+create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
+  f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
+  f2 <- generateStandardizedNames(path=NULL, lab=paste0("microdata_", ID), ext=".asc")
 
   f_metadata <- file.path(path, f1)
   f_microdata <- file.path(path, f2)
@@ -197,7 +197,7 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd()) {
     required_digits <- c(required_digits, cur_dig)
 
     # write hierachy-files
-    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
+    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=cur_dig)
 
@@ -256,10 +256,10 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd()) {
 }
 
 ## using tabular data
-create_tabdata_and_metadata <- function(obj, digits=2, path=getwd()) {
+create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   lpl <- upl <- sdcStatus <- NULL
-  f1 <- generateStandardizedNames(path=NULL, lab="metadata", ext=".rda")
-  f2 <- generateStandardizedNames(path=NULL, lab="tabdata", ext=".tab")
+  f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
+  f2 <- generateStandardizedNames(path=NULL, lab=paste0("tabdata_", ID), ext=".tab")
 
   f_metadata <- file.path(path, f1)
   f_microdata <- file.path(path, f2)
@@ -330,7 +330,7 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd()) {
     required_digits <- c(required_digits, cur_dig)
 
     # write hiercode-file
-    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",vv), ext=".hrc")
+    f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=0)
 
@@ -553,13 +553,11 @@ recode_sdcStati <- function(status_in, is_argus=TRUE) {
 ##### helper-function to read in tau-argus solution #####
 #########################################################
 ## reads an solution written to file from tau-argus into R
-read_ArgusSolution <- function(path) {
-  f <- list.files(path, pattern="tabout", full.names=TRUE)
-  f <- f[grep("txt", f)]
-  if (length(f)!=1) {
-    stop(paste("no output from argus found in",dQuote(path),"\n"))
+read_ArgusSolution <- function(fIn) {
+  if (!file.exists(fIn)) {
+    stop("Output file",dQuote(fIn),"does not exist!\n")
   }
-  fread(f)
+  fread(fIn)
 }
 
 
@@ -593,21 +591,16 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setId(batchObj, batchID)
   batchObj <- setObj(batchObj, obj)
 
-  path <- file.path(path, batchID)
   if (!file.exists(path)) {
-    res <- dir.create(path)
-  } else {
-    ## delete path with given batchID
-    unlink(path, recursive=TRUE, force=FALSE)
     res <- dir.create(path)
   }
 
   batchObj <- setPath(batchObj, path)
 
-  f_log <- generateStandardizedNames(path=NULL, lab="arguslog", ext=".log")
-  f_tab <- generateStandardizedNames(path=NULL, lab="tabout", ext=".txt")
+  f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_", batchID), ext=".log")
+  f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_microdata_and_metadata(obj, digits=2, path=path)
+  res <- create_microdata_and_metadata(obj, digits=2, path=path, ID=batchID)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -701,20 +694,15 @@ tauBatchInput_table <- function(obj,
   batchID <- paste(sample(c(letters, LETTERS, 0:9), 10, replace=TRUE), collapse="")
   batchObj <- setId(batchObj, batchID)
 
-  path <- file.path(path, batchID)
   if (!file.exists(path)) {
-    res <- dir.create(path)
-  } else {
-    ## delete path with given batchID
-    unlink(path, recursive=TRUE, force=FALSE)
     res <- dir.create(path)
   }
   batchObj <- setPath(batchObj, path)
 
-  f_log <- generateStandardizedNames(path=NULL, lab="arguslog", ext=".log")
-  f_tab <- generateStandardizedNames(path=NULL, lab="tabout", ext=".txt")
+  f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_",batchID), ext=".log")
+  f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_tabdata_and_metadata(obj, digits=2, path=path)
+  res <- create_tabdata_and_metadata(obj, digits=2, path=path, ID=batchID)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -782,38 +770,77 @@ tauBatchInput_table <- function(obj,
 ##### helper-function to merge sdcTable input and solution from tau-argus #####
 ###############################################################################
 ## merges sdc-results from argus to sdcTable output
-combineInputs <- function(obj, res_argus) {
+# if obj is NULL, only the solution fro tau-Argus is read in and variable names are extracted from batch-Input
+combineInputs <- function(obj=NULL, res_argus, batchF) {
+  extractVarnames <- function(batchF) {
+    inp <- readLines(batchF)
+    inp <- inp[grep("SPECIFY", inp)]
+    inp <- unlist(strsplit(inp, "> "))[-1]
+    inp <- unlist(strsplit(inp, '"'))
+    to <- which(inp=="|")[1]
+    inp <- inp[1:(to-1)]
+    vNames <- inp[inp!=""]
+    vNames
+  }
+
   id <- sdcStatus_argus <- cellvalue <- NULL
-  dN <- obj@dimInfo@vNames
+  if (is.null(obj)) {
+    dN <- extractVarnames(batchF)
+  } else {
+    dN <- obj@dimInfo@vNames
+  }
   setnames(res_argus, c(dN, "cellvalue", "sdcStatus_argus"))
 
-  orig <- g_df(obj, addDups=TRUE)
-  for (i in 1:length(dN)) {
-    cmd <- paste0("orig[,",dN[i],":=",dN[i],"_o]")
-    eval(parse(text=cmd))
-    cmd <- paste0("orig[,", dN[i],"_o:=NULL]")
-    eval(parse(text=cmd))
+  # if obj is NULL, we do not have information on "duplicates"
+  if (!is.null(obj)) {
+    ## check and re-add dups
+    ## due to ordering, the corresponding value is listed in the row above the dups
+    orig <- g_df(obj, addDups=TRUE)
+    for (i in 1:length(dN)) {
+      cmd <- paste0("orig[,",dN[i],":=",dN[i],"_o]")
+      eval(parse(text=cmd))
+      cmd <- paste0("orig[,", dN[i],"_o:=NULL]")
+      eval(parse(text=cmd))
 
-    cmd <- paste0("res_argus[,", dN[i],":=str_trim(",dN[i],")]")
-    eval(parse(text=cmd))
-  }
-  orig$id <- 1:nrow(orig)
-  setkeyv(orig, dN)
-  setkeyv(res_argus, dN)
-  orig <- merge(orig, res_argus, all.x=TRUE)
-  setkey(orig, id)
-  orig[,c("id","strID"):=NULL]
+      cmd <- paste0("res_argus[,", dN[i],":=str_trim(",dN[i],")]")
+      eval(parse(text=cmd))
+    }
+    orig$id <- 1:nrow(orig)
+    setkeyv(orig, dN)
+    setkeyv(res_argus, dN)
+    orig <- merge(orig, res_argus, all.x=TRUE)
+    setkey(orig, id)
+    orig[,c("id","strID"):=NULL]
 
-  ## check and re-add dups
-  ## due to ordering, the corresponding value is listed in the row above the dups
-  ii <- which(is.na(orig[,sdcStatus_argus]))
-  if (length(ii)>0) {
-    vv <- orig[ii-1,sdcStatus_argus]
-    orig[ii,sdcStatus_argus:=vv]
-    cv <- orig[ii-1,cellvalue]
-    orig[ii,cellvalue:=cv]
+    ii <- which(is.na(orig[,sdcStatus_argus]))
+    if (length(ii)>0) {
+      vv <- orig[ii-1,sdcStatus_argus]
+      orig[ii,sdcStatus_argus:=vv]
+      cv <- orig[ii-1,cellvalue]
+      orig[ii,cellvalue:=cv]
+    }
+  } else {
+    orig <- copy(res_argus)
+    suppressWarnings(orig[,cellvalue:=as.numeric(cellvalue)])
   }
+
   orig[,sdcStatus_argus:=recode_sdcStati(sdcStatus_argus, is_argus=TRUE)]
   orig
+}
+
+# read file-path from batch-files
+infoFromBatch <- function(batchF, typ="LOGBOOK") {
+  inp <- readLines(batchF)
+  inp <- inp[grep(typ, inp)]
+  if (length(inp)==0) {
+    stop(paste(dQuote(typ),"not found in batch-file",dQuote(batchF),"\n"))
+  }
+  filepath <- tail(unlist(strsplit(inp, " ")),1)
+  filepath <- gsub('\"', "", filepath)
+
+  if (typ=="WRITETABLE") {
+    filepath <- gsub(")", "", filepath)
+  }
+  filepath
 }
 
