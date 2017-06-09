@@ -33,7 +33,7 @@ check_pos_number <- function(inp, v_min=1, v_max=100, default=1) {
 }
 
 # check variable input for batch-file
-check_varinput <- function(obj, responsevar, shadowvar, costvar) {
+check_varinput <- function(obj, responsevar, shadowvar, costvar, requestvar, holdingvar) {
   if (!class(obj)=="sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'!\n")
   }
@@ -75,7 +75,34 @@ check_varinput <- function(obj, responsevar, shadowvar, costvar) {
   } else {
     costvar <- ""
   }
-  list(responsevar=responsevar, shadowvar=shadowvar, costvar=costvar)
+
+  if (!is.null(requestvar)) {
+    if (!check_character(requestvar) | !check_len(requestvar, 1)) {
+      stop("argument 'requestvar' must be a character vector with 1 element!\n")
+    }
+    if (!all(obj@dataObj@rawData[[requestvar]]  %in% c(0,1))) {
+      stop("variable 'requestvar' must contain 0 and 1 only!\n")
+    }
+    if (!requestvar %in% cn) {
+      stop("non-valid variable selected for choice 'requestvar'.\n")
+    }
+  } else {
+    requestvar <- ""
+  }
+
+  if (!is.null(holdingvar)) {
+    if (!check_character(holdingvar) | !check_len(holdingvar, 1)) {
+      stop("argument 'holdingvar' must be a character vector with 1 element!\n")
+    }
+    if (!holdingvar %in% cn) {
+      stop("non-valid variable selected for choice 'holdingvar'.\n")
+    }
+  } else {
+    holdingvar <- ""
+  }
+
+  list(responsevar=responsevar, shadowvar=shadowvar, costvar=costvar,
+    requestvar=requestvar, holdingvar=holdingvar)
 }
 
 # check suppression-method
@@ -137,7 +164,7 @@ write_hrc <- function(inp, fOut, nr_digits) {
 #### helper-function to write data-files and metadata files required for tau-argus based on sdcProblem-objects ####
 ###################################################################################################################
 ## using microdata
-create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
+create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, requestvar=NULL, holdingvar=NULL) {
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("microdata_", ID), ext=".asc")
 
@@ -214,7 +241,6 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     }
   }
 
-
   # 2: optionally (weight)
   # 3: numeric variables
 
@@ -232,16 +258,24 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
-
     cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
-    cmds <- append(cmds, paste(bl, "<NUMERIC>"))
-    if (has_decimals) {
-      cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
-    }
-    wV <- vNames[get.dataObj(dataObj, "sampWeightInd")]
-    if (length(wV)>0) {
-      if (vv==wV) {
-        cmds <- append(cmds, paste(bl, "<WEIGHT>"))
+
+    if (!is.null(requestvar) && requestvar==vv) {
+      cat("requestvar detected!\n")
+      cmds <- append(cmds, paste(bl, "<REQUEST>", dQuote(1)))
+    } else if (!is.null(holdingvar) && holdingvar==vv) {
+      cat("holdingvar detected!\n")
+      cmds <- append(cmds, paste(bl, "<HOLDING>"))
+    } else {
+      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
+      if (has_decimals) {
+        cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
+      }
+      wV <- vNames[get.dataObj(dataObj, "sampWeightInd")]
+      if (length(wV)>0) {
+        if (vv==wV) {
+          cmds <- append(cmds, paste(bl, "<WEIGHT>"))
+        }
       }
     }
     mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
@@ -453,6 +487,14 @@ sf_zero <- function(rg) {
   paste0("ZERO(",rg,")")
 }
 
+# REQ(Percent1, Percent2, SafetyMargin)
+#sf_req <- function(p1, p2, margin) {
+#  if (is.null(rg) || !check_int(rg) || !check_range(rg, 1, 99)) {
+#    stop("sf_req(): check parameter 'rg'\n")
+#  }
+#  paste0("REQ(",p1,",",p2,",",margin,")")
+#}
+
 
 ## create safety-rules
 # todo: REQ(); MIS, WGT: MAN: --> issues to peter-paul?
@@ -573,15 +615,19 @@ tauBatchInput_microdata <- function(obj,
     primSuppRules,
     responsevar="<freq>",
     shadowvar=NULL,
-    costvar=NULL, ...) {
+    costvar=NULL,
+    requestvar=NULL,
+    holdingvar=NULL, ...) {
 
   args = list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, responsevar, shadowvar, costvar, requestvar, holdingvar)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
+  requestvar <- vars$requestvar
+  holdingvar <- vars$holdingvar
 
   ## check argument 'method'
   method <- check_suppmethod(method)
@@ -600,7 +646,8 @@ tauBatchInput_microdata <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_", batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_microdata_and_metadata(obj, digits=2, path=path, ID=batchID)
+  res <- create_microdata_and_metadata(obj, digits=2, path=path, ID=batchID,
+    requestvar=requestvar, holdingvar=holdingvar)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -679,7 +726,8 @@ tauBatchInput_table <- function(obj,
   args = list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, responsevar, shadowvar, costvar,
+    requestvar=NULL, holdingvar=NULL)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
@@ -843,4 +891,3 @@ infoFromBatch <- function(batchF, typ="LOGBOOK") {
   }
   filepath
 }
-

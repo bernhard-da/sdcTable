@@ -37,6 +37,8 @@
 #' @param responsevar which variable should be tabulated (defaults to frequencies). For details see tau-argus manual section 4.4.4.
 #' @param shadowvar if specified, this variable is used to apply the safety rules, defaults to \code{responsevar}. For details see tau-argus manual section 4.4.4.
 #' @param costvar if specified, this variable describes the costs of suppressing each individual cell. For details see tau-argus manual section 4.4.4.
+#' @param requestvar if specified, this variable (0/1-coded) contains information about records that request protection. It is ignored, if tabular input is used.
+#' @param holdingvar if specified, this variable contains information about records that should be grouped together. It is ignored, if tabular input is used.
 #' @param ... allows to specify additional parameters for selected suppression-method as described above.
 #' @return the filepath to the batch-file
 #' @export
@@ -101,7 +103,7 @@
 #' bO_td1 <- createArgusInput(obj, typ="tabular", path=getwd(), solver="FREE", method="OPT")
 #' bO_td2 <- createArgusInput(obj_dupl, typ="tabular", path=getwd(), solver="FREE", method="OPT")
 createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", method,
-  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, ...) {
+  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, requestvar=NULL, holdingvar=NULL, ...) {
 
   if (class(obj)!="sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'.\n")
@@ -114,13 +116,22 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
       stop("primary suppression rules (argument 'primSuppRules') must be specified when using microdata as input!\n")
     }
     batchObj <- tauBatchInput_microdata(obj=obj, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
-      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
+      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, requestvar=requestvar, holdingvar=holdingvar, ...)
   }
   if (typ=="tabular") {
     if (!is.null(primSuppRules)) {
       message("ignoring argument 'primSuppRules'!\n")
       primSuppRules <- NULL
     }
+    if (!is.null(requestvar)) {
+      message("ignoring argument 'requestvar'!\n")
+      requestvar <- NULL
+    }
+    if (!is.null(holdingvar)) {
+      message("ignoring argument 'holdingvar'!\n")
+      holdingvar <- NULL
+    }
+
     batchObj <- tauBatchInput_table(obj=obj, path=path, solver=solver, method=method,
       responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
   }
