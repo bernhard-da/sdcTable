@@ -33,7 +33,8 @@
 #' \item MaxComputingTime: number specifiying max. allowed computing time (in minutes)
 #' }
 #' }
-#' @param primSuppRules rules for primary suppression, provided as a \code{list}.
+#' @param primSuppRules rules for primary suppression, provided as a
+#' \code{list}. For details, please have a look at the examples below.
 #' @param responsevar which variable should be tabulated (defaults to frequencies). For details see tau-argus manual section 4.4.4.
 #' @param shadowvar if specified, this variable is used to apply the safety rules, defaults to \code{responsevar}. For details see tau-argus manual section 4.4.4.
 #' @param costvar if specified, this variable describes the costs of suppressing each individual cell. For details see tau-argus manual section 4.4.4.
@@ -96,6 +97,12 @@
 #' primSuppRules <- list()
 #' primSuppRules[[1]] <- list(type="freq", n=5, rg=20)
 #' primSuppRules[[2]] <- list(type="p", n=5, p=20)
+#' # other supported formats are:
+#' # list(type="nk", n=5, k=20)
+#' # list(type="zero", rg=5)
+#' # list(type="mis", val=1)
+#' # list(type="wgt", val=1)
+#' # list(type="man", val=20)
 #'
 #' ## create batchInput object
 #' bO_md1 <- createArgusInput(obj, typ="microdata", path=getwd(), solver="FREE", method="OPT",

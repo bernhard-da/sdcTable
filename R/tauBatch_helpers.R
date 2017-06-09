@@ -114,7 +114,6 @@ check_suppmethod <- function(method) {
 }
 
 
-
 ###############################################################################################################
 ##### helper-functions that are used to create hierarchy-files for tau-argus using an sdcProblem-instance #####
 ###############################################################################################################
@@ -487,6 +486,31 @@ sf_zero <- function(rg) {
   paste0("ZERO(",rg,")")
 }
 
+# MIS(val)
+sf_mis <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !val %in% c(0,1)) {
+    stop("sf_mis(): check parameter 'val'\n")
+  }
+  paste0("MIS(",val,")")
+}
+
+# WGT(val)
+sf_wgt <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !val %in% c(0,1)) {
+    stop("sf_wgt(): check parameter 'val'\n")
+  }
+  paste0("WGT(",val,")")
+}
+
+# MAN(val)
+sf_man <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !check_range(val, 1, 99)) {
+    stop("sf_man(): check parameter 'val'\n")
+  }
+  paste0("MAN(",val,")")
+}
+
+
 # REQ(Percent1, Percent2, SafetyMargin)
 #sf_req <- function(p1, p2, margin) {
 #  if (is.null(rg) || !check_int(rg) || !check_range(rg, 1, 99)) {
@@ -497,22 +521,27 @@ sf_zero <- function(rg) {
 
 
 ## create safety-rules
-# todo: REQ(); MIS, WGT: MAN: --> issues to peter-paul?
+# todo: REQ()
 srule <- function(type, ...) {
   args <- list(...)
   type <- tolower(type)
   if (type=="p") {
-    rule <- sf_p(p=args$p, n=args$n)
+    return(sf_p(p=args$p, n=args$n))
   } else if (type=="nk") {
-    rule <- sf_nk(n=args$n, k=args$k)
+    return(sf_nk(n=args$n, k=args$k))
   } else if (type=="freq") {
-    rule <- return(sf_freq(n=args$n, rg=args$rg))
+    return(sf_freq(n=args$n, rg=args$rg))
   } else if (type=="zero") {
-    rule <- return(sf_zero(rg=args$rg))
+    return(sf_zero(rg=args$rg))
+  } else if (type=="mis") {
+    return(sf_mis(val=args$val))
+  } else if (type=="wgt") {
+    return(sf_wgt(val=args$val))
+  } else if (type=="man") {
+    return(sf_man(val=args$val))
   } else {
     stop("invalid choice of 'type'!\n")
   }
-  rule
 }
 
 ## check for invalid inputs
@@ -554,6 +583,10 @@ check_primrules <- function(primSuppRules, responsevar) {
 #primSuppRules[[1]] <- list(type="freq", n=5, rg=20)
 #primSuppRules[[2]] <- list(type="p", n=5, p=20)
 #primSuppRules[[3]] <- list(type="nk", n=5, k=20.5)
+#primSuppRules[[4]] <- list(type="mis", val=1)
+#primSuppRules[[5]] <- list(type="wgt", val=1)
+#primSuppRules[[6]] <- list(type="man", val=25)
+
 #check_primrules(primSuppRules, responsevar="asf")
 
 ##############################################################
