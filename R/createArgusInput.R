@@ -37,7 +37,7 @@
 #' @param responsevar which variable should be tabulated (defaults to frequencies). For details see tau-argus manual section 4.4.4.
 #' @param shadowvar if specified, this variable is used to apply the safety rules, defaults to \code{responsevar}. For details see tau-argus manual section 4.4.4.
 #' @param costvar if specified, this variable describes the costs of suppressing each individual cell. For details see tau-argus manual section 4.4.4.
-#' @param requestvar if specified, this variable (0/1-coded) contains information about records that request protection. It is ignored, if tabular input is used.
+#' @param requestvar if specified, this variable (0/1-coded) contains information about records that request protection. Records with 1 will be protected in case a corresponding request rule matches. It is ignored, if tabular input is used.
 #' @param holdingvar if specified, this variable contains information about records that should be grouped together. It is ignored, if tabular input is used.
 #' @param ... allows to specify additional parameters for selected suppression-method as described above.
 #' @return the filepath to the batch-file
