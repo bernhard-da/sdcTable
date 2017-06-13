@@ -229,7 +229,7 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
 
     cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
-    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", f_hrc))
+    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
     cmds <- append(cmds, paste(bl, "<HIERLEADSTRING> @"))
     cmds <- append(cmds, paste(bl, "<HIERARCHICAL>"))
 
