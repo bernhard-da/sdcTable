@@ -652,7 +652,7 @@ tauBatchInput_microdata <- function(obj,
     requestvar=NULL,
     holdingvar=NULL, ...) {
 
-  args = list(...)
+  args <- list(...)
 
   # create and check variable-input
   vars <- check_varinput(obj, responsevar, shadowvar, costvar, requestvar, holdingvar)
@@ -715,7 +715,11 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setReadInput(batchObj, "<READMICRODATA>")
 
   ## solver
-  batchObj <- setSolver(batchObj, solver)
+  license <- NULL
+  if (solver=="CPLEX") {
+    license <- args$licensefile
+  }
+  batchObj <- setSolver(batchObj, list(solver=solver, license=license))
 
   # modular/hitas
   if (method=="MOD") {
@@ -756,7 +760,7 @@ tauBatchInput_table <- function(obj,
     shadowvar=NULL,
     costvar=NULL, ...) {
 
-  args = list(...)
+  args <- list(...)
 
   # create and check variable-input
   vars <- check_varinput(obj, responsevar, shadowvar, costvar,
@@ -814,7 +818,11 @@ tauBatchInput_table <- function(obj,
   batchObj <- setReadInput(batchObj, "<READTABLE>")
 
   ## solver
-  batchObj <- setSolver(batchObj, solver)
+  license <- NULL
+  if (solver=="CPLEX") {
+    license <- args$licensefile
+  }
+  batchObj <- setSolver(batchObj, list(solver=solver, license=license))
 
   # modular/hitas
   if (method=="MOD") {

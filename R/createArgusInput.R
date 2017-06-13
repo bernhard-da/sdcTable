@@ -13,6 +13,8 @@
 #' \item "CPLEX"
 #' \item "XPRESS"
 #' }
+#' In case "CPLEX" is used, it is also mandatory to specify argument 'licensefile' which needs to be
+#' the absolute path the the cplex license file
 #' @param method secondary cell suppression algorithm, possible choices include:
 #' \itemize{
 #' \item MOD: modular approach. If specified, the following arguments in \code{...} can additionally be set:
@@ -40,7 +42,8 @@
 #' @param costvar if specified, this variable describes the costs of suppressing each individual cell. For details see tau-argus manual section 4.4.4.
 #' @param requestvar if specified, this variable (0/1-coded) contains information about records that request protection. Records with 1 will be protected in case a corresponding request rule matches. It is ignored, if tabular input is used.
 #' @param holdingvar if specified, this variable contains information about records that should be grouped together. It is ignored, if tabular input is used.
-#' @param ... allows to specify additional parameters for selected suppression-method as described above.
+#' @param ... allows to specify additional parameters for selected suppression-method as described above
+#' as well as \code{licensefile} in clase "CPLEX" was specified in argument \code{solver}.
 #' @return the filepath to the batch-file
 #' @export
 #' @examples
@@ -109,6 +112,12 @@
 #'   primSuppRules=primSuppRules, responsevar="num1")
 #' bO_td1 <- createArgusInput(obj, typ="tabular", path=getwd(), solver="FREE", method="OPT")
 #' bO_td2 <- createArgusInput(obj_dupl, typ="tabular", path=getwd(), solver="FREE", method="OPT")
+#' \dontrun{
+#' ## in case CPLEX should be used, it is required to specify argument licensefile
+#' bO_md2 <- createArgusInput(obj, typ="microdata", path=getwd(), solver="CPLEX", method="OPT",
+#'   primSuppRules=primSuppRules, responsevar="num1", licensefile="/path/to/my/cplexlicense")
+#' }
+
 createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", method,
   primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, requestvar=NULL, holdingvar=NULL, ...) {
 
@@ -118,6 +127,12 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
   if (!typ %in% c("microdata","tabular")) {
     stop("argument 'type' must be either 'microdata' or 'tabular'.\n")
   }
+
+  args <- list(...)
+  if (solver=="CPLEX" & is.null(args$licensefile)) {
+    stop(dQuote("CPLEX")," is required but argument 'licensefile' has not been set!\n")
+  }
+
   if (typ=="microdata") {
     if (is.null(primSuppRules)) {
       stop("primary suppression rules (argument 'primSuppRules') must be specified when using microdata as input!\n")

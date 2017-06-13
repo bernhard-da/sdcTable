@@ -1,5 +1,6 @@
 setClassUnion("characterOrNULL", c("character", "NULL"))
 setClassUnion("sdcProblemOrNULL", c("sdcProblem", "NULL"))
+setClassUnion("listOrNull", c("list", "NULL"))
 
 tau_BatchObj <- setClass("tau_BatchObj",
   slots = c(
@@ -11,7 +12,7 @@ tau_BatchObj <- setClass("tau_BatchObj",
     table="characterOrNULL",
     safetyrules="characterOrNULL",
     readInput="characterOrNULL",
-    solver="characterOrNULL",
+    solver="listOrNull",
     suppress="characterOrNULL",
     writetable="characterOrNULL",
     is_table="logical",
@@ -37,6 +38,11 @@ tau_BatchObj <- setClass("tau_BatchObj",
   validity=function(object) {
     if (length(object@is_table)!=1) {
       stop("length(is_table)!=1\n")
+    }
+    if (!is.null(object@solver)) {
+      if (object@solver$solver=="CPLEX" && !file.exists(object@solver$license)) {
+        stop("No valid licensefile given!\n")
+      }
     }
     return(TRUE)
   }
@@ -173,7 +179,13 @@ definition=function(obj) {
   cmds <- append(cmds, paste("<SPECIFYTABLE>", obj@table))
   cmds <- append(cmds, paste("<SAFETYRULE>", obj@safetyrules))
   cmds <- append(cmds, obj@readInput)
-  cmds <- append(cmds, paste("<SOLVER>", obj@solver))
+
+  if (obj@solver$solver=="CPLEX") {
+    cmds <- append(cmds, paste0("<SOLVER> ", obj@solver$solver,",", dQuote(obj@solver$license)))
+  } else {
+    cmds <- append(cmds, paste("<SOLVER>", obj@solver$solver))
+  }
+
   cmds <- append(cmds, paste("<SUPPRESS>", obj@suppress))
   cmds <- append(cmds, paste("<WRITETABLE>", obj@writetable))
 
