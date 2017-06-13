@@ -1,4 +1,10 @@
 #' runArgusBatchFile
+#'
+#' allows to run batch-files for tau argus given the path to an executable of argus.
+#' The provided batch input files can either be created using function \code{\link{createArgusInput}} or
+#' can be arbitrarily created. In the latter case, argument \code{obj} should not be specified and not output
+#' is returned, the script is just executed in tau-argus.
+#'
 #' @param obj \code{NULL} or an object of class \code{\link{sdcProblem-class}} that was used to generate the batchfile for argus. If not \code{NULL},
 #' this object is used to create correct variable names. Else, only the output from tau-Argus is read and returned as a \code{data.table}. In this case
 #' it is possible to run tau-Argus on arbitrarily created batch-files.
@@ -6,6 +12,8 @@
 #' @param exe (character) file-path to tau-argus executable
 #'
 #' @return a \code{data.table} containing the protected table or an error in case the batch-file was not solved correctly
+#' if the batch-file was created using sdcTable (argument \code{obj}) was specified. In
+#' case an arbitrarily batch-file has been run, \code{NULL} is returned.
 #' @export
 runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe") {
   ## checks
@@ -58,10 +66,17 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe") {
     stop(paste0("An error has occured. Please have a look at the logfile located at ", dQuote(logf),".\n"))
   }
 
-  ## everything ok, we can read the actual output from argus
-  out <- read_ArgusSolution(outtab)
-  if (!is.null(out)) {
-    out <- combineInputs(obj=obj, out, batchF=batchF)
+  ## everything ok (and batch-file was created from sdcTable)
+  ## we can read the actual output from argus
+  if (!is.null(obj)) {
+    out <- read_ArgusSolution(outtab)
+    if (!is.null(out)) {
+      out <- combineInputs(obj=obj, out, batchF=batchF)
+    }
+    return(out[])
   }
-  return(out[])
+
+  # custom batch-file: we just inform the user, where to look
+  cat(paste("The batch-file",dQuote(batchF),"has been processed by tau-argus!\n"))
+  return(invisible(NULL))
 }
