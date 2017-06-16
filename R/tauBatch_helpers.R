@@ -260,10 +260,8 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
     cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
 
     if (!is.null(requestvar) && requestvar==vv) {
-      cat("requestvar detected!\n")
       cmds <- append(cmds, paste(bl, "<REQUEST>", dQuote(1)))
     } else if (!is.null(holdingvar) && holdingvar==vv) {
-      cat("holdingvar detected!\n")
       cmds <- append(cmds, paste(bl, "<HOLDING>"))
     } else {
       cmds <- append(cmds, paste(bl, "<NUMERIC>"))
