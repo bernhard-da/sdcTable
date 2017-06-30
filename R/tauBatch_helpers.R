@@ -6,7 +6,7 @@ check_int <- function(x) {
   if (!is.numeric(x)) {
     return(FALSE)
   }
-  all(x%%1==0)
+  all(na.omit(x)%%1==0)
 }
 
 # different checks
@@ -33,14 +33,21 @@ check_pos_number <- function(inp, v_min=1, v_max=100, default=1) {
 }
 
 # check variable input for batch-file
-check_varinput <- function(obj, responsevar, shadowvar, costvar, requestvar, holdingvar) {
+check_varinput <- function(obj, type, responsevar, shadowvar, costvar, requestvar, holdingvar) {
   if (!class(obj)=="sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'!\n")
   }
+  stopifnot(type %in% c("microdata", "tabular"))
 
   if (is.null(responsevar)) {
-    responsevar <- "<freq>"
+    if (type=="microdata") {
+      responsevar <- "<freq>"
+    }
+    if (type == "tabular") {
+      responsevar <- "freq"
+    }
   }
+
   df <- g_df(obj, addNumVars=TRUE)
   vNames <- get.sdcProblem(obj, "dimInfo")@vNames
   vNames_o <- paste0(vNames,"_o")
@@ -227,7 +234,7 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=cur_dig)
 
-    cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
+    cmds <- append(cmds, paste(vv)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
     cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
     cmds <- append(cmds, paste(bl, "<HIERLEADSTRING> @"))
@@ -287,18 +294,18 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
 }
 
 ## using tabular data
-create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
+create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd(), ID) {
   lpl <- upl <- sdcStatus <- NULL
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("tabdata_", ID), ext=".tab")
 
   f_metadata <- file.path(path, f1)
-  f_microdata <- file.path(path, f2)
+  f_tabdata <- file.path(path, f2)
 
   # get data
   dataObj <- get.sdcProblem(obj, "dataObj")
   pI <- get.sdcProblem(obj, "problemInstance")
-  mdat <- copy(g_df(obj))
+  mdat <- copy(sdcProb2df(obj, addNumVars=TRUE, dimCodes="original"))
   mdat[,lpl:=get.problemInstance(pI, "LPL")]
   mdat[,upl:=get.problemInstance(pI, "UPL")]
 
@@ -345,10 +352,10 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   f_hrcs <- c()
   for (i in seq_along(dim_vars)) {
     vv <- dim_vars[i]
-    cmd <- paste0("mdat[,",vv,":=",paste0(vv,"_o"),"]")
-    eval(parse(text=cmd))
-    cmd <- paste0("mdat[,",paste0(vv,"_o"),":= NULL]")
-    eval(parse(text=cmd))
+    #cmd <- paste0("mdat[,",vv,":=",paste0(vv,"_o"),"]")
+    #eval(parse(text=cmd))
+    #cmd <- paste0("mdat[,",paste0(vv,"_o"),":= NULL]")
+    #eval(parse(text=cmd))
 
     vv <- dim_vars[i]
     startpos <- sum(required_digits)+i
@@ -365,7 +372,7 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=0)
 
-    cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
+    cmds <- append(cmds, paste(vv)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
     cmds <- append(cmds, paste(bl, "<TOTCODE>", dQuote(tot_code)))
     cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
@@ -380,10 +387,11 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   }
 
   # 2b: numeric variables, frequency, lpl/upl
-  num_vars <- setdiff(colnames(mdat), c("strID", dim_vars))
+  #num_vars <- setdiff(colnames(mdat), c("strID", dim_vars))
+  num_vars <- c("sdcStatus", responsevar, "lpl","upl")
+
   for (i in seq_along(num_vars)) {
     vv <- num_vars[i]
-
     has_decimals <- FALSE
     if (!check_int(mdat[[vv]])) {
       digits <- digits
@@ -397,14 +405,16 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
       mdat[,sdcStatus:=toupper(sdcStatus)] # bug in tau-argus?
     }
 
+    if (any(is.na(mdat[[vv]]))) {
+      stop("missing value detected in variable ",dQuote(vv),". This is currently not supported!\n")
+    }
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
 
     if (vv=="freq") {
-      cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
-      cmds <- append(cmds, paste(bl, "<FREQUENCY>"))
-
+      cmds <- append(cmds, vv)
+      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
     } else if (vv=="lpl") {
       cmds <- append(cmds, vv)
       cmds <- append(cmds, paste(bl, "<NUMERIC> <LOWERPL>"))
@@ -414,10 +424,12 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     } else if (vv=="sdcStatus") {
       cmds <- append(cmds, vv)
       cmds <- append(cmds, paste(bl, "<STATUS>"))
-    } else {
-      cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
-      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
     }
+    # do not append any other variable since batch-input assumes one numeric variable
+    # else {
+    #  cmds <- append(cmds, vv)
+    #  cmds <- append(cmds, paste(bl, "<NUMERIC>"))
+    #}
 
     if (has_decimals) {
       cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
@@ -434,8 +446,8 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   cat("writing metadatafile to",shQuote(f_metadata),"\n")
   cat(unlist(cmds), sep="\r\n", file=f_metadata)
 
-  cat("writing microdatafile to",shQuote(f_microdata),"\n")
-  write.table(mat, file=f_microdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
+  cat("writing tabular data file to",shQuote(f_tabdata),"\n")
+  write.table(mat, file=f_tabdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
   invisible(list(f_md=f1, f_dat=f2, f_hrcs=f_hrcs))
 }
 
@@ -653,7 +665,7 @@ tauBatchInput_microdata <- function(obj,
   args <- list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar, requestvar, holdingvar)
+  vars <- check_varinput(obj, type="microdata", responsevar, shadowvar, costvar, requestvar, holdingvar)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
@@ -754,14 +766,14 @@ tauBatchInput_table <- function(obj,
     path=getwd(),
     solver="FREE",
     method,
-    responsevar="<freq>",
+    responsevar="freq",
     shadowvar=NULL,
     costvar=NULL, ...) {
 
   args <- list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar,
+  vars <- check_varinput(obj, type="tabular", responsevar, shadowvar, costvar,
     requestvar=NULL, holdingvar=NULL)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
@@ -785,7 +797,7 @@ tauBatchInput_table <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_",batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_tabdata_and_metadata(obj, digits=2, path=path, ID=batchID)
+  res <- create_tabdata_and_metadata(obj, responsevar=responsevar, digits=2, path=path, ID=batchID)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -860,7 +872,7 @@ tauBatchInput_table <- function(obj,
 # if obj is NULL, only the solution fro tau-Argus is read in and variable names are extracted from batch-Input
 combineInputs <- function(obj=NULL, res_argus, batchF) {
   extractVarnames <- function(batchF) {
-    inp <- readLines(batchF)
+    inp <- readLines(batchF, warn=FALSE)
     inp <- inp[grep("SPECIFY", inp)]
     inp <- unlist(strsplit(inp, "> "))[-1]
     inp <- unlist(strsplit(inp, '"'))
@@ -917,7 +929,7 @@ combineInputs <- function(obj=NULL, res_argus, batchF) {
 
 # read file-path from batch-files
 infoFromBatch <- function(batchF, typ="LOGBOOK") {
-  inp <- readLines(batchF)
+  inp <- readLines(batchF, warn=FALSE)
   inp <- inp[grep(typ, inp)]
   if (length(inp)==0) {
     stop(paste(dQuote(typ),"not found in batch-file",dQuote(batchF),"\n"))
@@ -929,4 +941,45 @@ infoFromBatch <- function(batchF, typ="LOGBOOK") {
     filepath <- gsub(")", "", filepath)
   }
   filepath
+}
+
+#' argusVersion
+#'
+#' returns the version and build number of a given tau-argus executable
+#' specified in argument \code{exe}.
+#'
+#' @param exe a path to a tau-argus executable
+#' @param verbose (logical) if \code{TRUE}, the version info and build number
+#' of the given tau-argus executable will be printed.
+#'
+#' @return a list with two elements being the tau-argus version and the build-number.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' argusVersion(exe="C:\\Tau\\TauArgus.exe", verbose=TRUE)
+#' }
+argusVersion <- function(exe, verbose=FALSE) {
+  fInfo <- tempfile(fileext=".txt")
+  fBatch <- tempfile(fileext=".arb")
+  fLog <- tempfile(fileext=".log")
+  cat(paste("<LOGBOOK>", dQuote(fLog),"\n<VERSIONINFO>", dQuote(fInfo),"\n"), file=fBatch)
+
+  cmd <- paste(shQuote(exe), fBatch)
+  res <- suppressWarnings(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=FALSE))
+  if (!is.null(attributes(res)$status)) {
+    stop("Please use an tau-argus version >= 4.1.6\n")
+  }
+
+  res <- readLines(fInfo, warn=FALSE)
+  res <- unlist(strsplit(res, ";"))
+  version <- str_trim(unlist(strsplit(res[1], ":"))[2])
+  build <- str_trim(unlist(strsplit(res[2], ":"))[2])
+  if (verbose) {
+    cat(paste0("Tau-Argus version: ", version, " (Build: ",build,")\n"))
+  }
+
+  # cleanup
+  xx <- file.remove(c(fInfo, fBatch, fLog))
+  return(list(version=version, build=build))
 }

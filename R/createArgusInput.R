@@ -162,7 +162,7 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
   ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
   cat(paste0("\n",ff,"\n"))
   cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
-  rr <- readLines(batchF)[-c(1:3)]
+  rr <- readLines(batchF, warn=FALSE)[-c(1:3)]
   cat(rr, sep="\n")
   return(invisible(batchF))
 }
