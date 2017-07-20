@@ -3,7 +3,7 @@
 #include <stdlib.h> // for NULL
 #include <R_ext/Rdynload.h>
 
-/* FIXME: 
+/* FIXME:
    Check these declarations against the C/Fortran source code.
 */
 
@@ -11,10 +11,10 @@
 extern void csp(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 
 /* .Call calls */
-extern SEXP sdcTable_cpp_myPaste(SEXP, SEXP, SEXP);
-extern SEXP sdcTable_cpp_mySplit(SEXP, SEXP);
-extern SEXP sdcTable_cpp_splitByIndices(SEXP, SEXP);
-extern SEXP sdcTable_greedyMultDimSuppression(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP _sdcTable_cpp_myPaste(SEXP, SEXP, SEXP);
+extern SEXP _sdcTable_cpp_mySplit(SEXP, SEXP);
+extern SEXP _sdcTable_cpp_splitByIndices(SEXP, SEXP);
+extern SEXP _sdcTable_greedyMultDimSuppression(SEXP, SEXP, SEXP, SEXP, SEXP);
 
 static const R_CMethodDef CEntries[] = {
     {"csp", (DL_FUNC) &csp, 22},
@@ -22,10 +22,10 @@ static const R_CMethodDef CEntries[] = {
 };
 
 static const R_CallMethodDef CallEntries[] = {
-    {"sdcTable_cpp_myPaste",              (DL_FUNC) &sdcTable_cpp_myPaste,              3},
-    {"sdcTable_cpp_mySplit",              (DL_FUNC) &sdcTable_cpp_mySplit,              2},
-    {"sdcTable_cpp_splitByIndices",       (DL_FUNC) &sdcTable_cpp_splitByIndices,       2},
-    {"sdcTable_greedyMultDimSuppression", (DL_FUNC) &sdcTable_greedyMultDimSuppression, 5},
+    {"_sdcTable_cpp_myPaste",              (DL_FUNC) &_sdcTable_cpp_myPaste,              3},
+    {"_sdcTable_cpp_mySplit",              (DL_FUNC) &_sdcTable_cpp_mySplit,              2},
+    {"_sdcTable_cpp_splitByIndices",       (DL_FUNC) &_sdcTable_cpp_splitByIndices,       2},
+    {"_sdcTable_greedyMultDimSuppression", (DL_FUNC) &_sdcTable_greedyMultDimSuppression, 5},
     {NULL, NULL, 0}
 };
 

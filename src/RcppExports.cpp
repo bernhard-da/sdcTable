@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // cpp_splitByIndices
 List cpp_splitByIndices(std::vector<std::string> strings, List strInfo);
-RcppExport SEXP sdcTable_cpp_splitByIndices(SEXP stringsSEXP, SEXP strInfoSEXP) {
+RcppExport SEXP _sdcTable_cpp_splitByIndices(SEXP stringsSEXP, SEXP strInfoSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // cpp_myPaste
 CharacterVector cpp_myPaste(CharacterVector stringvec, int nrKeyVars, CharacterVector seperator);
-RcppExport SEXP sdcTable_cpp_myPaste(SEXP stringvecSEXP, SEXP nrKeyVarsSEXP, SEXP seperatorSEXP) {
+RcppExport SEXP _sdcTable_cpp_myPaste(SEXP stringvecSEXP, SEXP nrKeyVarsSEXP, SEXP seperatorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,7 +32,7 @@ END_RCPP
 }
 // cpp_mySplit
 CharacterVector cpp_mySplit(CharacterVector stringvec, IntegerVector indices);
-RcppExport SEXP sdcTable_cpp_mySplit(SEXP stringvecSEXP, SEXP indicesSEXP) {
+RcppExport SEXP _sdcTable_cpp_mySplit(SEXP stringvecSEXP, SEXP indicesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -44,7 +44,7 @@ END_RCPP
 }
 // greedyMultDimSuppression
 List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, IntegerVector dimVars, bool verbose);
-RcppExport SEXP sdcTable_greedyMultDimSuppression(SEXP datSEXP, SEXP indicesSEXP, SEXP subIndicesSEXP, SEXP dimVarsSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _sdcTable_greedyMultDimSuppression(SEXP datSEXP, SEXP indicesSEXP, SEXP subIndicesSEXP, SEXP dimVarsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
