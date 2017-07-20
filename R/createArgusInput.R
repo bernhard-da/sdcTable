@@ -5,6 +5,7 @@
 #'
 #' @param obj an object of class \code{\link{sdcProblem-class}} from \code{sdcTable}
 #' @param typ (character) either \code{microdata} or \code{tabular}
+#' @param verbose (logical) if TRUE, the contents of the batch-file are written to the prompt
 #' @param path path, into which (temporary) files will be written to (amongst them being the batch-files).
 #' Each file written to this folder belonging to the same problem contains a random id in its filename.
 #' @param solver which solver should be used. allowed choices are
@@ -118,7 +119,7 @@
 #'   primSuppRules=primSuppRules, responsevar="num1", licensefile="/path/to/my/cplexlicense")
 #' }
 
-createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", method,
+createArgusInput <- function(obj, typ="microdata", verbose=FALSE, path=getwd(), solver="FREE", method,
   primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, requestvar=NULL, holdingvar=NULL, ...) {
 
   if (class(obj)!="sdcProblem") {
@@ -137,7 +138,7 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
     if (is.null(primSuppRules)) {
       stop("primary suppression rules (argument 'primSuppRules') must be specified when using microdata as input!\n")
     }
-    batchObj <- tauBatchInput_microdata(obj=obj, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
+    batchObj <- tauBatchInput_microdata(obj=obj, verbose=verbose, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
       responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, requestvar=requestvar, holdingvar=holdingvar, ...)
   }
   if (typ=="tabular") {
@@ -154,15 +155,18 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
       holdingvar <- NULL
     }
 
-    batchObj <- tauBatchInput_table(obj=obj, path=path, solver=solver, method=method,
+    batchObj <- tauBatchInput_table(obj=obj, verbose=verbose, path=path, solver=solver, method=method,
       responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
   }
   ## write required files
   batchF <- writeBatchFile(batchObj)
-  ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
-  cat(paste0("\n",ff,"\n"))
-  cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
-  rr <- readLines(batchF, warn=FALSE)[-c(1:3)]
-  cat(rr, sep="\n")
+  batchF <- normalizePath(batchF, winslash="/", mustWork=TRUE)
+  if (verbose) {
+    ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
+    cat(paste0("\n",ff,"\n"))
+    cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
+    rr <- readLines(batchF, warn=FALSE)[-c(1:3)]
+    cat(rr, sep="\n")
+  }
   return(invisible(batchF))
 }

@@ -169,19 +169,23 @@ definition=function(obj) {
   cmds <- append(cmds, "//")
 
   ## tau-argus batch file
-  cmds <- append(cmds, paste("<LOGBOOK>", dQuote(file.path(path, obj@logbook))))
+  f_log <- normalizePath(file.path(path, obj@logbook), winslash="/", mustWork=FALSE)
+  f_data <- normalizePath(file.path(path, obj@microdata), winslash="/", mustWork=TRUE)
+  f_metadata <- normalizePath(file.path(path, obj@metadata), winslash="/", mustWork=TRUE)
+  cmds <- append(cmds, paste("<LOGBOOK>", dQuote(f_log)))
   if (is_table) {
-    cmds <- append(cmds, paste("<OPENTABLEDATA>", dQuote(file.path(path, obj@microdata))))
+    cmds <- append(cmds, paste("<OPENTABLEDATA>", dQuote(f_data)))
   } else {
-    cmds <- append(cmds, paste("<OPENMICRODATA>", dQuote(file.path(path, obj@microdata))))
+    cmds <- append(cmds, paste("<OPENMICRODATA>", dQuote(f_data)))
   }
-  cmds <- append(cmds, paste("<OPENMETADATA>", dQuote(file.path(path, obj@metadata))))
+  cmds <- append(cmds, paste("<OPENMETADATA>", dQuote(f_metadata)))
   cmds <- append(cmds, paste("<SPECIFYTABLE>", obj@table))
   cmds <- append(cmds, paste("<SAFETYRULE>", obj@safetyrules))
   cmds <- append(cmds, obj@readInput)
 
   if (obj@solver$solver=="CPLEX") {
-    cmds <- append(cmds, paste0("<SOLVER> ", obj@solver$solver,",", dQuote(obj@solver$license)))
+    f_license <- normalizePath(obj@solver$license, winslash="/", mustWork=TRUE)
+    cmds <- append(cmds, paste0("<SOLVER> ", obj@solver$solver,",", dQuote(f_license)))
   } else {
     cmds <- append(cmds, paste("<SOLVER>", obj@solver$solver))
   }
@@ -191,7 +195,10 @@ definition=function(obj) {
 
   fBatch <- generateStandardizedNames(path=obj@path, lab=paste0("batch_",obj@id), ext=".arb")
   #cat("writing batch-file",shQuote(fBatch),"\n")
-  cat(unlist(cmds), sep="\n", file=fBatch)
+
+  cmds <- unlist(cmds)
+  cmds[length(cmds)] <- paste0(cmds[length(cmds)],"\r")
+  cat(cmds, sep="\r\n", file=fBatch)
   invisible(fBatch)
 })
 

@@ -72,7 +72,6 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe", bat
   } else {
     cmd <- paste(shQuote(exe), batchF)
   }
-  cat("cmd:", cmd, "\n")
 
   res <- suppressWarnings(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=FALSE))
   s <- attributes(res)$status

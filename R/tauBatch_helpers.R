@@ -170,7 +170,7 @@ write_hrc <- function(inp, fOut, nr_digits) {
 #### helper-function to write data-files and metadata files required for tau-argus based on sdcProblem-objects ####
 ###################################################################################################################
 ## using microdata
-create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, requestvar=NULL, holdingvar=NULL) {
+create_microdata_and_metadata <- function(obj, verbose, digits=2, path=getwd(), ID, requestvar=NULL, holdingvar=NULL) {
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("microdata_", ID), ext=".asc")
 
@@ -233,11 +233,11 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
     f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=cur_dig)
-
-    cmds <- append(cmds, paste(vv)) # no missings allowed in sdcProblem-objects
+    f_hrc <- normalizePath(f_hrc, winslash="/", mustWork=TRUE)
+    cmds <- append(cmds, paste(vv, cur_dig)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
     cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
-    cmds <- append(cmds, paste(bl, "<HIERLEADSTRING> @"))
+    cmds <- append(cmds, paste(bl, "<HIERLEADSTRING>", dQuote("@")))
     cmds <- append(cmds, paste(bl, "<HIERARCHICAL>"))
 
     if (i==1) {
@@ -264,7 +264,7 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
-    cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
+    cmds <- append(cmds, paste(vv, cur_dig, dQuote(str_pad("", width=cur_dig, pad="9"))))
 
     if (!is.null(requestvar) && requestvar==vv) {
       cmds <- append(cmds, paste(bl, "<REQUEST>", dQuote(1)))
@@ -285,16 +285,22 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID, reque
     mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
   }
 
-  cat("writing metadatafile to",shQuote(f_metadata),"\n")
-  cat(unlist(cmds), sep="\r\n", file=f_metadata)
+  if (verbose) {
+    cat("writing metadatafile to",shQuote(f_metadata),"\n")
+  }
+  cmds <- unlist(cmds)
+  cmds[length(cmds)] <- paste0(cmds[length(cmds)],"\r")
+  cat(cmds, sep="\r\n", file=f_metadata)
 
-  cat("writing microdatafile to",shQuote(f_microdata),"\n")
+  if (verbose) {
+    cat("writing microdatafile to",shQuote(f_microdata),"\n")
+  }
   write.table(mat, file=f_microdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
   invisible(list(f_md=f1, f_dat=f2, f_hrcs=f_hrcs))
 }
 
 ## using tabular data
-create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd(), ID) {
+create_tabdata_and_metadata <- function(obj, verbose, responsevar, digits=2, path=getwd(), ID) {
   lpl <- upl <- sdcStatus <- NULL
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("tabdata_", ID), ext=".tab")
@@ -352,12 +358,6 @@ create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd()
   f_hrcs <- c()
   for (i in seq_along(dim_vars)) {
     vv <- dim_vars[i]
-    #cmd <- paste0("mdat[,",vv,":=",paste0(vv,"_o"),"]")
-    #eval(parse(text=cmd))
-    #cmd <- paste0("mdat[,",paste0(vv,"_o"),":= NULL]")
-    #eval(parse(text=cmd))
-
-    vv <- dim_vars[i]
     startpos <- sum(required_digits)+i
 
     tot_code <- get.sdcProblem(obj, "dimInfo")@dimInfo[[i]]@codesOriginal[1]
@@ -371,6 +371,7 @@ create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd()
     f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=0)
+    f_hrc <- normalizePath(f_hrc, winslash="/", mustWork=TRUE)
 
     cmds <- append(cmds, paste(vv)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
@@ -387,7 +388,6 @@ create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd()
   }
 
   # 2b: numeric variables, frequency, lpl/upl
-  #num_vars <- setdiff(colnames(mdat), c("strID", dim_vars))
   num_vars <- c("sdcStatus", responsevar, "lpl","upl")
 
   for (i in seq_along(num_vars)) {
@@ -426,10 +426,6 @@ create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd()
       cmds <- append(cmds, paste(bl, "<STATUS>"))
     }
     # do not append any other variable since batch-input assumes one numeric variable
-    # else {
-    #  cmds <- append(cmds, vv)
-    #  cmds <- append(cmds, paste(bl, "<NUMERIC>"))
-    #}
 
     if (has_decimals) {
       cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
@@ -443,10 +439,16 @@ create_tabdata_and_metadata <- function(obj, responsevar, digits=2, path=getwd()
     mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
   }
 
-  cat("writing metadatafile to",shQuote(f_metadata),"\n")
-  cat(unlist(cmds), sep="\r\n", file=f_metadata)
+  if (verbose) {
+    cat("writing metadatafile to",shQuote(f_metadata),"\n")
+  }
+  cmds <- unlist(cmds)
+  cmds[length(cmds)] <- paste0(cmds[length(cmds)],"\r")
+  cat(cmds, sep="\r\n", file=f_metadata)
 
-  cat("writing tabular data file to",shQuote(f_tabdata),"\n")
+  if (verbose) {
+    cat("writing tabular data file to",shQuote(f_tabdata),"\n")
+  }
   write.table(mat, file=f_tabdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
   invisible(list(f_md=f1, f_dat=f2, f_hrcs=f_hrcs))
 }
@@ -652,6 +654,7 @@ read_ArgusSolution <- function(fIn) {
 
 ## based on microdata input
 tauBatchInput_microdata <- function(obj,
+    verbose,
     path=getwd(),
     solver="FREE",
     method,
@@ -689,7 +692,7 @@ tauBatchInput_microdata <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_", batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_microdata_and_metadata(obj, digits=2, path=path, ID=batchID,
+  res <- create_microdata_and_metadata(obj, verbose=verbose, digits=2, path=path, ID=batchID,
     requestvar=requestvar, holdingvar=holdingvar)
 
   ## logfile
@@ -757,12 +760,14 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
+  f_tab <- normalizePath(file.path(path, f_tab), winslash="/", mustWork=FALSE)
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab),")"))
   invisible(batchObj)
 }
 
 ## based on tabular input
 tauBatchInput_table <- function(obj,
+    verbose,
     path=getwd(),
     solver="FREE",
     method,
@@ -797,7 +802,7 @@ tauBatchInput_table <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_",batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_tabdata_and_metadata(obj, responsevar=responsevar, digits=2, path=path, ID=batchID)
+  res <- create_tabdata_and_metadata(obj, verbose=verbose, responsevar=responsevar, digits=2, path=path, ID=batchID)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -860,7 +865,8 @@ tauBatchInput_table <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
+  f_tab <- normalizePath(file.path(path, f_tab), winslash="/", mustWork=FALSE)
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab),")"))
   invisible(batchObj)
 }
 
