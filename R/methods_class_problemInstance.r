@@ -2,68 +2,68 @@
 #' @rdname get.problemInstance-method
 setMethod(f='get.problemInstance', signature=c('problemInstance', 'character'),
   definition=function(object, type) {
-    if ( !type %in% c('strID', 'nrVars', 'freq', 'w', 'numVars', 'sdcStatus',
-        'lb', 'ub', 'LPL', 'SPL', 'UPL', 'primSupps', 'secondSupps',
-        'forcedCells', 'hasPrimSupps', 'hasSecondSupps', 'hasForcedCells',
-        'weight', 'suppPattern') ) {
+    if (!type %in% c("strID", "nrVars", "freq", "w", "numVars", "sdcStatus",
+        "lb", "ub", "LPL", "SPL", "UPL", "primSupps", "secondSupps",
+        "forcedCells", "hasPrimSupps", "hasSecondSupps", "hasForcedCells",
+        "weight", "suppPattern")) {
       stop("get.problemInstance:: argument 'type' is not valid!\n")
     }
 
-    if ( type == 'strID' ) {
+    if (type == "strID" ) {
       return(g_strID(object))
     }
-    if ( type == 'nrVars' ) {
+    if (type == "nrVars" ) {
       return(g_nrVars(object))
     }
-    if ( type == 'freq' ) {
+    if (type == "freq") {
       return(g_freq(object))
     }
-    if ( type == 'w' ) {
+    if (type == "w") {
       return(g_w(object))
     }
-    if ( type == 'numVars' ) {
+    if (type == "numVars") {
       return(g_numVars(object))
     }
-    if ( type == 'sdcStatus' ) {
+    if (type == "sdcStatus") {
       return(g_sdcStatus(object))
     }
-    if ( type == 'lb' ) {
+    if (type == "lb") {
       return(g_lb(object))
     }
-    if ( type == 'ub' ) {
+    if (type == "ub") {
       return(g_ub(object))
     }
-    if ( type == 'LPL' ) {
+    if (type == "LPL") {
       return(g_LPL(object))
     }
-    if ( type == 'UPL' ) {
+    if (type == "UPL") {
       return(g_UPL(object))
     }
-    if ( type == 'SPL' ) {
+    if (type == "SPL") {
       return(g_SPL(object))
     }
-    if ( type == 'primSupps' ) {
+    if (type == "primSupps") {
       return(g_primSupps(object))
     }
-    if ( type == 'secondSupps' ) {
+    if (type == "secondSupps") {
       return(g_secondSupps(object))
     }
-    if ( type == 'forcedCells' ) {
+    if (type == "forcedCells") {
       return(g_forcedCells(object))
     }
-    if ( type == 'hasPrimSupps' ) {
+    if (type == "hasPrimSupps") {
       return(g_hasPrimSupps(object))
     }
-    if ( type == 'hasSecondSupps' ) {
+    if (type == "hasSecondSupps") {
       return(g_hasSecondSupps(object))
     }
-    if ( type == 'hasForcedCells' ) {
+    if (type == "hasForcedCells") {
       return(g_hasForcedCells(object))
     }
-    if ( type == 'weight' ) {
+    if (type == "weight") {
       return(g_weight(object))
     }
-    if ( type == 'suppPattern' ) {
+    if (type == "suppPattern") {
       return(g_suppPattern(object))
     }
   }
@@ -75,52 +75,34 @@ setMethod(f='set.problemInstance', signature=c('problemInstance', 'character', '
   definition=function(object, type, input) {
     index <- input[[1]]
     values <- input[[2]]
-    if ( !type %in% c('lb', 'ub', 'LPL', 'UPL', 'SPL', 'sdcStatus') ) {
+    if (!type %in% c("lb", "ub", "LPL", "UPL", "SPL", "sdcStatus")) {
       stop("set.problemInstance:: check argument 'type'!\n" )
     }
-    if ( !is.null(index) & length(values) != length(index) ) {
+    if (!is.null(index) & length(values) != length(index)) {
       stop("set.problemInstance:: arguments 'values' and 'index' differ in length!\n")
     }
-    if ( !all(index %in% 1:g_nrVars(object)) ) {
+    if (!all(index %in% 1:g_nrVars(object))) {
       stop("set.problemInstance:: argument 'index' does not fit to given problem!\n")
     }
-    if ( type == 'lb' ) {
+    if (type == "lb") {
       s_lb(object) <- list(index=index, vals=values)
     }
-    if ( type == 'ub' ) {
+    if (type == "ub") {
       s_ub(object) <- list(index=index, vals=values)
     }
-    if ( type == 'LPL' ) {
+    if (type == "LPL") {
       s_LPL(object) <- list(index=index, vals=values)
     }
-    if ( type == 'UPL' ) {
+    if (type == "UPL") {
       s_UPL(object) <- list(index=index, vals=values)
     }
-    if ( type == 'SPL' ) {
+    if (type == "SPL") {
       s_SPL(object) <- list(index=index, vals=values)
     }
-    if ( type == 'sdcStatus' ) {
+    if (type == "sdcStatus") {
       s_sdcStatus(object) <- list(index=index, vals=values)
     }
-    #validObject(object)
     object
-  }
-)
-
-#' @aliases calc.problemInstance,problemInstance,character,list-method
-#' @rdname calc.problemInstance-method
-setMethod(f='calc.problemInstance', signature=c('problemInstance', 'character','list'),
-  definition=function(object, type, input) {
-    if ( !type %in% c('makeMasterProblem', 'isProtectedSolution') ) {
-      stop("calc.problemInstance:: check argument 'type'!\n" )
-    }
-    if ( type == 'makeMasterProblem' ) {
-      return(c_make_masterproblem(object, input))
-    }
-
-    if ( type == 'isProtectedSolution' ) {
-      return(c_is_protected_solution(object, input))
-    }
   }
 )
 
@@ -269,80 +251,5 @@ setReplaceMethod("s_SPL", signature=c("problemInstance", "list"), definition=fun
   object@SPL[value$index] <- value$vals
   validObject(object)
   object
-})
-
-
-setMethod("c_make_masterproblem", signature=c("problemInstance", "list"), definition=function(object, input) {
-  mProb <- NULL
-  if ( g_hasPrimSupps(object) ) {
-    objective <- g_weight(object)
-    primSupps <- g_primSupps(object)
-    nrVars <- g_nrVars(object)
-
-    M <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrVars)))
-    direction <- rep("==", g_nr_rows(M))
-    rhs <- rep(1, g_nr_rows(M))
-
-    # cells with sdcStatus=="z" must be published
-    if ( g_hasForcedCells(object) ) {
-      forcedCells <- g_forcedCells(object)
-      if ( length(forcedCells) > 0 ) {
-        for ( i in seq_along(forcedCells) ) {
-          M <- c_add_row(M, input=list(index=forcedCells[i], values=1))
-        }
-        direction <- c(direction, rep("==", length(forcedCells)))
-        rhs <- c(rhs, rep(0, length(forcedCells)))
-      }
-    }
-    types <- rep("C", nrVars)
-    boundsLower <- list(ind=1:nrVars, val=rep(0, nrVars))
-    boundsUpper <- list(ind=1:nrVars, val=rep(1, nrVars))
-
-    if ( length(primSupps) > 0 ) {
-      boundsLower$val[primSupps] <- 1
-    }
-    mProb <- new("linProb",
-      objective=objective,
-      constraints=M,
-      direction=direction,
-      rhs=rhs,
-      boundsLower=boundsLower,
-      boundsUpper=boundsUpper,
-      types=types)
-  }
-  return(mProb)
-})
-
-setMethod("c_is_protected_solution", signature=c("problemInstance", "list"), definition=function(object, input) {
-  input1 <- input$input1 # ~ limitsDown
-  input2 <- input$input2 # ~ limitsUp
-  primSupps <- g_primSupps(object)
-  if ( length(input1) != length(input2) ) {
-    stop("c_is_protected_solution:: parameters 'input1 (~limitsDown)' and 'input2 (~limitsUp)' differ in length!\n")
-  }
-  if ( length(input1) != length(primSupps) ) {
-    stop("c_is_protected_solution:: parameter 'limits.x' and length of primary suppressed cells differ!\n")
-  }
-
-  protected <- TRUE
-  weights <- g_weight(object)[primSupps]
-
-  limits <- list()
-  limits$LPL <- g_LPL(object)[primSupps]
-  limits$UPL <- g_UPL(object)[primSupps]
-  limits$SPL <- g_SPL(object)[primSupps]
-
-  if ( any(weights - input1 < limits[[1]]) == TRUE ) {
-    protected <- FALSE
-  }
-
-  if ( any(input2 - weights  < limits[[2]]) == TRUE ) {
-    protected <- FALSE
-  }
-
-  if ( any(input2 - input1  < limits[[3]]) == TRUE ) {
-    protected <- FALSE
-  }
-  return(protected)
 })
 

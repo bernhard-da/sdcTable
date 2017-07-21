@@ -114,16 +114,16 @@ setClass(
     posIndex=NULL
   ),
   validity=function(object) {
-    if ( length(g_varname(object)) != length(g_pos_index(object)) ) {
+    if (length(g_varname(object)) != length(g_pos_index(object))) {
       stop("dimInfo:: parameter 'vNames' and 'posIndex' differ in length!\n")
     }
-    if ( length(g_varname(object)) != length(g_dim_info(object)) ) {
+    if (length(g_varname(object)) != length(g_dim_info(object))) {
       stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
     }
-    if ( length(g_str_info(object)) != length(g_varname(object)) ) {
+    if (length(g_str_info(object)) != length(g_varname(object))) {
       stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
     }
-    if ( any(sapply(g_dim_info(object), "class") != "dimVar" ) ) {
+    if (any(sapply(g_dim_info(object), "class") != "dimVar") ) {
       stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
     }
     return(TRUE)
@@ -179,10 +179,10 @@ setClass(
     dupsUp=NULL
   ),
   validity=function(object) {
-    if ( length(g_original_codes(object)) != length(g_default_codes(object)) ) {
+    if (length(g_original_codes(object)) != length(g_default_codes(object))) {
       stop("dimVar:: length of 'codesOriginal' and 'codesDefault' differ!\n")
     }
-    if ( length(g_varname(object)) != 1 ) {
+    if (length(g_varname(object)) != 1) {
       stop("dimVar:: length of 'vName' must equal 1!\n")
     }
     return(TRUE)
@@ -243,7 +243,7 @@ setClass(
     sdcStatus=NULL
   ),
   validity=function(object) {
-    if ( !all.equal(
+    if (!all.equal(
       length(g_strID(object)),
       length(g_freq(object)),
       length(g_lb(object)),
@@ -251,36 +251,36 @@ setClass(
       length(g_SPL(object)),
       length(g_LPL(object)),
       length(g_UPL(object)),
-      length(g_sdcStatus(object))) ) {
+      length(g_sdcStatus(object)))) {
         stop("problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL' and 'sdcStatus' must have the same length!\n")
     }
-    if ( !is.null(g_numVars(object)) ) {
-      if ( !all(sapply(g_numVars(object), length) == length(g_numVars(object)[[1]])) ) {
+    if (!is.null(g_numVars(object))) {
+      if (!all(sapply(g_numVars(object), length) == length(g_numVars(object)[[1]]))) {
         stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
       }
     }
-    if ( !is.null(g_numVars(object)[[1]]) & length(g_freq(object)) != length(g_numVars(object)[[1]]) ) {
+    if (!is.null(g_numVars(object)[[1]]) & length(g_freq(object)) != length(g_numVars(object)[[1]])) {
       stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
     }
-    if ( !is.null(g_w(object)) & length(g_freq(object)) != length(g_w(object)) ) {
+    if (!is.null(g_w(object)) & length(g_freq(object)) != length(g_w(object))) {
       stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
     }
-    if ( any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE ) {
+    if (any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
     }
-    if ( any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE ) {
+    if (any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
     }
-    if ( any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE ) {
+    if (any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
     }
-    if ( any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
+    if (any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
     }
-    if ( any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
+    if (any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
     }
-    if ( !all(g_sdcStatus(object) %in% c('w','s','u','x','z')) ) {
+    if (!all(g_sdcStatus(object) %in% c('w','s','u','x','z'))) {
       stop("problemInstance:: valid codes for sdcStatus are 'w', 'z', 's', 'x' or 'u'!\n")
     }
     return(TRUE)
@@ -343,216 +343,26 @@ setClass(
     elapsedTime=NULL
   ),
   validity=function(object) {
-    if ( g_startI(object) > g_partition(object)$nrGroups ) {
+    if (g_startI(object) > g_partition(object)$nrGroups ) {
       stop("argument 'startI' must be <=",g_partition(object)$nrGroups,"!\n")
     }
-    if ( g_startJ(object) > length(g_partition(object)$indices[[g_startI(object)]]) ) {
+    if (g_startJ(object) > length(g_partition(object)$indices[[g_startI(object)]]) ) {
       stop("argument 'startJ' must be <=",length(g_partition(object)$indices[[g_startI(object)]]),"!\n")
     }
-    if ( length(g_startI(object)) != 1 ) {
+    if (length(g_startI(object)) != 1) {
       stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
     }
-    if ( length(g_startJ(object)) != 1 ) {
+    if (length(g_startJ(object)) != 1) {
       stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
     }
-    if ( g_startI(object) < 1 ) {
+    if (g_startI(object) < 1) {
       stop("sdcProblem:: argument 'startI' must be >= 1!\n")
     }
-    if ( g_startJ(object) < 1 ) {
+    if (g_startJ(object) < 1) {
       stop("sdcProblem:: argument 'startJ' must be >= 1!\n")
     }
-    if ( length(g_elapsedTime(object)) != 1 ) {
+    if (length(g_elapsedTime(object)) != 1) {
       stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
-    }
-    return(TRUE)
-  }
-)
-
-#' S4 class describing a simpleTriplet-object
-#'
-#' Objects of class \code{simpleTriplet} define matrices that are stored in a
-#' sparse format. Only the row- and column indices and the corresponding values
-#' of non-zero cells are stored. Additionally, the dimension of the matrix given
-#' by the total number of rows and columns is stored.
-#'
-#' \describe{
-#' \item{slot \code{i}:}{a numeric vector specifying row-indices with each value being geq 1 and leq of the value in \code{nrRows}}
-#' \item{slot \code{j}:}{a numeric vector specifying column-indices with each value being geq 1 and leq of the value in \code{nrCols}}
-#' \item{slot \code{v}:}{a numeric vector specifying the values of the matrix in cells specified by the corresponding row- and column indices}
-#' \item{slot \code{nrRows}:}{a numeric vector of length 1 holding the total number of rows of the matrix}
-#' \item{slot \code{nrCols}:}{a numeric vector of length 1 holding the total number of columns of the matrix}
-#' }
-#' @name simpleTriplet-class
-#' @rdname simpleTriplet-class
-#' @exportClass simpleTriplet
-#' @note objects of class \code{simpleTriplet} are input of slot \code{constraints} in class \code{\link{linProb-class}} and slot slot \code{con} in class \code{\link{cutList-class}}
-#' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setClass(
-  Class='simpleTriplet',
-  representation=representation(
-    i='numericOrNULL',
-    j='numericOrNULL',
-    v='numericOrNULL',
-    nrRows='numericOrNULL',
-    nrCols='numericOrNULL'
-  ),
-  prototype=prototype(
-    i=numeric(0),
-    j=numeric(0),
-    v=numeric(0),
-    nrRows=numeric(0),
-    nrCols=numeric(0)
-  ),
-  validity=function(object) {
-    if ( length(object@i) != length(object@j) ) {
-      stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
-    }
-    if ( length(object@i) != length(object@v) ) {
-      stop("simpleTriplet:: length of 'i' and 'v' differ!\n")
-    }
-    if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
-      stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n")
-    }
-    return(TRUE)
-  }
-)
-setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
-
-#' S4 class describing a linProb-object
-#'
-#' An object of class \code{linProb} defines a linear problem given by the
-#' objective coefficients (slot \code{objective}), a constraint matrix (slot
-#' \code{constraints}), the direction (slot \code{direction}) and the right
-#' hand side (slot \code{rhs}) of the constraints. Also, allowed lower (slot
-#' \code{boundsLower}) and upper (slot \code{boundsUpper}) bounds of the
-#' variables as well as its types (slot \code{types}) are specified.
-#'
-#' \describe{
-#' \item{slot \code{objective}:}{a numeric vector holding coefficients of the objective function}
-#' \item{slot \code{constraints}:}{an object of class \code{\link{simpleTriplet-class}} specifying the constraint matrix of the problem}
-#' \item{slot \code{direction}:}{a character vector holding the directions of the constraints, allowed values are:
-#' \itemize{
-#' \item \code{==}: equal
-#' \item \code{<}: less
-#' \item \code{>}: greater
-#' \item \code{<=}: less or equal
-#' \item \code{>=}: greater or equal}
-#' }
-#' \item{slot \code{rhs}:}{numeric vector holding right hand side values of the constraints}
-#' \item{slot \code{boundsLower}:}{a numeric vector holding lower bounds of the objective variables}
-#' \item{slot \code{boundsUpper}:}{a numeric vector holding upper bounds of the objective variables}
-#' \item{slot \code{types}:}{a character vector specifying types of the objective variables, allowed types are:
-#' \itemize{
-#' \item \code{C}: binary
-#' \item \code{B}: continuous
-#' \item \code{I}: integer}
-#' }
-#' }
-#' @name linProb-class
-#' @rdname linProb-class
-#' @exportClass linProb
-#' @note when solving the problems in the procedure, minimization of the objective is performed.
-#' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setClass(
-  Class='linProb',
-  representation=representation(
-    objective='numericOrNULL',
-    constraints='simpleTripletOrNULL',
-    direction='characterOrNULL',
-    rhs='numericOrNULL',
-    boundsLower='listOrNULL',
-    boundsUpper='listOrNULL',
-    types='characterOrNULL'
-  ),
-  prototype=prototype(
-    objective=NULL,
-    constraints=NULL,
-    direction=NULL,
-    rhs=NULL,
-    boundsLower=NULL,
-    boundsUpper=NULL,
-    types=NULL
-  ),
-  validity=function(object) {
-    if ( length(object@rhs) != length(object@direction) ) {
-      stop("linProb:: length of 'rhs' and 'direction' differ!\n")
-    }
-    nrRows.constraints <- g_nr_rows(object@constraints)
-    if ( length(object@direction) != nrRows.constraints ) {
-      stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n")
-    }
-    nrCols.constraints <- g_nr_cols(object@constraints)
-    if ( length(object@objective) != nrCols.constraints ) {
-      stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")
-    }
-    if ( length(object@objective) != length(object@types) ) {
-      stop("linProb:: Length of 'objective' and 'types' differ!\n")
-    }
-    if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
-      stop("linProb:: wrong indices of 'boundsLower!'\n")
-    }
-    if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
-      stop("linProb:: wrong indices of 'boundsUpper!'\n")
-    }
-    if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
-      stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
-    }
-    if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
-      stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
-    }
-    if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
-      stop("linProb:: illegal symbols in 'direction' differ!\n")
-    }
-    return(TRUE)
-  }
-)
-
-#' S4 class describing a cutList-object
-#'
-#' An object of class \code{cutList} holds constraints that can be extracted and
-#' used as for objects of class \code{\link{linProb-class}}. An object of class
-#' \code{cutList} consists of a constraint matrix (slot \code{con}), a vector
-#' of directions (slot \code{direction}) and a vector specifying the right hand
-#' sides of the constraints (slot \code{rhs}).
-#'
-#' \describe{
-#' \item{slot \code{con}:}{an object of class \code{\link{simpleTriplet-class}} specifying the constraint matrix of the problem}
-#' \item{slot \code{direction}:}{a character vector holding the directions of the constraints, allowed values are:
-#' \itemize{
-#' \item \code{==}: equal
-#' \item \code{<}: less
-#' \item \code{>}: greater
-#' \item \code{<=}: less or equal
-#' \item \code{>=}: greater or equal}
-#' }
-#' \item{slot \code{rhs}:}{numeric vector holding right hand side values of the constraints}
-#' }
-#' @name cutList-class
-#' @rdname cutList-class
-#' @exportClass cutList
-#' @note objects of class \code{cutList} are dynamically generated (and removed) during the cut and branch algorithm when solving the secondary cell suppression problem
-#' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setClass(
-  Class='cutList',
-  representation=representation(
-    con='simpleTriplet',
-    direction='character',
-    rhs='numeric'
-  ),
-  prototype=prototype(
-    con=new("simpleTriplet"),
-    direction=character(0),
-    rhs=numeric(0)
-  ),
-  validity=function(object) {
-    if ( g_nr_rows(g_constraints(object)) != length(g_direction(object)) ) {
-      stop("cutList:: number of rows of 'con' and length of 'direction' differs!\n")
-    }
-    if ( length(g_direction(object))!= length(g_rhs(object)) ) {
-      stop("cutList:: length of 'direction' and 'rhs' differ!\n")
-    }
-    if ( !all(g_direction(object) %in% c(">", ">=", "==", "<", "<=")) ) {
-      stop("cutList:: elements of 'direction' must only contain symbols '>', '>=', '==', '<' or '<='!\n")
     }
     return(TRUE)
   }
@@ -618,25 +428,25 @@ setClass(
     elapsedTime=NULL
   ),
   validity=function(object) {
-    if ( length(g_nrPrimSupps(object)) != 1 ) {
+    if (length(g_nrPrimSupps(object)) != 1) {
       stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
     }
-    if ( length(g_nrNonDuplicatedCells(object)) != 1 ) {
+    if (length(g_nrNonDuplicatedCells(object)) != 1) {
       stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
     }
-    if ( length(g_nrSecondSupps(object)) != 1 ) {
+    if (length(g_nrSecondSupps(object)) != 1) {
       stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
     }
-    if ( length(g_nrPublishableCells(object)) != 1 ) {
+    if (length(g_nrPublishableCells(object)) != 1) {
       stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
     }
-    if ( length(g_suppMethod(object)) != 1 ) {
+    if (length(g_suppMethod(object)) != 1) {
       stop("safeObj:: length of 'suppMethod' must equal 1!\n")
     }
-    if ( !g_suppMethod(object) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
+    if (!g_suppMethod(object) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
       stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
     }
-    if ( length(g_elapsedTime(object)) != 1 ) {
+    if (length(g_elapsedTime(object)) != 1) {
       stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
     }
     return(TRUE)

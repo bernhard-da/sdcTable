@@ -3,21 +3,13 @@
 setMethod(f='calc.multiple', signature=c('character', 'list'),
   definition=function(type, input) {
     .SD <- ID <- NULL
-    if (!type %in% c('makePartitions', 'genMatMFull',
-        'makeAttackerProblem', 'calcFullProblem') ) {
+    if (!type %in% c("makePartitions", "calcFullProblem") ) {
       stop("calc.multiple:: argument 'type' is not valid!\n")
     }
-
-    if ( type == 'makePartitions' ) {
+    if (type == "makePartitions") {
       return(c_make_partitions(input))
     }
-    if ( type == 'genMatMFull' ) {
-      return(c_gen_mat_m(input))
-    }
-    if ( type == 'makeAttackerProblem' ) {
-      return(c_make_att_prob(input))
-    }
-    if ( type == 'calcFullProblem' ) {
+    if (type == "calcFullProblem") {
       return(c_calc_full_prob(input))
     }
   }
@@ -115,112 +107,6 @@ setMethod("c_make_partitions", signature=c("list"), definition=function(input) {
     length(final$indices[[x]])
   }))
   return(final)
-})
-
-setMethod("c_gen_mat_m", signature=c("list"), definition=function(input) {
-  x <- input$objectA
-  y <- input$objectB
-
-  levelObj <- g_dim_info(y)
-  strID <- g_strID(x)
-  nrVars <- length(levelObj)
-  nrCells <- g_nrVars(x)
-  freqs <- g_freq(x)
-
-  constraintM <- init.simpleTriplet(type='simpleTriplet', input=list(mat=matrix(0, nrow=0, ncol=nrCells)))
-  for ( i in 1:nrVars ) {
-    lO <- levelObj[[i]]
-    keepList <- lapply(g_str_info(y)[-i], function(k) {
-      seq(k[1], k[2])
-    })
-    keepList2 <- lapply(g_str_info(y)[i], function(k) {
-      seq(k[1], k[2])
-    })
-    f1 <- f2 <- mySplitIndicesList(strID, keepList2)
-
-    if ( nrVars > 1 ) {
-      f1 <- mySplitIndicesList(strID, keepList)
-    }
-
-    dimlO <- g_dims(lO)
-    if ( length(unique(f2)) != 1 ) {
-      dimInd <- sapply(1:length(dimlO), function(x) { identical( sort(unique(f2)), dimlO[[x]]) } )
-      if ( sum(dimInd) == 0 ) {
-        for ( j in 1:length(g_dims(lO)) ) {
-          splitInd <- which(f2 %in% g_dims(lO)[[j]])
-          spl <- split(splitInd, f1[splitInd])
-          for ( z in 1:length(spl) ) {
-            ind <- rep(1,length(spl[[z]]))
-            ind[which.max(freqs[spl[[z]]])] <- -1
-            if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
-              stop("something went wrong!\n")
-            }
-            constraintM <- c_add_row(constraintM, input=list(index=spl[[z]], values=ind))
-          }
-        }
-      } else {
-        splitInd <- which(f2 %in% g_dims(lO)[[which(dimInd==TRUE)]])
-        ## only 1 dimension
-        if ( nrVars > 1 ) {
-          spl <- split(splitInd, f1[splitInd])
-        } else {
-          spl <- split(splitInd, rep(1, length(splitInd)))
-        }
-
-        for ( z in 1:length(spl) ) {
-          ind <- rep(1,length(spl[[z]]))
-          ind[which.max(freqs[spl[[z]]])] <- -1
-          if ( !is.zero(sum(freqs[spl[[z]]]*ind)) ) {
-            stop("something went wrong! (z=",z," und names(spl)[z]='",names(spl)[z],")\n")
-          }
-          constraintM <- c_add_row(constraintM, input=list(index=spl[[z]], value=ind))
-        }
-      }
-    }
-  }
-  return(constraintM)
-})
-
-setMethod("c_make_att_prob", signature=c("list"), definition=function(input) {
-  x <- input$objectA
-  y <- input$objectB
-  nrVars <- g_nrVars(x)
-  A <- c_gen_mat_m(input=list(objectA=x, objectB=y))
-
-  ## calculating (logical) constraints for the master problem ##
-  # idea: for each constraint at least 2 suppressions must
-  # exist if one xi != 0! (http://www.eia.doe.gov/ices2/missing_papers.pdf)
-  newCutsMaster <- init.cutList(type='empty', input=list(nrCols=nrVars))
-  #xx <- lapply(1:g_nr_rows(A), function(x) {
-  # cols <- g_col_ind(g_row(A, input=list(x)))
-  # v <- rep(0, nrVars)
-  # v[cols] <- c(1, rep(-1, length(cols)))
-  # s_add_complete_constraint(newCutsMaster) <<- list(init.cutList(type='singleCut', input=list(vals=v, dir="<=", rhs=0)))
-  #})
-  ################################################################
-
-  nrConstraints <- g_nr_rows(A)
-  objective <- rep(0, length=2*nrVars+nrConstraints)
-  z1 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=FALSE))
-  z2 <- init.simpleTriplet(type='simpleTripletDiag', input=list(nrRows=nrVars, negative=TRUE))
-  z <- c_bind(object=z1, input=list(z2, bindRow=FALSE))
-  A <- c_bind(object=z, input=list(g_transpose(A), bindRow=FALSE))
-  direction <- rep("==", g_nr_rows(A))
-  rhs <- rep(0, g_nr_rows(A))
-
-  types <- rep("C", g_nr_cols(A))
-  boundsLower <- list(ind=1:g_nr_cols(A), val=c(rep(0, 2*nrVars), rep(-Inf, nrConstraints)))
-  boundsUpper <- list(ind=1:g_nr_cols(A), val=c(rep(Inf, 2*nrVars), rep(Inf,  nrConstraints)))
-
-  aProb <- new("linProb",
-    objective=objective,
-    constraints=A,
-    direction=direction,
-    rhs=rhs,
-    boundsLower=boundsLower,
-    boundsUpper=boundsUpper,
-    types=types)
-  return(list(aProb=aProb, newCutsMaster=newCutsMaster))
 })
 
 setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {

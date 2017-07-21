@@ -73,7 +73,6 @@ setGeneric('set.problemInstance', function(object, type, input) {standardGeneric
 #' @param object an object of class \code{problemInstance}
 #' @param type a character vector of length 1 defining what to calculate|return|modify. Allowed types are:}
 #' \itemize{
-#' \item makeMasterProblem: create the master problem that is the core of the secondary cell suppression problem
 #' \item isProtectedSolution: check if a solution violates any required (upper|lower|sliding) protection levels
 #' @param input a list depending on argument \code{type}.}
 #'
@@ -128,5 +127,4 @@ setGeneric("s_UPL<-", function(object, value) standardGeneric("s_UPL<-"))
 setGeneric("s_SPL<-", function(object, value) standardGeneric("s_SPL<-"))
 
 # calc-methods
-setGeneric("c_make_masterproblem", function(object, input) { standardGeneric("c_make_masterproblem") })
-setGeneric("c_is_protected_solution", function(object, input) { standardGeneric("c_is_protected_solution") })
+# currently none
