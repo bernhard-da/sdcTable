@@ -55,7 +55,11 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe", bat
   basedir_tauexe <- dirname(exe)
   logf <- infoFromBatch(batchF, typ="LOGBOOK")
   if (dirname(logf)==".") {
-    logf <- file.path(basedir_tauexe, logf)
+    if (!is.null(batchDataDir)) {
+      logf <- file.path(batchDataDir, logf)
+    } else {
+      logf <- file.path(basedir_tauexe, logf)
+    }
   }
 
   if (!is.null(obj)) {
@@ -68,9 +72,9 @@ runArgusBatchFile <- function(obj=NULL, batchF, exe="C:\\Tau\\TauArgus.exe", bat
 
   ## run and check for success
   if (!is.null(batchDataDir)) {
-    cmd <- paste(shQuote(exe), batchF, "- -", batchDataDir)
+    cmd <- paste(shQuote(exe), shQuote(batchF), "- -", shQuote(batchDataDir))
   } else {
-    cmd <- paste(shQuote(exe), batchF)
+    cmd <- paste(shQuote(exe), shQuote(batchF))
   }
 
   res <- suppressWarnings(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=FALSE))
