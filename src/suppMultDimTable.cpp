@@ -12,20 +12,20 @@ using namespace Rcpp;
 IntegerVector convert_sdcStatus_to_num(CharacterVector sdcStatus) {
   int n=sdcStatus.size();
   IntegerVector result(n);
-  for ( int i=0; i<n; i++ ) {
-    if ( sdcStatus[i]=="s" ) {
+  for (int i=0; i<n; i++) {
+    if (sdcStatus[i]=="s") {
       result[i] = 0;
     }
-    if ( sdcStatus[i]=="u" ) {
+    if (sdcStatus[i]=="u") {
       result[i] = 1;
     }
-    if ( sdcStatus[i]=="x" ) {
+    if (sdcStatus[i]=="x") {
       result[i] = 2;
     }
-    if ( sdcStatus[i]=="z" ) {
+    if (sdcStatus[i]=="z") {
       result[i] = 3;
     }
-    if ( sdcStatus[i]=="w" ) {
+    if (sdcStatus[i]=="w") {
       result[i] = 4;
     }
   }
@@ -40,7 +40,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
 
   /* start protection of data() */
   int nrDims=dimVars.size();
-  if ( verbose == true ) {
+  if (verbose == true) {
     Rcout << "We have to protect an " << nrDims << " dimensional dataset!" << std::endl;
   }
   /* extracting input data from list */
@@ -59,15 +59,16 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
   int counter=1;
   int total_new_supps=0; /* total number of required secondary supps */
   while (runInd==true ) {
-    if ( verbose ) {
+    if (verbose) {
       Rcout << "Start of run " << counter << std::endl;
     }
     bool override=false;
-    for ( int group=0; group<nrGroups; group++ ) {
+    bool final_ok=true;
+    for (int group=0; group<nrGroups; group++) {
       List subList=indices[group];
       int nrTabs=subList.size();
       /* tab is iterating over all subtables within a given group */
-      for ( int tab=0; tab<nrTabs; tab++ ) {
+      for (int tab=0; tab<nrTabs; tab++) {
         /* subsetting data to current subtable */
         List subList=indices[group];
         current_indices=subList[tab];
@@ -91,14 +92,14 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
         /* iterativly protecting the current simple tab */
         bool newSuppsAdded=true;
         int suppsAdded=0;
-        while ( newSuppsAdded==true ) {
+        while (newSuppsAdded==true) {
           int additional_supps=0;
-          for ( int i=0; i<nrDims; i++ ) {
+          for (int i=0; i<nrDims; i++) {
             IntegerVector gr=st_subIndices[i];
             int nrSimpleTables=max(gr);
             IntegerVector c_indices=seq_along(gr)-1; // indices relative to current simple table, c-style!
 
-            for ( int j=0; j<nrSimpleTables; j++) {
+            for (int j=0; j<nrSimpleTables; j++) {
               /* subset original vectors to current subtable */
               /* ind_c: index relative to entire data, starting with 0 */
               IntegerVector ind_c=c_indices[gr==j+1];
@@ -118,22 +119,22 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
               int upVal=max(cur_weights)+1.0;
               int nr_dummycells=0;
               int nr_zcells=0;
-              for ( int kk=0; kk<nCells; kk++ ) {
-                if ( (cur_sdcStatus[kk] == 1) or (cur_sdcStatus[kk]==2) ) {
+              for (int kk=0; kk<nCells; kk++) {
+                if ((cur_sdcStatus[kk] == 1) or (cur_sdcStatus[kk]==2) ) {
                   nr_supps = nr_supps+1;
                   cur_weights[kk]=upVal;
                 }
-                if ( cur_sdcStatus[kk] == 3 ) {
+                if (cur_sdcStatus[kk] == 3) {
                   cur_weights[kk]=upVal;
                 }
-                if ( cur_sdcStatus[kk] == 4 ) {
+                if (cur_sdcStatus[kk] == 4) {
                   nr_dummycells=nr_dummycells+1;
                 }
-                if ( (cur_sdcStatus[kk]==0) & (cur_freq[kk]>0) ) {
+                if ((cur_sdcStatus[kk]==0) & (cur_freq[kk]>0)) {
                   isCandidate[kk]=true;
                 }
                 /* we only count 'z' cells with frequency > 0 */
-                if ( (cur_sdcStatus[kk] == 3) & (cur_freq[kk] > 0) ) {
+                if ((cur_sdcStatus[kk] == 3) & (cur_freq[kk] > 0)) {
                   nr_zcells=nr_zcells+1;
                 }
               }
@@ -143,10 +144,10 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                 simple table but only a single suppressed cell and
                 the number of dummy-cells (which should never be published) is 0
               */
-              if ( (nCells > 1) & (nr_supps == 1) & (nr_dummycells==0) ) {
+              if ((nCells > 1) & (nr_supps == 1) & (nr_dummycells==0)) {
                 int nrCandidates=sum(isCandidate);
-                if ( nrCandidates==0 ) {
-                  if ( nr_zcells==0 ) {
+                if (nrCandidates==0) {
+                  if (nr_zcells==0) {
                     if (debug) {
                       Rcout << "nCells: " << nCells << std::endl;
                       Rcout << "nr_supps: " << nr_supps << std::endl;
@@ -163,7 +164,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                      In this case, it is not possible to find a pattern with only 's'-cells.
                      we need to relax 'z' (code 3) cells to 's' (code 0) and try again
                      */
-                    if ( debug == true ) {
+                    if (debug == true) {
                       Rcout << "we need to set 'z'-cells to 's'!" << std::endl;
                     }
                     zcells_changed=true;
@@ -171,8 +172,8 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
                     LogicalVector ii=(cur_sdcStatus==3) & (cur_freq>0);
                     /* this is possible required, but not sure if cur_weights[ii] = cur_weights_o[ii] really works */
                     /*
-                    for ( int zz=0; zz < ii.size(); zz++) {
-                      if ( ii[zz]==true ) {
+                    for (int zz=0; zz < ii.size(); zz++) {
+                      if (ii[zz]==true) {
                         Rcout << "zz: " << zz << " | ii[zz]: " << ii[zz] << std::endl;
                         cur_weights[zz] = cur_weights_o[zz]; // reset to original value
                         cur_sdcStatus[zz] = 0; // set cur_sdcStatus temporarily to 's' (0)
@@ -260,6 +261,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
               if (suppsAdded == 0) {
                 Rcout << " | everything ok/nothing todo." << std::endl;
               } else {
+                final_ok=false;
                 Rcout << " | additionally suppressed cells: " << suppsAdded << std::endl;
               }
               R_FlushConsole();
@@ -285,7 +287,7 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
       without setting any 'z' cells to 's'.
       In this case, we can stop the outer while-loop!
     */
-    if (override==false) {
+    if ((override==false) & (final_ok==true)) {
       runInd=false;
     } else {
       counter=counter+1;

@@ -5,6 +5,7 @@
 #'
 #' @param obj an object of class \code{\link{sdcProblem-class}} from \code{sdcTable}
 #' @param typ (character) either \code{microdata} or \code{tabular}
+#' @param verbose (logical) if TRUE, the contents of the batch-file are written to the prompt
 #' @param path path, into which (temporary) files will be written to (amongst them being the batch-files).
 #' Each file written to this folder belonging to the same problem contains a random id in its filename.
 #' @param solver which solver should be used. allowed choices are
@@ -13,6 +14,8 @@
 #' \item "CPLEX"
 #' \item "XPRESS"
 #' }
+#' In case "CPLEX" is used, it is also mandatory to specify argument 'licensefile' which needs to be
+#' the absolute path the the cplex license file
 #' @param method secondary cell suppression algorithm, possible choices include:
 #' \itemize{
 #' \item MOD: modular approach. If specified, the following arguments in \code{...} can additionally be set:
@@ -33,11 +36,15 @@
 #' \item MaxComputingTime: number specifiying max. allowed computing time (in minutes)
 #' }
 #' }
-#' @param primSuppRules rules for primary suppression, provided as a \code{list}.
+#' @param primSuppRules rules for primary suppression, provided as a
+#' \code{list}. For details, please have a look at the examples below.
 #' @param responsevar which variable should be tabulated (defaults to frequencies). For details see tau-argus manual section 4.4.4.
 #' @param shadowvar if specified, this variable is used to apply the safety rules, defaults to \code{responsevar}. For details see tau-argus manual section 4.4.4.
 #' @param costvar if specified, this variable describes the costs of suppressing each individual cell. For details see tau-argus manual section 4.4.4.
-#' @param ... allows to specify additional parameters for selected suppression-method as described above.
+#' @param requestvar if specified, this variable (0/1-coded) contains information about records that request protection. Records with 1 will be protected in case a corresponding request rule matches. It is ignored, if tabular input is used.
+#' @param holdingvar if specified, this variable contains information about records that should be grouped together. It is ignored, if tabular input is used.
+#' @param ... allows to specify additional parameters for selected suppression-method as described above
+#' as well as \code{licensefile} in clase "CPLEX" was specified in argument \code{solver}.
 #' @return the filepath to the batch-file
 #' @export
 #' @examples
@@ -94,14 +101,26 @@
 #' primSuppRules <- list()
 #' primSuppRules[[1]] <- list(type="freq", n=5, rg=20)
 #' primSuppRules[[2]] <- list(type="p", n=5, p=20)
+#' # other supported formats are:
+#' # list(type="nk", n=5, k=20)
+#' # list(type="zero", rg=5)
+#' # list(type="mis", val=1)
+#' # list(type="wgt", val=1)
+#' # list(type="man", val=20)
 #'
 #' ## create batchInput object
 #' bO_md1 <- createArgusInput(obj, typ="microdata", path=getwd(), solver="FREE", method="OPT",
 #'   primSuppRules=primSuppRules, responsevar="num1")
 #' bO_td1 <- createArgusInput(obj, typ="tabular", path=getwd(), solver="FREE", method="OPT")
 #' bO_td2 <- createArgusInput(obj_dupl, typ="tabular", path=getwd(), solver="FREE", method="OPT")
-createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", method,
-  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, ...) {
+#' \dontrun{
+#' ## in case CPLEX should be used, it is required to specify argument licensefile
+#' bO_md2 <- createArgusInput(obj, typ="microdata", path=getwd(), solver="CPLEX", method="OPT",
+#'   primSuppRules=primSuppRules, responsevar="num1", licensefile="/path/to/my/cplexlicense")
+#' }
+
+createArgusInput <- function(obj, typ="microdata", verbose=FALSE, path=getwd(), solver="FREE", method,
+  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, requestvar=NULL, holdingvar=NULL, ...) {
 
   if (class(obj)!="sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'.\n")
@@ -109,27 +128,45 @@ createArgusInput <- function(obj, typ="microdata", path=getwd(), solver="FREE", 
   if (!typ %in% c("microdata","tabular")) {
     stop("argument 'type' must be either 'microdata' or 'tabular'.\n")
   }
+
+  args <- list(...)
+  if (solver=="CPLEX" & is.null(args$licensefile)) {
+    stop(dQuote("CPLEX")," is required but argument 'licensefile' has not been set!\n")
+  }
+
   if (typ=="microdata") {
     if (is.null(primSuppRules)) {
       stop("primary suppression rules (argument 'primSuppRules') must be specified when using microdata as input!\n")
     }
-    batchObj <- tauBatchInput_microdata(obj=obj, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
-      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
+    batchObj <- tauBatchInput_microdata(obj=obj, verbose=verbose, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
+      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, requestvar=requestvar, holdingvar=holdingvar, ...)
   }
   if (typ=="tabular") {
     if (!is.null(primSuppRules)) {
       message("ignoring argument 'primSuppRules'!\n")
       primSuppRules <- NULL
     }
-    batchObj <- tauBatchInput_table(obj=obj, path=path, solver=solver, method=method,
+    if (!is.null(requestvar)) {
+      message("ignoring argument 'requestvar'!\n")
+      requestvar <- NULL
+    }
+    if (!is.null(holdingvar)) {
+      message("ignoring argument 'holdingvar'!\n")
+      holdingvar <- NULL
+    }
+
+    batchObj <- tauBatchInput_table(obj=obj, verbose=verbose, path=path, solver=solver, method=method,
       responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
   }
   ## write required files
   batchF <- writeBatchFile(batchObj)
-  ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
-  cat(paste0("\n",ff,"\n"))
-  cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
-  rr <- readLines(batchF)[-c(1:3)]
-  cat(rr, sep="\n")
+  batchF <- normalizePath(batchF, winslash="/", mustWork=TRUE)
+  if (verbose) {
+    ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
+    cat(paste0("\n",ff,"\n"))
+    cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
+    rr <- readLines(batchF, warn=FALSE)[-c(1:3)]
+    cat(rr, sep="\n")
+  }
   return(invisible(batchF))
 }

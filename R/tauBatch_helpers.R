@@ -6,7 +6,7 @@ check_int <- function(x) {
   if (!is.numeric(x)) {
     return(FALSE)
   }
-  all(x%%1==0)
+  all(na.omit(x)%%1==0)
 }
 
 # different checks
@@ -33,14 +33,21 @@ check_pos_number <- function(inp, v_min=1, v_max=100, default=1) {
 }
 
 # check variable input for batch-file
-check_varinput <- function(obj, responsevar, shadowvar, costvar) {
+check_varinput <- function(obj, type, responsevar, shadowvar, costvar, requestvar, holdingvar) {
   if (!class(obj)=="sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'!\n")
   }
+  stopifnot(type %in% c("microdata", "tabular"))
 
   if (is.null(responsevar)) {
-    responsevar <- "<freq>"
+    if (type=="microdata") {
+      responsevar <- "<freq>"
+    }
+    if (type == "tabular") {
+      responsevar <- "freq"
+    }
   }
+
   df <- g_df(obj, addNumVars=TRUE)
   vNames <- get.sdcProblem(obj, "dimInfo")@vNames
   vNames_o <- paste0(vNames,"_o")
@@ -75,7 +82,34 @@ check_varinput <- function(obj, responsevar, shadowvar, costvar) {
   } else {
     costvar <- ""
   }
-  list(responsevar=responsevar, shadowvar=shadowvar, costvar=costvar)
+
+  if (!is.null(requestvar)) {
+    if (!check_character(requestvar) | !check_len(requestvar, 1)) {
+      stop("argument 'requestvar' must be a character vector with 1 element!\n")
+    }
+    if (!all(obj@dataObj@rawData[[requestvar]]  %in% c(0,1))) {
+      stop("variable 'requestvar' must contain 0 and 1 only!\n")
+    }
+    if (!requestvar %in% cn) {
+      stop("non-valid variable selected for choice 'requestvar'.\n")
+    }
+  } else {
+    requestvar <- ""
+  }
+
+  if (!is.null(holdingvar)) {
+    if (!check_character(holdingvar) | !check_len(holdingvar, 1)) {
+      stop("argument 'holdingvar' must be a character vector with 1 element!\n")
+    }
+    if (!holdingvar %in% cn) {
+      stop("non-valid variable selected for choice 'holdingvar'.\n")
+    }
+  } else {
+    holdingvar <- ""
+  }
+
+  list(responsevar=responsevar, shadowvar=shadowvar, costvar=costvar,
+    requestvar=requestvar, holdingvar=holdingvar)
 }
 
 # check suppression-method
@@ -85,7 +119,6 @@ check_suppmethod <- function(method) {
   }
   method
 }
-
 
 
 ###############################################################################################################
@@ -137,7 +170,7 @@ write_hrc <- function(inp, fOut, nr_digits) {
 #### helper-function to write data-files and metadata files required for tau-argus based on sdcProblem-objects ####
 ###################################################################################################################
 ## using microdata
-create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
+create_microdata_and_metadata <- function(obj, verbose, digits=2, path=getwd(), ID, requestvar=NULL, holdingvar=NULL) {
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("microdata_", ID), ext=".asc")
 
@@ -200,11 +233,11 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=cur_dig)
-
-    cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
+    f_hrc <- normalizePath(f_hrc, winslash="/", mustWork=TRUE)
+    cmds <- append(cmds, paste(vv, cur_dig)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
-    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", f_hrc))
-    cmds <- append(cmds, paste(bl, "<HIERLEADSTRING> @"))
+    cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
+    cmds <- append(cmds, paste(bl, "<HIERLEADSTRING>", dQuote("@")))
     cmds <- append(cmds, paste(bl, "<HIERARCHICAL>"))
 
     if (i==1) {
@@ -213,7 +246,6 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
       mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
     }
   }
-
 
   # 2: optionally (weight)
   # 3: numeric variables
@@ -232,42 +264,54 @@ create_microdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
+    cmds <- append(cmds, paste(vv, cur_dig, dQuote(str_pad("", width=cur_dig, pad="9"))))
 
-    cmds <- append(cmds, paste(vv, cur_dig, str_pad("", width=cur_dig, pad="9")))
-    cmds <- append(cmds, paste(bl, "<NUMERIC>"))
-    if (has_decimals) {
-      cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
-    }
-    wV <- vNames[get.dataObj(dataObj, "sampWeightInd")]
-    if (length(wV)>0) {
-      if (vv==wV) {
-        cmds <- append(cmds, paste(bl, "<WEIGHT>"))
+    if (!is.null(requestvar) && requestvar==vv) {
+      cmds <- append(cmds, paste(bl, "<REQUEST>", dQuote(1)))
+    } else if (!is.null(holdingvar) && holdingvar==vv) {
+      cmds <- append(cmds, paste(bl, "<HOLDING>"))
+    } else {
+      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
+      if (has_decimals) {
+        cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
+      }
+      wV <- vNames[get.dataObj(dataObj, "sampWeightInd")]
+      if (length(wV)>0) {
+        if (vv==wV) {
+          cmds <- append(cmds, paste(bl, "<WEIGHT>"))
+        }
       }
     }
     mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
   }
 
-  cat("writing metadatafile to",shQuote(f_metadata),"\n")
-  cat(unlist(cmds), sep="\r\n", file=f_metadata)
+  if (verbose) {
+    cat("writing metadatafile to",shQuote(f_metadata),"\n")
+  }
+  cmds <- unlist(cmds)
+  cmds[length(cmds)] <- paste0(cmds[length(cmds)],"\r")
+  cat(cmds, sep="\r\n", file=f_metadata)
 
-  cat("writing microdatafile to",shQuote(f_microdata),"\n")
+  if (verbose) {
+    cat("writing microdatafile to",shQuote(f_microdata),"\n")
+  }
   write.table(mat, file=f_microdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
   invisible(list(f_md=f1, f_dat=f2, f_hrcs=f_hrcs))
 }
 
 ## using tabular data
-create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
+create_tabdata_and_metadata <- function(obj, verbose, responsevar, digits=2, path=getwd(), ID) {
   lpl <- upl <- sdcStatus <- NULL
   f1 <- generateStandardizedNames(path=NULL, lab=paste0("metadata_", ID), ext=".rda")
   f2 <- generateStandardizedNames(path=NULL, lab=paste0("tabdata_", ID), ext=".tab")
 
   f_metadata <- file.path(path, f1)
-  f_microdata <- file.path(path, f2)
+  f_tabdata <- file.path(path, f2)
 
   # get data
   dataObj <- get.sdcProblem(obj, "dataObj")
   pI <- get.sdcProblem(obj, "problemInstance")
-  mdat <- copy(g_df(obj))
+  mdat <- copy(sdcProb2df(obj, addNumVars=TRUE, dimCodes="original"))
   mdat[,lpl:=get.problemInstance(pI, "LPL")]
   mdat[,upl:=get.problemInstance(pI, "UPL")]
 
@@ -314,12 +358,6 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   f_hrcs <- c()
   for (i in seq_along(dim_vars)) {
     vv <- dim_vars[i]
-    cmd <- paste0("mdat[,",vv,":=",paste0(vv,"_o"),"]")
-    eval(parse(text=cmd))
-    cmd <- paste0("mdat[,",paste0(vv,"_o"),":= NULL]")
-    eval(parse(text=cmd))
-
-    vv <- dim_vars[i]
     startpos <- sum(required_digits)+i
 
     tot_code <- get.sdcProblem(obj, "dimInfo")@dimInfo[[i]]@codesOriginal[1]
@@ -333,8 +371,9 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     f_hrc <- generateStandardizedNames(path=path, lab=paste0("hier_",ID,"_",vv), ext=".hrc")
     f_hrcs <- c(f_hrcs, f_hrc)
     write_hrc(inp=hiercodes[[vv]], fOut=f_hrc, nr_digits=0)
+    f_hrc <- normalizePath(f_hrc, winslash="/", mustWork=TRUE)
 
-    cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
+    cmds <- append(cmds, paste(vv)) # no missings allowed in sdcProblem-objects
     cmds <- append(cmds, paste(bl, "<RECODEABLE>"))
     cmds <- append(cmds, paste(bl, "<TOTCODE>", dQuote(tot_code)))
     cmds <- append(cmds, paste(bl, "<HIERCODELIST>", dQuote(f_hrc)))
@@ -349,10 +388,10 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
   }
 
   # 2b: numeric variables, frequency, lpl/upl
-  num_vars <- setdiff(colnames(mdat), c("strID", dim_vars))
+  num_vars <- c("sdcStatus", responsevar, "lpl","upl")
+
   for (i in seq_along(num_vars)) {
     vv <- num_vars[i]
-
     has_decimals <- FALSE
     if (!check_int(mdat[[vv]])) {
       digits <- digits
@@ -366,14 +405,16 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
       mdat[,sdcStatus:=toupper(sdcStatus)] # bug in tau-argus?
     }
 
+    if (any(is.na(mdat[[vv]]))) {
+      stop("missing value detected in variable ",dQuote(vv),". This is currently not supported!\n")
+    }
     startpos <- sum(required_digits)+i
     cur_dig <- max(nchar(as.character(mdat[[vv]])))
     required_digits <- c(required_digits, cur_dig)
 
     if (vv=="freq") {
-      cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
-      cmds <- append(cmds, paste(bl, "<FREQUENCY>"))
-
+      cmds <- append(cmds, vv)
+      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
     } else if (vv=="lpl") {
       cmds <- append(cmds, vv)
       cmds <- append(cmds, paste(bl, "<NUMERIC> <LOWERPL>"))
@@ -383,10 +424,8 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     } else if (vv=="sdcStatus") {
       cmds <- append(cmds, vv)
       cmds <- append(cmds, paste(bl, "<STATUS>"))
-    } else {
-      cmds <- append(cmds, paste(vv, dQuote(str_pad("", width=cur_dig, pad="9"))))
-      cmds <- append(cmds, paste(bl, "<NUMERIC>"))
     }
+    # do not append any other variable since batch-input assumes one numeric variable
 
     if (has_decimals) {
       cmds <- append(cmds, paste(bl, "<DECIMALS>", digits))
@@ -400,11 +439,17 @@ create_tabdata_and_metadata <- function(obj, digits=2, path=getwd(), ID) {
     mat <- cbind(mat, str_pad(mdat[[vv]], width=cur_dig, side="left"))
   }
 
-  cat("writing metadatafile to",shQuote(f_metadata),"\n")
-  cat(unlist(cmds), sep="\r\n", file=f_metadata)
+  if (verbose) {
+    cat("writing metadatafile to",shQuote(f_metadata),"\n")
+  }
+  cmds <- unlist(cmds)
+  cmds[length(cmds)] <- paste0(cmds[length(cmds)],"\r")
+  cat(cmds, sep="\r\n", file=f_metadata)
 
-  cat("writing microdatafile to",shQuote(f_microdata),"\n")
-  write.table(mat, file=f_microdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
+  if (verbose) {
+    cat("writing tabular data file to",shQuote(f_tabdata),"\n")
+  }
+  write.table(mat, file=f_tabdata, sep=",", row.names=FALSE, col.names=FALSE, quote=FALSE, eol="\r\n")
   invisible(list(f_md=f1, f_dat=f2, f_hrcs=f_hrcs))
 }
 
@@ -453,24 +498,62 @@ sf_zero <- function(rg) {
   paste0("ZERO(",rg,")")
 }
 
+# MIS(val)
+sf_mis <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !val %in% c(0,1)) {
+    stop("sf_mis(): check parameter 'val'\n")
+  }
+  paste0("MIS(",val,")")
+}
+
+# WGT(val)
+sf_wgt <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !val %in% c(0,1)) {
+    stop("sf_wgt(): check parameter 'val'\n")
+  }
+  paste0("WGT(",val,")")
+}
+
+# MAN(val)
+sf_man <- function(val) {
+  if (is.null(val) || !check_int(val) || !check_len(val, 1) || !check_range(val, 1, 99)) {
+    stop("sf_man(): check parameter 'val'\n")
+  }
+  paste0("MAN(",val,")")
+}
+
+
+# REQ(Percent1, Percent2, SafetyMargin)
+#sf_req <- function(p1, p2, margin) {
+#  if (is.null(rg) || !check_int(rg) || !check_range(rg, 1, 99)) {
+#    stop("sf_req(): check parameter 'rg'\n")
+#  }
+#  paste0("REQ(",p1,",",p2,",",margin,")")
+#}
+
 
 ## create safety-rules
-# todo: REQ(); MIS, WGT: MAN: --> issues to peter-paul?
+# todo: REQ()
 srule <- function(type, ...) {
   args <- list(...)
   type <- tolower(type)
   if (type=="p") {
-    rule <- sf_p(p=args$p, n=args$n)
+    return(sf_p(p=args$p, n=args$n))
   } else if (type=="nk") {
-    rule <- sf_nk(n=args$n, k=args$k)
+    return(sf_nk(n=args$n, k=args$k))
   } else if (type=="freq") {
-    rule <- return(sf_freq(n=args$n, rg=args$rg))
+    return(sf_freq(n=args$n, rg=args$rg))
   } else if (type=="zero") {
-    rule <- return(sf_zero(rg=args$rg))
+    return(sf_zero(rg=args$rg))
+  } else if (type=="mis") {
+    return(sf_mis(val=args$val))
+  } else if (type=="wgt") {
+    return(sf_wgt(val=args$val))
+  } else if (type=="man") {
+    return(sf_man(val=args$val))
   } else {
     stop("invalid choice of 'type'!\n")
   }
-  rule
 }
 
 ## check for invalid inputs
@@ -512,6 +595,10 @@ check_primrules <- function(primSuppRules, responsevar) {
 #primSuppRules[[1]] <- list(type="freq", n=5, rg=20)
 #primSuppRules[[2]] <- list(type="p", n=5, p=20)
 #primSuppRules[[3]] <- list(type="nk", n=5, k=20.5)
+#primSuppRules[[4]] <- list(type="mis", val=1)
+#primSuppRules[[5]] <- list(type="wgt", val=1)
+#primSuppRules[[6]] <- list(type="man", val=25)
+
 #check_primrules(primSuppRules, responsevar="asf")
 
 ##############################################################
@@ -567,21 +654,26 @@ read_ArgusSolution <- function(fIn) {
 
 ## based on microdata input
 tauBatchInput_microdata <- function(obj,
+    verbose,
     path=getwd(),
     solver="FREE",
     method,
     primSuppRules,
     responsevar="<freq>",
     shadowvar=NULL,
-    costvar=NULL, ...) {
+    costvar=NULL,
+    requestvar=NULL,
+    holdingvar=NULL, ...) {
 
-  args = list(...)
+  args <- list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, type="microdata", responsevar, shadowvar, costvar, requestvar, holdingvar)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
+  requestvar <- vars$requestvar
+  holdingvar <- vars$holdingvar
 
   ## check argument 'method'
   method <- check_suppmethod(method)
@@ -600,7 +692,8 @@ tauBatchInput_microdata <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_", batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_microdata_and_metadata(obj, digits=2, path=path, ID=batchID)
+  res <- create_microdata_and_metadata(obj, verbose=verbose, digits=2, path=path, ID=batchID,
+    requestvar=requestvar, holdingvar=holdingvar)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -635,7 +728,11 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setReadInput(batchObj, "<READMICRODATA>")
 
   ## solver
-  batchObj <- setSolver(batchObj, solver)
+  license <- NULL
+  if (solver=="CPLEX") {
+    license <- args$licensefile
+  }
+  batchObj <- setSolver(batchObj, list(solver=solver, license=license))
 
   # modular/hitas
   if (method=="MOD") {
@@ -663,23 +760,26 @@ tauBatchInput_microdata <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
+  f_tab <- normalizePath(file.path(path, f_tab), winslash="/", mustWork=FALSE)
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab),")"))
   invisible(batchObj)
 }
 
 ## based on tabular input
 tauBatchInput_table <- function(obj,
+    verbose,
     path=getwd(),
     solver="FREE",
     method,
-    responsevar="<freq>",
+    responsevar="freq",
     shadowvar=NULL,
     costvar=NULL, ...) {
 
-  args = list(...)
+  args <- list(...)
 
   # create and check variable-input
-  vars <- check_varinput(obj, responsevar, shadowvar, costvar)
+  vars <- check_varinput(obj, type="tabular", responsevar, shadowvar, costvar,
+    requestvar=NULL, holdingvar=NULL)
   responsevar <- vars$responsevar
   shadowvar <- vars$shadowvar
   costvar <- vars$costvar
@@ -702,7 +802,7 @@ tauBatchInput_table <- function(obj,
   f_log <- generateStandardizedNames(path=NULL, lab=paste0("arguslog_",batchID), ext=".log")
   f_tab <- generateStandardizedNames(path=NULL, lab=paste0("tabout_", batchID), ext=".txt")
 
-  res <- create_tabdata_and_metadata(obj, digits=2, path=path, ID=batchID)
+  res <- create_tabdata_and_metadata(obj, verbose=verbose, responsevar=responsevar, digits=2, path=path, ID=batchID)
 
   ## logfile
   batchObj <- setLogbook(batchObj, f=f_log)
@@ -733,7 +833,11 @@ tauBatchInput_table <- function(obj,
   batchObj <- setReadInput(batchObj, "<READTABLE>")
 
   ## solver
-  batchObj <- setSolver(batchObj, solver)
+  license <- NULL
+  if (solver=="CPLEX") {
+    license <- args$licensefile
+  }
+  batchObj <- setSolver(batchObj, list(solver=solver, license=license))
 
   # modular/hitas
   if (method=="MOD") {
@@ -761,7 +865,8 @@ tauBatchInput_table <- function(obj,
   batchObj <- setSuppress(batchObj, suppstr)
 
   ## output-table
-  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(file.path(path, f_tab)),")"))
+  f_tab <- normalizePath(file.path(path, f_tab), winslash="/", mustWork=FALSE)
+  batchObj <- setWritetable(batchObj, paste0("(1, 3, AS+FL+, ", dQuote(f_tab),")"))
   invisible(batchObj)
 }
 
@@ -773,7 +878,7 @@ tauBatchInput_table <- function(obj,
 # if obj is NULL, only the solution fro tau-Argus is read in and variable names are extracted from batch-Input
 combineInputs <- function(obj=NULL, res_argus, batchF) {
   extractVarnames <- function(batchF) {
-    inp <- readLines(batchF)
+    inp <- readLines(batchF, warn=FALSE)
     inp <- inp[grep("SPECIFY", inp)]
     inp <- unlist(strsplit(inp, "> "))[-1]
     inp <- unlist(strsplit(inp, '"'))
@@ -830,7 +935,7 @@ combineInputs <- function(obj=NULL, res_argus, batchF) {
 
 # read file-path from batch-files
 infoFromBatch <- function(batchF, typ="LOGBOOK") {
-  inp <- readLines(batchF)
+  inp <- readLines(batchF, warn=FALSE)
   inp <- inp[grep(typ, inp)]
   if (length(inp)==0) {
     stop(paste(dQuote(typ),"not found in batch-file",dQuote(batchF),"\n"))
@@ -844,3 +949,43 @@ infoFromBatch <- function(batchF, typ="LOGBOOK") {
   filepath
 }
 
+#' argusVersion
+#'
+#' returns the version and build number of a given tau-argus executable
+#' specified in argument \code{exe}.
+#'
+#' @param exe a path to a tau-argus executable
+#' @param verbose (logical) if \code{TRUE}, the version info and build number
+#' of the given tau-argus executable will be printed.
+#'
+#' @return a list with two elements being the tau-argus version and the build-number.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' argusVersion(exe="C:\\Tau\\TauArgus.exe", verbose=TRUE)
+#' }
+argusVersion <- function(exe, verbose=FALSE) {
+  fInfo <- tempfile(fileext=".txt")
+  fBatch <- tempfile(fileext=".arb")
+  fLog <- tempfile(fileext=".log")
+  cat(paste("<LOGBOOK>", dQuote(fLog),"\n<VERSIONINFO>", dQuote(fInfo),"\n"), file=fBatch)
+
+  cmd <- paste(shQuote(exe), fBatch)
+  res <- suppressWarnings(system(cmd, intern=TRUE, ignore.stdout=TRUE, ignore.stderr=FALSE))
+  if (!is.null(attributes(res)$status)) {
+    stop("Please use an tau-argus version >= 4.1.6\n")
+  }
+
+  res <- readLines(fInfo, warn=FALSE)
+  res <- unlist(strsplit(res, ";"))
+  version <- str_trim(unlist(strsplit(res[1], ":"))[2])
+  build <- str_trim(unlist(strsplit(res[2], ":"))[2])
+  if (verbose) {
+    cat(paste0("Tau-Argus version: ", version, " (Build: ",build,")\n"))
+  }
+
+  # cleanup
+  xx <- file.remove(c(fInfo, fBatch, fLog))
+  return(list(version=version, build=build))
+}

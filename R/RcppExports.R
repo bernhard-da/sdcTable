@@ -2,18 +2,18 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cpp_splitByIndices <- function(strings, strInfo) {
-    .Call('sdcTable_cpp_splitByIndices', PACKAGE = 'sdcTable', strings, strInfo)
+    .Call(`_sdcTable_cpp_splitByIndices`, strings, strInfo)
 }
 
 cpp_myPaste <- function(stringvec, nrKeyVars, seperator) {
-    .Call('sdcTable_cpp_myPaste', PACKAGE = 'sdcTable', stringvec, nrKeyVars, seperator)
+    .Call(`_sdcTable_cpp_myPaste`, stringvec, nrKeyVars, seperator)
 }
 
 cpp_mySplit <- function(stringvec, indices) {
-    .Call('sdcTable_cpp_mySplit', PACKAGE = 'sdcTable', stringvec, indices)
+    .Call(`_sdcTable_cpp_mySplit`, stringvec, indices)
 }
 
 greedyMultDimSuppression <- function(dat, indices, subIndices, dimVars, verbose) {
-    .Call('sdcTable_greedyMultDimSuppression', PACKAGE = 'sdcTable', dat, indices, subIndices, dimVars, verbose)
+    .Call(`_sdcTable_greedyMultDimSuppression`, dat, indices, subIndices, dimVars, verbose)
 }
 
