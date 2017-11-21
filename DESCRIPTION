@@ -17,3 +17,4 @@ LinkingTo: Rcpp
 License: GPL (>= 2)
 SystemRequirements: GLPK library, including -dev or -devel part
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
