@@ -64,7 +64,7 @@ completeData <- completeData[,-ncol(completeData)]
 
 We now walk through the steps that are required to protect tabular data using **sdcTable**. In the first example we are going to protect table cells given a three-dimensional tabular structure with some sub-totals. 
 
-We will start by discussing input data sets in sections ["Starting from microdata"](ex1:microDat) and ["Using aggregated data"](ex1:aggDat). Then we continue by discussing how to define and describe dimensional variables in ["Defining hierarchies"]{#ex1:hier} which is a crucial step in the entire procedure. Once the hierarchies are defined it is necessary to create suitable objects as described ([here](ex1:makeProb)) that can be used to identify and suppress primary sensitive cells. This is shown in section ["Identifying sensitive cells"](#ex1:primSupp). Finally we discuss how to ["protect primary sensitive table cells"](#ex1:secondSupp).
+We will start by discussing input data sets in sections ["Starting from microdata"](#ex1:microDat) and ["Using aggregated data"](#ex1:aggDat). Then we continue by discussing how to define and describe dimensional variables in ["Defining hierarchies"]{#ex1:hier} which is a crucial step in the entire procedure. Once the hierarchies are defined it is necessary to create suitable objects as described ([here](ex1:makeProb)) that can be used to identify and suppress primary sensitive cells. This is shown in section ["Identifying sensitive cells"](#ex1:primSupp). Finally we discuss how to ["protect primary sensitive table cells"](#ex1:secondSupp).
 
 Throughout it is also shown how to set and extract information from the objects we are working with using functions `getInfo()` and `setInfo()`.
 
