@@ -10,7 +10,7 @@ Maintainer: Bernhard Meindl <bernhard.meindl@gmail.com>
 URL: http://www.statistik.at
 BugReports: https://github.com/bernhard-da/sdcTable/issues
 Depends: stringr, methods, Rcpp (>= 0.11.0), Rglpk, slam, lpSolveAPI
-Imports: data.table
+Imports: data.table, knitr
 Suggests: testthat (>= 0.3)
 LazyLoad: yes
 LinkingTo: Rcpp
