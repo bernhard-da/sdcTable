@@ -25,7 +25,6 @@
 #' @param sampWeightInd numeric vector of length 1 (or NULL) defining the column-index of a variable holding sampling weights within argument \code{data}
 #'
 #' @return a \code{\link{sdcProblem-class}}-object
-#'
 #' @examples
 #' # loading micro data
 #' data("microData1", package="sdcTable")
@@ -33,8 +32,9 @@
 #' # having a look at the data structure
 #' str(microData)
 #'
-#' # we can observe that we have a micro data set consisting of two spanning
-#' # variables ('region' and 'gender') and one numeric variable ('val')
+#' # we can observe that we have a micro data set consisting
+#' # of two spanning variables ('region' and 'gender') and one
+#' # numeric variable ('val')
 #'
 #' # specify structure of hierarchical variable 'region'
 #' # levels 'A' to 'D' sum up to a Total
@@ -44,27 +44,16 @@
 #'  stringsAsFactors=FALSE)
 #'
 #' # specify structure of hierarchical variable 'gender'
-#' # levels 'male' and 'female' sum up to a Total
-#' dim.gender <- data.frame(
-#'  levels=c('@@','@@@@','@@@@'),
-#'  codes=c('Total', 'male','female'),
-#'  stringsAsFactors=FALSE)
+#' # using create_node() and add_nodes() (see ?manage_hierarchies)
+#' dim.gender <- create_node(total_lab="Total")
+#' dim.gender <- add_nodes(dim.gender,
+#'   node_labs=c("male","female"), reference_node="Total")
+#' print(dim.gender)
 #'
-#' # create a list with each element being a data-frame containing information
-#' # on a dimensional variables
-#' dimList <- list(dim.region, dim.gender)
-#'
-#' # name the list:
-#' # - first list-element: corresponds to variable 'region'
-#' # - second list-element: corresponds to variable 'gender'
-#' names(dimList) <- c('region', 'gender')
-#'
-#' # specify the indices where dimensional variables are located
-#' # within the input data
-#'
-#' # - variable 'region': first column
-#' # - variable 'gender': second column
-#' dimVarInd <- c(1,2)
+#' # create a named list with each element being a data-frame
+#' # containing information on one dimensional variable and
+#' # the names referring to variables in the input data
+#' dimList <- list(region=dim.region, gender=dim.gender)
 #'
 #' # third column containts a numeric variable
 #' numVarInd <- 3
@@ -77,7 +66,6 @@
 #' problem <- makeProblem(
 #'  data=microData,
 #'  dimList=dimList,
-#'  dimVarInd=dimVarInd,
 #'  freqVarInd=freqVarInd,
 #'  numVarInd=numVarInd,
 #'  weightInd=weightInd,
@@ -87,8 +75,8 @@
 #' print(class(problem))
 #'
 #' # have a look at the data
-#' sdcProb2df(problem, addDups=TRUE, addNumVars=TRUE, dimCodes="original")
-#'
+#' sdcProb2df(problem, addDups=TRUE,
+#'   addNumVars=TRUE, dimCodes="original")
 #' @rdname makeProblem
 #' @export makeProblem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
@@ -222,6 +210,13 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
   # check/calculate dimVarInd
   if (!all(names(dimList) %in% names(data))) {
     stop("For at least one dimensional variable specified in 'dimList', we do not have a corresponding variable in 'data'!\n")
+  }
+
+  # convert from tree- to standard format
+  for (i in 1:length(dimList)) {
+    if ("nodedim" %in% class(dimList[[i]])) {
+      dimList[[i]] <- node_to_sdcinput(dimList[[i]], addNumLevels=FALSE)
+    }
   }
 
   if (is.null(dimVarInd)) {

@@ -1,18 +1,15 @@
 #' @useDynLib sdcTable, .registration=TRUE
-#' @import "methods"
-#' @import "Rcpp"
-#' @import "Rglpk"
-#' @import "stringr"
-#' @import "lpSolveAPI"
-#' @import "data.table"
-#' @importFrom "slam" "simple_triplet_matrix"
-#' @importFrom "stats" "na.omit"
-#' @importFrom "utils" "combn"
-#' @importFrom "utils" "tail"
-#' @importFrom "utils" "read.table"
-#' @importFrom "utils" "str"
-#' @importFrom "utils" "write.table"
-
+#' @import methods
+#' @import Rcpp
+#' @import Rglpk
+#' @import stringr
+#' @import lpSolveAPI
+#' @import data.table
+#' @importFrom slam simple_triplet_matrix
+#' @importFrom stats na.omit
+#' @importFrom utils combn tail read.table str write.table
+#' @importFrom data.tree Node Prune Traverse FindNode
+#' @importFrom rlang is_scalar_character is_character
 setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
 setClassUnion('numericOrNULL', c('numeric', 'NULL'))
 setClassUnion('characterOrNULL', c('character', 'NULL'))

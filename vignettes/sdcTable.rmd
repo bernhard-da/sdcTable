@@ -223,19 +223,34 @@ print(dimV1, row.names=FALSE)
 
 Using this information, **sdcTable** internally calculates all kinds of information on dimensional variables. So for example it is able to deal with codes that can be (temporarily) removed from the structure because it can be considered as a *"duplicate"*. This is however not the case for this basic dimensional variable that has a total of 8 codes of which 6 are required to calculate information for the 2 (sub)totals.
 
+Since versions `>0.23`, **sdcTable** contains some helper functions that allow an easier way to create the hierarchies. The function `create_node()`, `add_nodes()` and `delete_nodes()` make use of a tree-like data structure available from package [**data.tree**](https://CRAN.R-project.org/package=data.tree). We now show an alternative way to generate the hierarchy for variable `V1`.
+
+```{r}
+dimV1 <- create_node(total_lab="Tot")
+dimV1 <- add_nodes(dimV1, reference_node="Tot", node_labs=c("A","B","C","D"))
+dimV1 <- add_nodes(dimV1, reference_node="B", node_labs=c("Ba","Bb","Bc"))
+print(dimV1)
+```
+
+**sdcTable** will internally convert the tree-based structure generated using `create_node()`, `add_nodes()` and `delete_nodes()` automatically into the `data.frame` based structure discussed at the begin of this section. What is nice using this dynamic approach to generate hierarchies is that there is a nice `plot` method for vizualization available:
+
+```{r}
+plot(dimV1)
+```
+
+
 #### defining level-structure for variable `V2`
 The creation of a suitable object that describes the hierarchical structure of variable `V2` is easy. We are only dealing with one overall Total (`Tot`) that is the sum of all codes listed [here](#ex1:microDat) for this variable.
 
 The code how to specify an object that describes the structure of dimensional variable `V2` is given below:
 
 ```{r}
-dimV2 <- matrix(nrow=3, ncol=2)
-dimV2[,1] <- c('@','@@','@@')
-dimV2[,2] <- c('Tot','m','w')
-print(dimV2, row.names=FALSE)
+dimV2 <- create_node(total_lab="Tot")
+dimV2 <- add_nodes(dimV2, reference_node="Tot", node_labs=c("m","w"))
+print(dimV2)
 ```
 
-We see that the overall total (`Tot`) is again listed in the first row as level 1 (`@` has one character) while all contributing codes (`m` and `w`) are listed below the total and are of level 2 (`@@` has two characters).
+We see that the overall total (`Tot`) is again listed in the first row with the two other contributing codes (`m` and `w`) being below in the same hierarchy level.
 
 #### defining level-structure for variable `V3`
 The creation of a suitable object that describes the hierarchical structure of variable `V3` is easy. We are only dealing with one overall Total (`Tot`) that is the sum of all codes listed [here](#ex1:microDat) for variable `V3`.
@@ -244,10 +259,9 @@ The required code to generate an object specifying the hierarchical structure of
 variable `V3` is given below:
 
 ```{r}
-dimV3 <- matrix(nrow=7, ncol=2)
-dimV3[,1] <- c('@',rep('@@',6))
-dimV3[,2] <- c('Tot',letters[1:6])
-print(dimV3, row.names=FALSE)
+dimV3 <- create_node(total_lab="Tot")
+dimV3 <- add_nodes(dimV3, reference_node="Tot", node_labs=letters[1:6])
+print(dimV3)
 ```
 
 It is required to create an object defining the complete structure and hierarchies for each dimensional variable. Once this step has been done, the multidimensional tabular structure that is required to apply any statistical disclosure methods can be created using **makeProblem()**.
