@@ -261,13 +261,14 @@ List greedyMultDimSuppression(DataFrame dat, List indices, List subIndices, Inte
               if (suppsAdded == 0) {
                 Rcout << " | everything ok/nothing todo." << std::endl;
               } else {
-                final_ok=false;
                 Rcout << " | additionally suppressed cells: " << suppsAdded << std::endl;
               }
               R_FlushConsole();
             }
             newSuppsAdded=false;
             total_new_supps=total_new_supps+suppsAdded;
+          } else {
+            final_ok=false;
           }
         } /* inner while()-loop */
       } /* end for-loop (tabs) */

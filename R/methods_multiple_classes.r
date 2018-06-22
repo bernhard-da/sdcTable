@@ -232,7 +232,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   dimObj <- g_dim_info(y)
 
   # we have to aggregate if we are dealing with microdata
-  if ( g_is_microdata(x) ) {
+  if (g_is_microdata(x)) {
     rawData <- datO[, lapply(.SD, sum, na.rm=TRUE), by=key(datO), .SDcols=setdiff(colnames(datO), key(datO))]
   } else {
     rawData <- copy(datO)
@@ -241,23 +241,22 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ind.freq <- g_freqvar_ind(x)
 
   codes <- list(); length(codes) <- length(ind.dimvars)
-  for ( i in 1:length(codes) ) {
+  for (i in 1:length(codes)) {
     codes[[i]] <- rawData[[ind.dimvars[i]]]
     cDefault <- g_default_codes(dimObj[[i]])
     cOriginal <- g_original_codes(dimObj[[i]])
     cOriginalDups <- g_dups(dimObj[[i]])
     cOriginalDupsUp <- g_dups_up(dimObj[[i]])
-    if ( all(codes[[i]] %in% c(cOriginal, cOriginalDups)) ) {
-      mInd1 <- match(codes[[i]], cOriginalDups)
-      mInd2 <- which(!is.na(mInd1))
-      if ( length(mInd2) > 0 ) {
-        codes[[i]][mInd2] <- cOriginalDupsUp[mInd1[mInd2]]
-      }
+    if (all(unique(codes[[i]]) %in% c(cOriginal, cOriginalDups))) {
       codes[[i]] <- c_match_default_codes(object=dimObj[[i]], input=rawData[[ind.dimvars[i]]])
-    } else if ( all(codes[[i]] %in% cDefault) ) {
+      if (sum(is.na(codes[[i]]))>0) {
+        stop(paste0("NA values in default codes have been generated for variable ",
+          shQuote(names(dimObj)[i]),".\nPlease check the definition of this hierarchy!\n"))
+      }
+    } else if (all(unique(codes[[i]]) %in% cDefault)) {
       # cat("no recoding necessary!\n")
     } else {
-      stop("c_calc_full_prob:: recoding not possible!\n")
+      stop("c_calc_full_prob:: recoding not possible. Check your inputs!\n")
     }
   }
 
@@ -276,14 +275,14 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   allCodes <- expand(lapply(dimObj, g_default_codes), vector=FALSE)
   fullTabObj <- data.table(ID=1:length(allCodes[[1]]))
-  for ( i in 1:length(allCodes)) {
+  for (i in 1:length(allCodes)) {
     fullTabObj[,colnames(rawData)[ind.dimvars][i]:=allCodes[[i]]]
   }
   setkeyv(fullTabObj, colnames(rawData)[ind.dimvars])
   fullTabObj[,ID:=NULL]
 
   ## revert rawData codes to default codes
-  for ( j in seq_along(ind.dimvars) ) {
+  for (j in seq_along(ind.dimvars)) {
     v <- c_match_default_codes(object=dimObj[[j]], input=rawData[,get(names(dimObj)[j])])
     set(rawData, NULL, names(dimObj)[j], v)
   }
@@ -292,7 +291,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
   ## replace NAs in rawData by 0 (required for aggregation)
   cols <- colnames(rawData)[(length(dimObj)+1):ncol(rawData)]
   ind.na <- list(); length(ind.na) <- length(cols); k <- 1
-  for ( j in cols ) {
+  for (j in cols) {
     ind.na[[k]] <- which(is.na(rawData[[j]]))
     set(rawData, ind.na[[k]], j, 0)
     k <- k+1
@@ -319,7 +318,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   if (length(missing.codes) > 0) {
     index <- which(strID%in%missing.codes)
-    for ( i in 1:length(cols) ) {
+    for (i in 1:length(cols)) {
       set(fullTabObj, index, cols[i], 0)
     }
   }
@@ -349,14 +348,14 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
         cur.levs <-  cur.dim[[j]]
         cmd <- paste0("out <- fullTabObj[",dim.vars[i],"%in% cur.levs[-1],]")
         eval(parse(text=cmd))
-        if ( length(dim.vars)==1 ) {
+        if (length(dim.vars)==1) {
           out <- out[,lapply(.SD,sum), .SDcols=col.names]
         } else {
           out <- out[,lapply(.SD,sum), .SDcols=col.names, by=key(out)]
         }
         cmd <- paste0("row.ind <- fullTabObj[",dim.vars[i],"==cur.levs[1],id]")
         eval(parse(text=cmd))
-        for ( z in col.names ) {
+        for (z in col.names) {
           cmd <- paste0("fullTabObj[id %in% row.ind,",z,":=out[[z]]]")
           eval(parse(text=cmd))
         }
@@ -392,20 +391,20 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
     w <- fullTabObj[[w.ind]]
   }
   n.ind <- g_numvar_ind(x)
-  if ( !is.null(n.ind) ) {
+  if (!is.null(n.ind)) {
     numVarsList <- list(); length(numVarsList) <- length(n.ind)
-    for ( n in 1:length(n.ind) ) {
+    for (n in 1:length(n.ind)) {
       numVarsList[[n]] <- fullTabObj[[n.ind[n]]]
     }
   }
 
-  if ( length(n.ind) > 0 ) {
+  if (length(n.ind) > 0) {
     names(numVarsList) <- colnames(g_raw_data(x))[n.ind]
   }
 
   ## replace 0 in rawData by NA if they have been replaced earlier
-  for ( i in 1:length(ind.na) ) {
-    if ( length(ind.na[[i]]) > 0 ) {
+  for (i in 1:length(ind.na)) {
+    if (length(ind.na[[i]]) > 0) {
       set(rawData, ind.na[[i]], cols[i], NA)
     }
   }

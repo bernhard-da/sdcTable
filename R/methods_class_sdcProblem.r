@@ -392,7 +392,8 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
     # if TRUE, cell needs to be suppressed
     (sumNcont) > (k/100*celltot)
   }
-  if ( !g_is_microdata(g_dataObj(object)) ) {
+
+  if (!g_is_microdata(g_dataObj(object))) {
     stop("nk-dominance rule can only be applied if micro-data are available!\n")
   }
   pI <- g_problemInstance(object)
@@ -401,7 +402,7 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
   numVarInds <- g_numvar_ind(dataObj)
 
   numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if ( any(numVal < 0 ) ) {
+  if (any(na.omit(numVal) < 0)) {
     stop("dominance rules can only be applied to numeric variables with only positive values!\n")
   }
 
@@ -410,9 +411,8 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
     c_contributing_indices(object, input=list(strIDs[x]))
   })
 
-  minContributingUnits <- min(setdiff(unique(sapply(indices, length)), 0))
-  if ( input$n < 1 | input$n > minContributingUnits ) {
-    stop("set.sdcProblem:: parameter 'n' must be >= 1 and <",minContributingUnits,"!\n")
+  if (input$n < 1) {
+    stop("c_rule_nk:: parameter 'n' must be >= 1!\n")
   }
 
   # values of contributing units
@@ -421,25 +421,21 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
   })
 
   cellTotals <- g_numVars(pI)[[input$numVarInd]]
+
   # suppStatus: TRUE:unsafe, FALSE: safe
   nkState <- sapply(1:g_nrVars(pI), function(x) {
     nkRule(cellTotals[x], valueList[[x]], input$k)
   })
 
-  addSupps <- which(sapply(indices, length) %in% 1:input$n)
-  if ( length(addSupps) > 0 ) {
-    nkState[addSupps] <- TRUE
-  }
-
   suppIndex <- which(nkState==TRUE)
-  if ( length(suppIndex) > 0 ) {
+  if (length(suppIndex) > 0) {
     s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
   }
 
-  if ( input$allowZeros == FALSE ) {
-    indZero <- which(g_freq(pI)==0)
-    if ( length(indZero) > 0 ) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("z", length(indZero)))
+  if (input$allowZeros==FALSE) {
+    indZero <- which(cellTotals==0 & g_freq(pI)>=0)
+    if (length(indZero) > 0) {
+      s_sdcStatus(pI) <- list(index=indZero, vals=rep("s", length(indZero)))
     }
   }
   s_problemInstance(object) <- pI
@@ -484,13 +480,13 @@ setMethod("c_rule_p", signature=c("sdcProblem", "list"), definition=function(obj
   })
 
   suppIndex <- which(pState==TRUE)
-  if ( length(suppIndex) > 0 ) {
+  if (length(suppIndex) > 0) {
     s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
   }
 
-  if ( input$allowZeros == FALSE ) {
+  if (input$allowZeros == FALSE) {
     indZero <- which(g_freq(pI)==0)
-    if ( length(indZero) > 0 ) {
+    if (length(indZero) > 0) {
       s_sdcStatus(pI) <- list(index=indZero, vals=rep("u", length(indZero)))
     }
   }

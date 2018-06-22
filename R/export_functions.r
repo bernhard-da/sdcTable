@@ -25,7 +25,6 @@
 #' @param sampWeightInd numeric vector of length 1 (or NULL) defining the column-index of a variable holding sampling weights within argument \code{data}
 #'
 #' @return a \code{\link{sdcProblem-class}}-object
-#'
 #' @examples
 #' # loading micro data
 #' data("microData1", package="sdcTable")
@@ -33,8 +32,9 @@
 #' # having a look at the data structure
 #' str(microData)
 #'
-#' # we can observe that we have a micro data set consisting of two spanning
-#' # variables ('region' and 'gender') and one numeric variable ('val')
+#' # we can observe that we have a micro data set consisting
+#' # of two spanning variables ('region' and 'gender') and one
+#' # numeric variable ('val')
 #'
 #' # specify structure of hierarchical variable 'region'
 #' # levels 'A' to 'D' sum up to a Total
@@ -44,27 +44,16 @@
 #'  stringsAsFactors=FALSE)
 #'
 #' # specify structure of hierarchical variable 'gender'
-#' # levels 'male' and 'female' sum up to a Total
-#' dim.gender <- data.frame(
-#'  levels=c('@@','@@@@','@@@@'),
-#'  codes=c('Total', 'male','female'),
-#'  stringsAsFactors=FALSE)
+#' # using create_node() and add_nodes() (see ?manage_hierarchies)
+#' dim.gender <- create_node(total_lab="Total")
+#' dim.gender <- add_nodes(dim.gender,
+#'   node_labs=c("male","female"), reference_node="Total")
+#' print(dim.gender)
 #'
-#' # create a list with each element being a data-frame containing information
-#' # on a dimensional variables
-#' dimList <- list(dim.region, dim.gender)
-#'
-#' # name the list:
-#' # - first list-element: corresponds to variable 'region'
-#' # - second list-element: corresponds to variable 'gender'
-#' names(dimList) <- c('region', 'gender')
-#'
-#' # specify the indices where dimensional variables are located
-#' # within the input data
-#'
-#' # - variable 'region': first column
-#' # - variable 'gender': second column
-#' dimVarInd <- c(1,2)
+#' # create a named list with each element being a data-frame
+#' # containing information on one dimensional variable and
+#' # the names referring to variables in the input data
+#' dimList <- list(region=dim.region, gender=dim.gender)
 #'
 #' # third column containts a numeric variable
 #' numVarInd <- 3
@@ -77,7 +66,6 @@
 #' problem <- makeProblem(
 #'  data=microData,
 #'  dimList=dimList,
-#'  dimVarInd=dimVarInd,
 #'  freqVarInd=freqVarInd,
 #'  numVarInd=numVarInd,
 #'  weightInd=weightInd,
@@ -87,8 +75,8 @@
 #' print(class(problem))
 #'
 #' # have a look at the data
-#' sdcProb2df(problem, addDups=TRUE, addNumVars=TRUE, dimCodes="original")
-#'
+#' sdcProb2df(problem, addDups=TRUE,
+#'   addNumVars=TRUE, dimCodes="original")
 #' @rdname makeProblem
 #' @export makeProblem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
@@ -97,10 +85,10 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
   # 'doPrep()' is the old function 'newDimInfo()'
   # since it also recodes inputData eventually, it was renamed
   doPrep <- function(inputData, inputDims) {
-    if ( any(sapply(inputDims, class) != "dimVar") ) {
+    if (any(sapply(inputDims, class) != "dimVar")) {
       stop("Error: all elements of 'inputDims' must be of class 'dimVar'!\n")
     }
-    if ( class(inputData) != "dataObj") {
+    if (class(inputData) != "dataObj") {
       stop("Error: 'inputData' be of class 'dataObj'!\n")
     }
 
@@ -109,7 +97,7 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
       g_varname(dimList[[x]])
     })
 
-    if ( !all(varNamesInDims %in% varNames) ) {
+    if (!all(varNamesInDims %in% varNames)) {
       stop("makeProblem::doPrep() mismatch in variable names in 'inputData' and 'inputDims'!\n")
     }
 
@@ -125,24 +113,24 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
 
     # variables not used
     vNotUsed <- setdiff(vNamesInDimList, varNames)
-    if ( length(vNotUsed) > 0 ) {
+    if (length(vNotUsed) > 0) {
       removeIndex <- match(vNotUsed, vNamesInDimList)
       inputDims <- inputDims[-c(removeIndex)]
       vNamesInDimList <- sapply(1:length(inputDims), function(x) {
         g_varname(inputDims[[x]])
       })
 
-      if ( any(vNamesInDimList != varNames) ) {
+      if (any(vNamesInDimList != varNames)) {
         stop("Error: Matching failed!\n")
       }
     }
 
     posIndex <- match(vNamesInData, vNamesInDimList)
     dimVarInd <- g_dimvar_ind(inputData)
-    if ( length(posIndex) < 1 ) {
+    if (length(posIndex) < 1) {
       stop("Error: matching of variable names failed. Please check 'inputData' and/or 'inputDims'!\n")
     } else {
-      if ( any(is.na(posIndex)) ) {
+      if (any(is.na(posIndex))) {
         dimVarInd <- setdiff(dimVarInd, which(is.na(posIndex)))
         vNamesInData <- vNamesInData[dimVarInd]
         inputDims <- inputDims[na.omit(posIndex)]
@@ -153,17 +141,17 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
     }
 
     ss <- list()
-    for ( i in seq_along(dimVarInd) ) {
+    for (i in seq_along(dimVarInd)) {
       remove.vals <- FALSE
       remove_ind <- NULL
-      if ( !c_has_default_codes(inputDims[[i]], input=rawData[[dimVarInd[i]]]) ) {
+      if (!c_has_default_codes(inputDims[[i]], input=rawData[[dimVarInd[i]]])) {
         dups <- g_dups(inputDims[[i]])
-        if ( length(dups) > 0 ) {
+        if (length(dups) > 0) {
           dupsUp <- g_dups_up(inputDims[[i]])
-          for ( k in length(dups):1 ) {
+          for (k in length(dups):1) {
             ind <- which(rawData[[dimVarInd[i]]]==dups[k])
-            if ( length(ind) > 0 ) {
-              if ( length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0 ) {
+            if (length(ind) > 0) {
+              if (length(which(rawData[[dimVarInd[i]]]==dupsUp[k])) > 0) {
                 remove.vals <- TRUE
                 remove_ind <- c(remove_ind, ind)
               } else {
@@ -171,7 +159,7 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
               }
             }
           }
-          if ( remove.vals ) {
+          if (remove.vals) {
             rawData <- rawData[-unique(remove_ind)]
           }
           s_raw_data(inputData) <- list(rawData)
@@ -181,9 +169,9 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
         ss[[i]] <- rawData[[dimVarInd[i]]]
       }
       # remove entries in ss[[1]...ss[[i-1]]
-      if ( remove.vals ) {
-        if ( i > 1 ) {
-          for ( z in 1:(i-1)) {
+      if (remove.vals) {
+        if (i > 1) {
+          for (z in 1:(i-1)) {
             ss[[z]] <- ss[[z]][-remove_ind]
           }
         }
@@ -195,9 +183,9 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
       sum(g_structure(x))
     })
     strInfo <- list()
-    for ( i in 1:length(inputDims) ) {
+    for (i in 1:length(inputDims)) {
       sumCur <- info[[i]]
-      if ( i == 1 ) {
+      if (i == 1) {
         strInfo[[i]] <- c(1, sumCur)
       } else {
         strInfo[[i]] <- c(1+max(strInfo[[c(i-1)]]), max(strInfo[[c(i-1)]])+sumCur)
@@ -222,6 +210,13 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
   # check/calculate dimVarInd
   if (!all(names(dimList) %in% names(data))) {
     stop("For at least one dimensional variable specified in 'dimList', we do not have a corresponding variable in 'data'!\n")
+  }
+
+  # convert from tree- to standard format
+  for (i in 1:length(dimList)) {
+    if ("nodedim" %in% class(dimList[[i]])) {
+      dimList[[i]] <- node_to_sdcinput(dimList[[i]], addNumLevels=FALSE)
+    }
   }
 
   if (is.null(dimVarInd)) {
@@ -324,33 +319,33 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 primarySuppression <- function(object, type, ...) {
   start.time <- proc.time()
-  if ( !type %in% c('nk', 'freq', 'p', 'pq') ) {
+  if (!type %in% c("nk", "freq", "p", "pq")) {
     stop("valid types are 'nk', 'freq', 'p' or 'pq'!\n")
   }
 
   numVarsIndices <- g_numvar_ind(g_dataObj(object))
   paraList <- genParaObj(selection='control.primary', numVarIndices=numVarsIndices, ...)
 
-  if ( type == "freq") {
+  if (type == "freq") {
     object <- c_rule_freq(object, input=paraList)
   }
 
-  if ( type == "nk" ) {
-    if ( is.na(paraList$numVarInd) ) {
+  if (type == "nk") {
+    if (is.na(paraList$numVarInd)) {
       stop("argument 'numVarInd' must be specified!\n")
     }
     object <- c_rule_nk(object, input=paraList)
   }
 
-  if ( type == "p") {
-    if ( is.na(paraList$numVarInd) ) {
+  if (type == "p") {
+    if (is.na(paraList$numVarInd)) {
       stop("argument 'numVarInd' must be specified!\n")
     }
     object <- c_rule_p(object, input=paraList)
   }
 
-  if ( type == "pq") {
-    if ( is.na(paraList$numVarInd) ) {
+  if (type == "pq") {
+    if (is.na(paraList$numVarInd)) {
       stop("argument 'numVarInd' must be specified!\n")
     }
     object <- c_rule_pq(object, input=paraList)
@@ -435,26 +430,26 @@ primarySuppression <- function(object, type, ...) {
 #' @export protectTable
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 protectTable <- function(object, method, ...) {
-  if ( !method %in% c('HITAS', 'OPT', 'HYPERCUBE', 'SIMPLEHEURISTIC') ) {
+  if (!method %in% c('HITAS', 'OPT', 'HYPERCUBE', 'SIMPLEHEURISTIC')) {
     stop("valid methods are 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
   }
 
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
   supps_u <- length(g_primSupps(object@problemInstance))
   supps_x <- length(g_secondSupps(object@problemInstance))
-  if ( supps_u + supps_x == 0 ) {
+  if (supps_u + supps_x == 0) {
     return(c_finalize(object=object, input=paraList))
   }
 
-  if ( method == 'SIMPLEHEURISTIC' ) {
+  if (method == 'SIMPLEHEURISTIC') {
     out <- c_quick_suppression(object, input=paraList)
     out <- out$object
   } else {
-    if ( paraList$useC ) {
-      if ( method == "OPT" ) {
+    if (paraList$useC) {
+      if (method == "OPT") {
         out <- c_opt_cpp(object=object, input=paraList)
       }
-      if ( method == "HITAS" ) {
+      if (method == "HITAS") {
         out <- c_hitas_cpp(object=object, input=paraList)
       }
     } else {
@@ -537,8 +532,8 @@ attack <- function(object, verbose=FALSE) {
 #' # problem is an object of class \code{\link{sdcProblem-class}}
 #' print(class(problem))
 #'
-#' for ( slot in c('lb','ub','LPL','SPL','UPL','sdcStatus',
-#'   'freq', 'strID', 'numVars', 'w') ) {
+#' for (slot in c('lb','ub','LPL','SPL','UPL','sdcStatus',
+#'   'freq', 'strID', 'numVars', 'w')) {
 #'   cat('slot', slot,':\n')
 #'   print(getInfo(problem, type=slot))
 #' }
@@ -546,8 +541,8 @@ attack <- function(object, verbose=FALSE) {
 #' # extracting information for objects of class \code{\link{safeObj-class}}
 #' fn <- paste(sp[grep("sdcTable", sp)], "/data/protectedData.RData", sep="")
 #' protectedData <- get(load(fn))
-#' for ( slot in c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps',
-#'   'nrSecondSupps', 'nrPublishableCells', 'suppMethod') ) {
+#' for (slot in c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps',
+#'   'nrSecondSupps', 'nrPublishableCells', 'suppMethod')) {
 #'   cat('slot', slot,':\n')
 #'   print(getInfo(protectedData, type=slot))
 #' }
@@ -555,21 +550,21 @@ attack <- function(object, verbose=FALSE) {
 #' @export getInfo
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 getInfo <- function(object, type) {
-  if ( !class(object) %in% c('sdcProblem', 'problemInstance', 'safeObj') ) {
+  if (!class(object) %in% c('sdcProblem', 'problemInstance', 'safeObj')) {
     stop("getInfo:: argument 'object' must be of class 'sdcProblem', 'problemInstance' or 'safeObj'!\n")
   }
 
-  if ( class(object) == 'safeObj' ) {
-    if ( !type %in% c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps', 'nrSecondSupps', 'nrPublishableCells', 'suppMethod') ) {
+  if (class(object) == 'safeObj') {
+    if (!type %in% c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps', 'nrSecondSupps', 'nrPublishableCells', 'suppMethod')) {
       stop("getInfo:: type must be one of 'finalData', 'nrNonDuplicatedCells', 'nrPrimSupps', 'nrSecondSupps', 'nrPublishableCells' or 'suppMethod'!\n")
     }
     return(get.safeObj(object, type=type, input=list()))
   }
   else {
-    if ( !type %in% c('lb','ub','LPL','SPL','UPL','sdcStatus', 'freq', 'strID', 'numVars', 'w') ) {
+    if (!type %in% c('lb','ub','LPL','SPL','UPL','sdcStatus', 'freq', 'strID', 'numVars', 'w')) {
       stop("getInfo:: check argument 'type'!\n")
     }
-    if ( class(object) == 'sdcProblem' ) {
+    if (class(object) == 'sdcProblem') {
       pI <- g_problemInstance(object)
     } else {
       pI <- object
@@ -630,15 +625,15 @@ getInfo <- function(object, type) {
 #' @export setInfo
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setInfo <- function(object, type, index, input) {
-  if ( !class(object) %in% c('sdcProblem', 'problemInstance') ) {
+  if (!class(object) %in% c('sdcProblem', 'problemInstance')) {
     stop("setInfo:: argument 'object' must be of class 'sdcProblem' or 'problemInstance'!\n")
   }
 
-  if ( !type %in% c('lb','ub','LPL','SPL','UPL','sdcStatus') ) {
+  if (!type %in% c('lb','ub','LPL','SPL','UPL','sdcStatus')) {
     stop("setInfo:: check argument 'type'!\n")
   }
 
-  if ( class(object) == "sdcProblem" ) {
+  if (class(object) == "sdcProblem") {
     pI <- g_problemInstance(object)
   } else {
     pI <- object
@@ -646,7 +641,7 @@ setInfo <- function(object, type, index, input) {
 
   pI <- set.problemInstance(pI, type=type, input=list(index=index, values=input))
 
-  if ( class(object) == "sdcProblem" ) {
+  if (class(object) == "sdcProblem") {
     s_problemInstance(object) <- pI
   } else {
     object <- pI
@@ -694,7 +689,7 @@ setInfo <- function(object, type, index, input) {
 #' @note Important: the \code{i}-th element of argument \code{characteristics} is uses as the desired characteristic for the dimensional variable specified at the \code{i}-th position of argument \code{varNames}!
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 changeCellStatus <- function(object, characteristics, varNames, rule, verbose=FALSE) {
-  if ( class(object) != 'sdcProblem' ) {
+  if (class(object) != 'sdcProblem') {
     stop("changeCellStatus:: argument 'object' must be of class 'sdcProblem'!\n")
   }
 
@@ -709,7 +704,7 @@ changeCellStatus <- function(object, characteristics, varNames, rule, verbose=FA
   s_sdcStatus(pI) <- list(index=cellID, vals=rule)
   s_problemInstance(object) <- pI
 
-  if ( paraList$verbose ) {
+  if (paraList$verbose) {
     cat('--> The cell with ID=', cellID,'and Frequency',g_freq(pI)[cellID], 'has been set to', rule,'.\n')
   }
   object
@@ -887,24 +882,24 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     dI2 <- g_dimInfo(input2)
 
     # restrict to totals in non-overlapping variables in dataset1
-    totvars <- setdiff(dI1@vNames, sapply(commonCells, function(x) x[[1]] ))
-    if ( length(totvars) > 0 ) {
-      for ( i in 1:length(totvars)) {
+    totvars <- setdiff(dI1@vNames, sapply(commonCells, function(x) x[[1]]))
+    if (length(totvars) > 0) {
+      for (i in 1:length(totvars)) {
         cmd <- paste0("dat1 <- dat1[",totvars[i],"=='",dI1@dimInfo[[totvars[i]]]@codesDefault[1],"']")
         eval(parse(text=cmd))
       }
     }
     # restrict to totals in non-overlapping variables in dataset2
-    totvars <- setdiff(dI2@vNames, sapply(commonCells, function(x) x[[2]] ))
-    if ( length(totvars) > 0 ) {
-      for ( i in 1:length(totvars)) {
+    totvars <- setdiff(dI2@vNames, sapply(commonCells, function(x) x[[2]]))
+    if (length(totvars) > 0) {
+      for (i in 1:length(totvars)) {
         cmd <- paste0("dat2 <- dat2[",totvars[i],"=='",dI2@dimInfo[[totvars[i]]]@codesDefault[1],"']")
         eval(parse(text=cmd))
       }
     }
 
-    for ( i in 1:length(commonCells)) {
-      if ( length(commonCells[[i]]) == 4 ) {
+    for (i in 1:length(commonCells)) {
+      if (length(commonCells[[i]]) == 4) {
         cmd1 <- paste0("dat1 <- dat1[,tmpxxx_V",i,":=",commonCells[[i]][[1]],"_o]")
         cmd2 <- paste0("dat2 <- dat2[,tmpxxx_V",i,":=",commonCells[[i]][[2]],"_o]")
         eval(parse(text=cmd1))
@@ -913,8 +908,8 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
         # recode different codes to those of dataset1
         codes <- commonCells[[i]][[4]]
         codesX <- commonCells[[i]][[3]]
-        for  ( z in 1:length(codes)) {
-          if ( codes[z] != codesX[z] ) {
+        for  (z in 1:length(codes)) {
+          if (codes[z] != codesX[z]) {
             cmd <- paste0("dat2 <- dat2[tmpxxx_V",i,"=='",codes[z],"',tmpxxx_V",i,":='",codesX[z],"']")
             eval(parse(text=cmd))
           }
@@ -931,7 +926,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
     kV1 <- names(dat1)[grep("tmpxxx", names(dat1))]; setkeyv(dat1, kV1)
     kV2 <- names(dat2)[grep("tmpxxx", names(dat2))]; setkeyv(dat2, kV2)
     mm <- merge(dat1, dat2); setkey(mm, id1)
-    if ( any(mm$freq.x != mm$freq.y) ) {
+    if (any(mm$freq.x != mm$freq.y)) {
       stop("Error: common cells must have same values!\n")
     }
     return(list(commonInd1=mm$id1, commonInd2=mm$id2))
@@ -939,29 +934,29 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
   f.checkCommonCells <- function(suppPattern1, suppPattern2, commonCellIndices) {
     indOK <- TRUE
-    if ( any(suppPattern1[commonCellIndices[[1]]] != suppPattern2[commonCellIndices[[2]]]) )
+    if (any(suppPattern1[commonCellIndices[[1]]] != suppPattern2[commonCellIndices[[2]]]))
       indOK <- FALSE
     return(indOK)
   }
 
   ### arguments ###
-  if ( !method %in% c('HITAS', 'OPT', 'SIMPLEHEURISTIC') ) {
+  if (!method %in% c('HITAS', 'OPT', 'SIMPLEHEURISTIC')) {
     stop("valid methods are 'HITAS', 'OPT' or 'SIMPLEHEURISTIC'!\n")
   }
 
   paraList <- genParaObj(selection='control.secondary', method=method, ...)
 
   ### first run
-  if ( method == "SIMPLEHEURISTIC" ) {
+  if (method == "SIMPLEHEURISTIC") {
     outA <- c_quick_suppression(objectA, input=paraList)$object
     outB <- c_quick_suppression(objectB, input=paraList)$object
   } else {
-    if ( paraList$useC ) {
-      if ( method == "OPT" ) {
+    if (paraList$useC) {
+      if (method == "OPT") {
         outA <- c_opt_cpp(object=objectA, input=paraList)
         outB <- c_opt_cpp(object=objectB, input=paraList)
       }
-      if ( method == "HITAS" ) {
+      if (method == "HITAS") {
         outA <- c_hitas_cpp(object=objectA, input=paraList)
         outB <- c_hitas_cpp(object=objectB, input=paraList)
       }
@@ -979,8 +974,8 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
   origPrimSupp2Index <- g_primSupps(pI.B)
 
   # no primary suppressions
-  if ( length(origPrimSupp1Index) + length(origPrimSupp2Index) == 0 ) {
-    if ( paraList$verbose ) {
+  if (length(origPrimSupp1Index) + length(origPrimSupp2Index) == 0) {
+    if (paraList$verbose) {
       cat("\n===> no primary suppressions. All common cells have the same anonymity-status! [Finished]\n")
     }
     outA <- c_finalize(object=outA, input=paraList)
@@ -997,12 +992,12 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
   indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
   counter <- 1
-  if ( !indOK ) {
-    if ( paraList$verbose ) {
+  if (!indOK) {
+    if (paraList$verbose) {
       cat("we have to start the iterative procedure!\n")
     }
     runInd <- TRUE
-    while ( runInd ) {
+    while (runInd) {
       x <- cbind(suppPatternA[commonCellIndices[[1]]], suppPatternB[commonCellIndices[[2]]])
       index <- list()
       i1 <- which(x[,1] == 0 & x[,2]==1)
@@ -1010,9 +1005,9 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
       index[[1]] <- commonCellIndices[[1]][i1]
       index[[2]] <- commonCellIndices[[2]][i2]
 
-      for ( j in 1:2 ) {
-        if ( length(index[[j]]) > 0 ) {
-          if ( j == 1 ) {
+      for (j in 1:2) {
+        if (length(index[[j]]) > 0) {
+          if (j == 1) {
             pI.A <- g_problemInstance(outA)
             s_sdcStatus(pI.A) <- list(index=index[[j]], vals=rep("u", length(index[[j]])))
             s_problemInstance(outA) <- pI.A
@@ -1037,9 +1032,9 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
 
       cbind(suppPatternA[commonCellIndices[[1]]], suppPatternB[commonCellIndices[[2]]])
       indOK <- f.checkCommonCells(suppPatternA, suppPatternB, commonCellIndices)
-      if ( indOK )
+      if (indOK)
         runInd <- FALSE
-      if ( counter > paraList$maxIter ) {
+      if (counter > paraList$maxIter) {
         runInd <- FALSE
         warning("iterative procedure did not converge! --> returning NULL")
         return(NULL)
@@ -1047,7 +1042,7 @@ protectLinkedTables <- function(objectA, objectB, commonCells, method, ...) {
       counter <- counter + 1
     }
   }
-  if ( paraList$verbose ) {
+  if (paraList$verbose) {
     cat("\n===> all common cells have the same anonymity-state in both tables after",counter,"iterations! [Finished]\n")
   }
   outA <- c_finalize(object=outA, input=paraList)
