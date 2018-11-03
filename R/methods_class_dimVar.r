@@ -465,10 +465,14 @@ setMethod(f="c_match_default_codes", signature=c("dimVar", "character"), definit
 
 setMethod(f="c_standardize", signature=c("dimVar", "character"), definition=function(object, input) {
   ind <- which(is.na(match(input, g_original_codes(object))))
-  if ( length(ind) > 0 ) {
+  if (length(ind) > 0) {
     matchInd <- match(input[ind], g_dups(object))
-    if ( any(is.na(matchInd)) ) {
-      stop("c_standardize: elements of 'codesOrig' not listed in 'codesOriginal' or 'dups'!\n")
+    if (any(is.na(matchInd))) {
+      probs <- unique(input[is.na(matchInd)])
+      err <- paste("the following characteristics in dim-variable",shQuote(g_varname(object)))
+      err <- paste(err, "were not specified in the hierarchical definition:\n")
+      err <- paste0(err, paste("  o",shQuote(probs), collapse="\n"))
+      stop(err, call.=FALSE)
     }
     input[ind] <- g_dups_up(object)[matchInd]
   }
