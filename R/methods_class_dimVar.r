@@ -468,17 +468,16 @@ setMethod(f="c_standardize", signature=c("dimVar", "character"), definition=func
   if (length(ind) > 0) {
     matchInd <- match(input[ind], g_dups(object))
     if (any(is.na(matchInd))) {
-      probs <- unique(input[is.na(matchInd)])
-      err <- paste("the following characteristics in dim-variable",shQuote(g_varname(object)))
+      probs <- unique(input[ind][is.na(matchInd)])
+      err <- paste("the following levels for dimension",shQuote(g_varname(object)))
       err <- paste(err, "were not specified in the hierarchical definition:\n")
-      err <- paste0(err, paste("  o",shQuote(probs), collapse="\n"))
+      err <- paste0(err, paste("-",shQuote(probs), collapse="\n"))
       stop(err, call.=FALSE)
     }
     input[ind] <- g_dups_up(object)[matchInd]
   }
   out <- c_match_default_codes(object, input)
-
-  if ( any(is.na(out)) ) {
+  if (any(is.na(out))) {
     stop("c_standardize:: matching not successful!\n")
   }
   return(out)
