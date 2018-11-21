@@ -214,7 +214,7 @@ makeProblem <- function(data, dimList, dimVarInd=NULL, freqVarInd=NULL, numVarIn
 
   # convert from tree- to standard format
   for (i in 1:length(dimList)) {
-    if ("nodedim" %in% class(dimList[[i]])) {
+    if ("sdcHier" %in% class(dimList[[i]])) {
       dimList[[i]] <- node_to_sdcinput(dimList[[i]], addNumLevels=FALSE)
     }
   }

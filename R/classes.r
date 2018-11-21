@@ -8,8 +8,8 @@
 #' @importFrom slam simple_triplet_matrix
 #' @importFrom stats na.omit
 #' @importFrom utils combn tail read.table str write.table
-#' @importFrom data.tree Node Prune Traverse FindNode
 #' @importFrom rlang is_scalar_character is_character
+#' @import sdcHierarchies
 setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
 setClassUnion('numericOrNULL', c('numeric', 'NULL'))
 setClassUnion('characterOrNULL', c('character', 'NULL'))
