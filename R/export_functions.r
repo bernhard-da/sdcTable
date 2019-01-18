@@ -368,7 +368,7 @@ primarySuppression <- function(object, type, ...) {
 #' The implemented methods may have bugs that yield in not-fully protected tables. Especially
 #' the usage of \code{OPT}, \code{HITAS} and \code{HYPERCUBE} in production is not
 #' suggested as these methods may eventually be removed completely. In case you encounter any problems,
-#' please report it or use Tau-Argus (\url{http://neon.vb.cbs.nl/casc/tau.htm}).
+#' please report it or use Tau-Argus (\url{http://research.cbs.nl/casc/tau.htm}).
 #'
 #' @param object a \code{\link{sdcProblem-class}} object that has created using \code{\link{makeProblem}} and has been modified by \code{\link{primarySuppression}}
 #' @param method a character vector of length 1 specifying the algorithm that should be used to protect the primary sensitive table cells. Allowed values are:
