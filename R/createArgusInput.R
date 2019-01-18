@@ -1,4 +1,5 @@
-# Documentation: http://neon.vb.cbs.nl/casc/Software/TauManualV4.1.pdf
+# Documentation: http://research.cbs.nl/casc/Software/TauManualV4.1.pdf
+
 #' createArgusInput
 #'
 #' create required input-files and batch-file for tau-argus given an \code{sdcProblem-obj} object
