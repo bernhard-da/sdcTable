@@ -2436,32 +2436,60 @@ setMethod("c_contributing_indices", signature=c("sdcProblem", "list"), definitio
   dimInfo <- g_dim_info(dimInfoObj)
   pI <- g_problemInstance(object)
 
-  if ( !strID %in% g_strID(pI) ) {
+  if (!strID %in% g_strID(pI)) {
     stop("c_contributing_indices:: strID not found in the current problem!\n")
   }
   dims <- lapply(dimInfo, function(x) {
     g_dims(x)
   })
   indexVec <- which(g_str_id(dimInfoObj)==strID)
+
+  if (length(indexVec)>0) {
+    return(indexVec)
+  }
+
   # some (sub)totals need to be considered
-  if( length(indexVec) == 0 ) {
-    levInfo <- list()
-    for ( z in 1:length(dimInfo) ) {
-      subLevel <- substr(strID, g_str_info(dimInfoObj)[[z]][1], g_str_info(dimInfoObj)[[z]][2])
-      if ( sum(as.numeric(subLevel)) == 0 ) {
-        levInfo[[z]] <- sort(unique(unlist(dims[[z]])))
-      } else {
-        orderInd <- unlist(lapply(dims[[z]], function(x) { match(subLevel, x)}))
-        if( min(orderInd, na.rm=TRUE) == 1 ) {
-          levInfo[[z]] <- dims[[z]][[which(orderInd==1)]]
-        } else {
-          levInfo[[z]] <- subLevel
+  levInfo <- list()
+  for (z in 1:length(dimInfo)) {
+    subLevel <- substr(strID, g_str_info(dimInfoObj)[[z]][1], g_str_info(dimInfoObj)[[z]][2])
+    if (sum(as.numeric(subLevel)) == 0) {
+      # overall total of this sublevel consists of all unique codes
+      levInfo[[z]] <- sort(unique(unlist(dims[[z]])))
+    } else {
+      orderInd <- unlist(lapply(dims[[z]], function(x) { match(subLevel, x)}))
+      if (min(orderInd, na.rm=TRUE) == 1) {
+        # we need to check, if es muss geprueft werden, ob einer der indices auch noch als "subtotal" vorkommt
+        # --> nested hierarchies
+        posscodes <- dims[[z]][[which(orderInd==1)]][-1]
+        finished <- FALSE
+        while(!finished) {
+          newcodes <- posscodes
+          changed <- FALSE
+          for (i in 1:length(posscodes)) {
+            o <- unlist(lapply(dims[[z]], function(x) { match(posscodes[i], x)}))
+            ii <- which(o==1)
+            if (length(ii)==1) {
+              newcodes <- setdiff(newcodes, posscodes[i])
+              newcodes <- c(newcodes, dims[[z]][[ii]][-1])
+              changed <- TRUE
+            }
+          }
+          if (changed) {
+            posscodes <- newcodes
+          } else {
+            finished <- TRUE
+            levInfo[[z]] <- newcodes
+          }
         }
+        levInfo[[z]] <- posscodes
+      } else {
+        # subLevel is not a "subtotal" too
+        levInfo[[z]] <- subLevel
       }
     }
-    cellIndex <- pasteStrVec(unlist(expand.grid(levInfo)), length(levInfo))
-    indexVec <- which(g_str_id(dimInfoObj) %in% cellIndex)
   }
+  cellIndex <- pasteStrVec(unlist(expand.grid(levInfo)), length(levInfo))
+  indexVec <- which(g_str_id(dimInfoObj) %in% cellIndex)
   return(indexVec)
 })
 
