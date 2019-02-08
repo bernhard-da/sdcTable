@@ -21,9 +21,6 @@ matrix:
     - R CMD INSTALL $PKG_TARBALL
     - Rscript -e 'covr::coveralls()'
     - Rscript -e 'devtools::install(); devtools::test()'
-    deploy:
-      provider: script
-      skip_cleanup: true
   - r: devel
 
 notifications:
