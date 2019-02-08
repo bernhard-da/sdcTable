@@ -17,6 +17,7 @@ matrix:
   - r: release
     r_github_packages:
     - r-lib/covr
+    - r-lib/pkgdown
     after_success:
     - R CMD INSTALL $PKG_TARBALL
     - Rscript -e 'covr::coveralls()'
