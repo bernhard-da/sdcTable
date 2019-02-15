@@ -43,15 +43,37 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("get.safeObj", function(object, type, input) { standardGeneric("get.safeObj")})
+setGeneric("get.safeObj", function(object, type, input) {
+  standardGeneric("get.safeObj")
+})
 
-setGeneric("g_dimInfo", function(object) { standardGeneric("g_dimInfo") })
-setGeneric("g_elapsedTime", function(object) { standardGeneric("g_elapsedTime") })
-setGeneric("g_finalData", function(object) { standardGeneric("g_finalData") })
-setGeneric("g_nrNonDuplicatedCells", function(object) { standardGeneric("g_nrNonDuplicatedCells") })
-setGeneric("g_nrPrimSupps", function(object) { standardGeneric("g_nrPrimSupps") })
-setGeneric("g_nrSecondSupps", function(object) { standardGeneric("g_nrSecondSupps") })
-setGeneric("g_nrPublishableCells", function(object) { standardGeneric("g_nrPublishableCells") })
-setGeneric("g_suppMethod", function(object) { standardGeneric("g_suppMethod") })
-setGeneric("g_getCellInfo", function(object, input) { standardGeneric("g_getCellInfo") })
-setGeneric("g_getCellID", function(object, input) { standardGeneric("g_getCellID") })
+setGeneric("g_dimInfo", function(object) {
+  standardGeneric("g_dimInfo")
+})
+setGeneric("g_elapsedTime", function(object) {
+  standardGeneric("g_elapsedTime")
+})
+setGeneric("g_finalData", function(object) {
+  standardGeneric("g_finalData")
+})
+setGeneric("g_nrNonDuplicatedCells", function(object) {
+  standardGeneric("g_nrNonDuplicatedCells")
+})
+setGeneric("g_nrPrimSupps", function(object) {
+  standardGeneric("g_nrPrimSupps")
+})
+setGeneric("g_nrSecondSupps", function(object) {
+  standardGeneric("g_nrSecondSupps")
+})
+setGeneric("g_nrPublishableCells", function(object) {
+  standardGeneric("g_nrPublishableCells")
+})
+setGeneric("g_suppMethod", function(object) {
+  standardGeneric("g_suppMethod")
+})
+setGeneric("g_getCellInfo", function(object, input) {
+  standardGeneric("g_getCellInfo")
+})
+setGeneric("g_getCellID", function(object, input) {
+  standardGeneric("g_getCellID")
+})

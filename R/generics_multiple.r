@@ -31,9 +31,19 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('calc.multiple', function(type, input) {standardGeneric('calc.multiple')})
+setGeneric("calc.multiple", function(type, input) {
+  standardGeneric("calc.multiple")
+})
 
-setGeneric("c_make_partitions", function(input) { standardGeneric("c_make_partitions") })
-setGeneric("c_gen_mat_m", function(input) { standardGeneric("c_gen_mat_m") })
-setGeneric("c_make_att_prob", function(input) { standardGeneric("c_make_att_prob") })
-setGeneric("c_calc_full_prob", function(input) { standardGeneric("c_calc_full_prob") })
+setGeneric("c_make_partitions", function(input) {
+  standardGeneric("c_make_partitions")
+})
+setGeneric("c_gen_mat_m", function(input) {
+  standardGeneric("c_gen_mat_m")
+})
+setGeneric("c_make_att_prob", function(input) {
+  standardGeneric("c_make_att_prob")
+})
+setGeneric("c_calc_full_prob", function(input) {
+  standardGeneric("c_calc_full_prob")
+})

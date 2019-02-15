@@ -30,7 +30,9 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("get.dimVar", function(object, type) { standardGeneric("get.dimVar") })
+setGeneric("get.dimVar", function(object, type) {
+  standardGeneric("get.dimVar")
+})
 
 #' modify \code{dimVar}-objects depending on argument \code{type}
 #'
@@ -56,7 +58,9 @@ setGeneric("get.dimVar", function(object, type) { standardGeneric("get.dimVar") 
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("calc.dimVar", function(object, type, input) { standardGeneric("calc.dimVar") })
+setGeneric("calc.dimVar", function(object, type, input) {
+  standardGeneric("calc.dimVar")
+})
 
 #' initialize \code{dimVar}-object
 #'
@@ -71,26 +75,61 @@ setGeneric("calc.dimVar", function(object, type, input) { standardGeneric("calc.
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("init.dimVar", function(input) { standardGeneric("init.dimVar") })
+setGeneric("init.dimVar", function(input) {
+  standardGeneric("init.dimVar")
+})
 
-# get-methods
-setGeneric("g_varname", function(object) { standardGeneric("g_varname") })
-setGeneric("g_original_codes", function(object) { standardGeneric("g_original_codes") })
-setGeneric("g_default_codes", function(object) { standardGeneric("g_default_codes") })
-setGeneric("g_minimal_codes", function(object) { standardGeneric("g_minimal_codes") })
-setGeneric("g_levels", function(object) { standardGeneric("g_levels") })
-setGeneric("g_structure", function(object) { standardGeneric("g_structure") })
-setGeneric("g_dims", function(object) { standardGeneric("g_dims") })
-setGeneric("g_dups", function(object) { standardGeneric("g_dups") })
-setGeneric("g_dups_up", function(object) { standardGeneric("g_dups_up") })
-setGeneric("g_has_dups", function(object) { standardGeneric("g_has_dups") })
-setGeneric("g_nr_levels", function(object) { standardGeneric("g_nr_levels") })
-setGeneric("g_minimal_default_codes", function(object) { standardGeneric("g_minimal_default_codes") })
+# get methods
+setGeneric("g_varname", function(object) {
+  standardGeneric("g_varname")
+})
+setGeneric("g_original_codes", function(object) {
+  standardGeneric("g_original_codes")
+})
+setGeneric("g_default_codes", function(object) {
+  standardGeneric("g_default_codes")
+})
+setGeneric("g_minimal_codes", function(object) {
+  standardGeneric("g_minimal_codes")
+})
+setGeneric("g_levels", function(object) {
+  standardGeneric("g_levels")
+})
+setGeneric("g_structure", function(object) {
+  standardGeneric("g_structure")
+})
+setGeneric("g_dims", function(object) {
+  standardGeneric("g_dims")
+})
+setGeneric("g_dups", function(object) {
+  standardGeneric("g_dups")
+})
+setGeneric("g_dups_up", function(object) {
+  standardGeneric("g_dups_up")
+})
+setGeneric("g_has_dups", function(object) {
+  standardGeneric("g_has_dups")
+})
+setGeneric("g_nr_levels", function(object) {
+  standardGeneric("g_nr_levels")
+})
+setGeneric("g_minimal_default_codes", function(object) {
+  standardGeneric("g_minimal_default_codes")
+})
 
-# calc-methods
-setGeneric("c_has_default_codes", function(object, input) { standardGeneric("c_has_default_codes") })
-setGeneric("c_match_orig_codes", function(object, input) { standardGeneric("c_match_orig_codes") })
-setGeneric("c_match_default_codes", function(object, input) { standardGeneric("c_match_default_codes") })
-setGeneric("c_standardize", function(object, input) { standardGeneric("c_standardize") })
-setGeneric("c_required_minimal_codes", function(object, input) { standardGeneric("c_required_minimal_codes") })
-
+# calc methods
+setGeneric("c_has_default_codes", function(object, input) {
+  standardGeneric("c_has_default_codes")
+})
+setGeneric("c_match_orig_codes", function(object, input) {
+  standardGeneric("c_match_orig_codes")
+})
+setGeneric("c_match_default_codes", function(object, input) {
+  standardGeneric("c_match_default_codes")
+})
+setGeneric("c_standardize", function(object, input) {
+  standardGeneric("c_standardize")
+})
+setGeneric("c_required_minimal_codes", function(object, input) {
+  standardGeneric("c_required_minimal_codes")
+})

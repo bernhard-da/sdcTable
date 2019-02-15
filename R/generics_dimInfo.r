@@ -21,7 +21,9 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("get.dimInfo", function(object, type) { standardGeneric("get.dimInfo") })
+setGeneric("get.dimInfo", function(object, type) {
+  standardGeneric("get.dimInfo")
+})
 
 #' modify \code{dimInfo}-objects depending on argument \code{type}
 #'
@@ -41,15 +43,28 @@ setGeneric("get.dimInfo", function(object, type) { standardGeneric("get.dimInfo"
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("set.dimInfo", function(object, type, input) { standardGeneric("set.dimInfo") })
+setGeneric("set.dimInfo", function(object, type, input) {
+  standardGeneric("set.dimInfo")
+})
 
-# get-methods
-setGeneric("g_str_info", function(object) { standardGeneric("g_str_info") })
-setGeneric("g_dim_info", function(object) { standardGeneric("g_dim_info") })
-setGeneric("g_varname", function(object) { standardGeneric("g_varname") })
-setGeneric("g_str_id", function(object) { standardGeneric("g_str_id") })
-setGeneric("g_pos_index", function(object) { standardGeneric("g_pos_index") })
+# get methods
+setGeneric("g_str_info", function(object) {
+  standardGeneric("g_str_info")
+})
+setGeneric("g_dim_info", function(object) {
+  standardGeneric("g_dim_info")
+})
+setGeneric("g_varname", function(object) {
+  standardGeneric("g_varname")
+})
+setGeneric("g_str_id", function(object) {
+  standardGeneric("g_str_id")
+})
+setGeneric("g_pos_index", function(object) {
+  standardGeneric("g_pos_index")
+})
 
-# set-methods
-setGeneric("s_str_id<-", function(object, value) { standardGeneric("s_str_id<-") })
-
+# set methods
+setGeneric("s_str_id<-", function(object, value) {
+  standardGeneric("s_str_id<-")
+})
