@@ -11,12 +11,12 @@
 #' @importFrom data.tree Node Prune Traverse FindNode
 #' @importFrom rlang is_scalar_character is_character
 #' @importFrom knitr knit
-setClassUnion('dataframeOrNULL', c('data.frame', 'NULL'))
-setClassUnion('numericOrNULL', c('numeric', 'NULL'))
-setClassUnion('characterOrNULL', c('character', 'NULL'))
-setClassUnion('logicalOrNULL', c('logical', 'NULL'))
-setClassUnion('matrixOrNULL', c('matrix', 'NULL'))
-setClassUnion('listOrNULL', c('list', 'NULL'))
+setClassUnion("dataframeOrNULL", c("data.frame", "NULL"))
+setClassUnion("numericOrNULL", c("numeric", "NULL"))
+setClassUnion("characterOrNULL", c("character", "NULL"))
+setClassUnion("logicalOrNULL", c("logical", "NULL"))
+setClassUnion("matrixOrNULL", c("matrix", "NULL"))
+setClassUnion("listOrNULL", c("list", "NULL"))
 
 #' S4 class describing a dataObj-object
 #'
@@ -42,37 +42,45 @@ setClassUnion('listOrNULL', c('list', 'NULL'))
 #' @note objects of class \code{dataObj} are input for slot \code{dataObj} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dataObj',
-  representation=representation(
-    rawData='listOrNULL',
-    dimVarInd='numericOrNULL',
-    freqVarInd='numericOrNULL',
-    numVarInd='numericOrNULL',
-    weightVarInd='numericOrNULL',
-    sampWeightInd='numericOrNULL',
-    isMicroData='logicalOrNULL'
+  Class = "dataObj",
+  representation = representation(
+    rawData = "listOrNULL",
+    dimVarInd = "numericOrNULL",
+    freqVarInd = "numericOrNULL",
+    numVarInd = "numericOrNULL",
+    weightVarInd = "numericOrNULL",
+    sampWeightInd = "numericOrNULL",
+    isMicroData = "logicalOrNULL"
   ),
-  prototype=prototype(
-    rawData=NULL,
-    dimVarInd=NULL,
-    freqVarInd=NULL,
-    numVarInd=NULL,
-    weightVarInd=NULL,
-    sampWeightInd=NULL,
-    isMicroData=NULL
+  prototype = prototype(
+    rawData = NULL,
+    dimVarInd = NULL,
+    freqVarInd = NULL,
+    numVarInd = NULL,
+    weightVarInd = NULL,
+    sampWeightInd = NULL,
+    isMicroData = NULL
   ),
-  validity=function(object) {
-    if ( !all(g_freqvar_ind(object) %in% 1:length(g_raw_data(object))) ) {
+  validity = function(object) {
+    if (!all(g_freqvar_ind(object) %in% 1:length(g_raw_data(object)))) {
       stop("dataObj:: check input parameter 'freqVarInd'!\n")
     }
-    if ( !all(g_numvar_ind(object) %in% 1:length(g_raw_data(object))) ) {
+    if (!all(g_numvar_ind(object) %in% 1:length(g_raw_data(object)))) {
       stop("dataObj:: check input parameter 'numVarInd'!\n")
     }
-    if ( length(g_weightvar_ind(object)) > 1 ) {
-      stop("dataObj:: length of parameter 'weightVarInd' must not be greater than 1!\n")
+    if (length(g_weightvar_ind(object)) > 1) {
+      e <- c(
+        "dataObj:: length of parameter",
+        shQuote("weightVarInd"), "must not be greater than 1!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
-    if ( length(g_sampweight_ind(object)) > 1 ) {
-      stop("dataObj:: length of parameter 'sampWeightInd' must not be greater than 1!\n")
+    if (length(g_sampweight_ind(object)) > 1) {
+      e <- c(
+        "dataObj:: length of parameter",
+        shQuote("sampWeightInd"), "must not be greater than 1!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
     return(TRUE)
   }
@@ -96,32 +104,32 @@ setClass(
 #' @note objects of class \code{dimInfo} are input for slots in classes \code{sdcProblem} and \code{safeObj}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dimInfo',
-    representation=representation(
-    dimInfo='listOrNULL',
-    strID='characterOrNULL',
-    strInfo='listOrNULL',
-    vNames='characterOrNULL',
-    posIndex='numericOrNULL'
+  Class = "dimInfo",
+  representation = representation(
+    dimInfo = "listOrNULL",
+    strID = "characterOrNULL",
+    strInfo = "listOrNULL",
+    vNames = "characterOrNULL",
+    posIndex = "numericOrNULL"
   ),
-  prototype=prototype(
-    dimInfo=NULL,
-    strID=NULL,
-    strInfo=NULL,
-    vNames=NULL,
-    posIndex=NULL
+  prototype = prototype(
+    dimInfo = NULL,
+    strID = NULL,
+    strInfo = NULL,
+    vNames = NULL,
+    posIndex = NULL
   ),
-  validity=function(object) {
-    if ( length(g_varname(object)) != length(g_pos_index(object)) ) {
+  validity = function(object) {
+    if (length(g_varname(object)) != length(g_pos_index(object))) {
       stop("dimInfo:: parameter 'vNames' and 'posIndex' differ in length!\n")
     }
-    if ( length(g_varname(object)) != length(g_dim_info(object)) ) {
+    if (length(g_varname(object)) != length(g_dim_info(object))) {
       stop("dimInfo:: parameter 'vNames' and 'dimInfo' differ in length!\n")
     }
-    if ( length(g_str_info(object)) != length(g_varname(object)) ) {
+    if (length(g_str_info(object)) != length(g_varname(object))) {
       stop("dimInfo:: parameter 'strInfo' and 'vNames' differ in length!\n")
     }
-    if ( any(sapply(g_dim_info(object), "class") != "dimVar" ) ) {
+    if (any(sapply(g_dim_info(object), "class") != "dimVar")) {
       stop("dimInfo:: elements of parameter 'dimInfo' must be of class 'dimVar'!\n")
     }
     return(TRUE)
@@ -153,34 +161,34 @@ setClass(
 #' @note objects of class \code{dimVar} form the base for elements in slot \code{dimInfo} of class \code{dimInfo}.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='dimVar',
-  representation=representation(
-    codesOriginal='characterOrNULL',
-    codesDefault='characterOrNULL',
-    codesMinimal='logicalOrNULL',
-    vName='characterOrNULL',
-    levels='numericOrNULL',
-    structure='numericOrNULL',
-    dims='listOrNULL',
-    dups='characterOrNULL',
-    dupsUp='characterOrNULL'
+  Class = "dimVar",
+  representation = representation(
+    codesOriginal = "characterOrNULL",
+    codesDefault = "characterOrNULL",
+    codesMinimal = "logicalOrNULL",
+    vName = "characterOrNULL",
+    levels = "numericOrNULL",
+    structure = "numericOrNULL",
+    dims = "listOrNULL",
+    dups = "characterOrNULL",
+    dupsUp = "characterOrNULL"
   ),
-  prototype=prototype(
-    codesOriginal=NULL,
-    codesDefault=NULL,
-    codesMinimal=NULL,
-    vName=NULL,
-    levels=NULL,
-    structure=NULL,
-    dims=NULL,
-    dups=NULL,
-    dupsUp=NULL
+  prototype = prototype(
+    codesOriginal = NULL,
+    codesDefault = NULL,
+    codesMinimal = NULL,
+    vName = NULL,
+    levels = NULL,
+    structure = NULL,
+    dims = NULL,
+    dups = NULL,
+    dupsUp = NULL
   ),
-  validity=function(object) {
-    if ( length(g_original_codes(object)) != length(g_default_codes(object)) ) {
+  validity = function(object) {
+    if (length(g_original_codes(object)) != length(g_default_codes(object))) {
       stop("dimVar:: length of 'codesOriginal' and 'codesDefault' differ!\n")
     }
-    if ( length(g_varname(object)) != 1 ) {
+    if (length(g_varname(object)) != 1) {
       stop("dimVar:: length of 'vName' must equal 1!\n")
     }
     return(TRUE)
@@ -215,33 +223,33 @@ setClass(
 #' @note objects of class \code{problemInstance} are used as input for slot \code{problemInstance} in class \code{sdcProblem}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='problemInstance',
-  representation=representation(
-    strID='characterOrNULL',
-    Freq='numericOrNULL',
-    w='numericOrNULL',
-    numVars='listOrNULL',
-    lb='numericOrNULL',
-    ub='numericOrNULL',
-    LPL='numericOrNULL',
-    UPL='numericOrNULL',
-    SPL='numericOrNULL',
-    sdcStatus='characterOrNULL'
+  Class = "problemInstance",
+  representation = representation(
+    strID = "characterOrNULL",
+    Freq = "numericOrNULL",
+    w = "numericOrNULL",
+    numVars = "listOrNULL",
+    lb = "numericOrNULL",
+    ub = "numericOrNULL",
+    LPL = "numericOrNULL",
+    UPL = "numericOrNULL",
+    SPL = "numericOrNULL",
+    sdcStatus = "characterOrNULL"
   ),
-  prototype=prototype(
-    strID=NULL,
-    Freq=NULL,
-    w=NULL,
-    numVars=NULL,
-    lb=NULL,
-    ub=NULL,
-    LPL=NULL,
-    UPL=NULL,
-    SPL=NULL,
-    sdcStatus=NULL
+  prototype = prototype(
+    strID = NULL,
+    Freq = NULL,
+    w = NULL,
+    numVars = NULL,
+    lb = NULL,
+    ub = NULL,
+    LPL = NULL,
+    UPL = NULL,
+    SPL = NULL,
+    sdcStatus = NULL
   ),
-  validity=function(object) {
-    if ( !all.equal(
+  validity = function(object) {
+    if (!all.equal(
       length(g_strID(object)),
       length(g_freq(object)),
       length(g_lb(object)),
@@ -249,45 +257,52 @@ setClass(
       length(g_SPL(object)),
       length(g_LPL(object)),
       length(g_UPL(object)),
-      length(g_sdcStatus(object))) ) {
-        stop("problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL' and 'sdcStatus' must have the same length!\n")
+      length(g_sdcStatus(object))
+    )) {
+      e <- c(
+        "problemInstance:: slots 'strID', 'freq', 'lb', 'ub', 'SPL', 'LPL', 'SPL'",
+        "and 'sdcStatus' must have the same length!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
-    if ( !is.null(g_numVars(object)) ) {
-      if ( !all(sapply(g_numVars(object), length) == length(g_numVars(object)[[1]])) ) {
+    if (!is.null(g_numVars(object))) {
+      if (!all(sapply(g_numVars(object), length) == length(g_numVars(object)[[1]]))) {
         stop("problemInstance:: length of vectors in slot 'numVars' differ in length!\n")
       }
     }
-    if ( !is.null(g_numVars(object)[[1]]) & length(g_freq(object)) != length(g_numVars(object)[[1]]) ) {
+    if (!is.null(g_numVars(object)[[1]]) &
+        length(g_freq(object)) != length(g_numVars(object)[[1]])) {
       stop("problemInstance:: parameter 'Freq' and 'numVars' differ in length!\n")
     }
-    if ( !is.null(g_w(object)) & length(g_freq(object)) != length(g_w(object)) ) {
+    if (!is.null(g_w(object)) &
+        length(g_freq(object)) != length(g_w(object))) {
       stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
     }
-    if ( any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE ) {
+    if (any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
     }
-    if ( any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE ) {
+    if (any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
     }
-    if ( any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE ) {
+    if (any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
     }
-    if ( any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
+    if (any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
       stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
     }
-    if ( any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
+    if (any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")
     }
-    if ( !all(g_sdcStatus(object) %in% c('w','s','u','x','z')) ) {
+    if (!all(g_sdcStatus(object) %in% c("w", "s", "u", "x", "z"))) {
       stop("problemInstance:: valid codes for sdcStatus are 'w', 'z', 's', 'x' or 'u'!\n")
     }
     return(TRUE)
   }
 )
 
-setClassUnion('dataObjOrNULL', c('dataObj', 'NULL'))
-setClassUnion('dimInfoOrNULL', c('dimInfo', 'NULL'))
-setClassUnion('problemInstanceOrNULL', c('problemInstance', 'NULL'))
+setClassUnion("dataObjOrNULL", c("dataObj", "NULL"))
+setClassUnion("dimInfoOrNULL", c("dimInfo", "NULL"))
+setClassUnion("problemInstanceOrNULL", c("problemInstance", "NULL"))
 
 #' S4 class describing a sdcProblem-object
 #'
@@ -319,47 +334,48 @@ setClassUnion('problemInstanceOrNULL', c('problemInstance', 'NULL'))
 #' @note objects of class \code{sdcProblem} are typically generated by function \code{\link{makeProblem}} and are the input of functions \code{\link{primarySuppression}} and \code{\link{protectTable}}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='sdcProblem',
-  representation=representation(
-    dataObj='dataObjOrNULL',
-    dimInfo='dimInfoOrNULL',
-    problemInstance='problemInstanceOrNULL',
-    partition='listOrNULL',
-    startI='numeric',
-    startJ='numeric',
-    indicesDealtWith='numericOrNULL',
-    elapsedTime='numericOrNULL'
+  Class = "sdcProblem",
+  representation = representation(
+    dataObj = "dataObjOrNULL",
+    dimInfo = "dimInfoOrNULL",
+    problemInstance = "problemInstanceOrNULL",
+    partition = "listOrNULL",
+    startI = "numeric",
+    startJ = "numeric",
+    indicesDealtWith = "numericOrNULL",
+    elapsedTime = "numericOrNULL"
   ),
-  prototype=prototype(
-    dataObj=NULL,
-    dimInfo=NULL,
-    problemInstance=NULL,
-    partition=NULL,
-    startI=1,
-    startJ=1,
-    indicesDealtWith=NULL,
-    elapsedTime=NULL
+  prototype = prototype(
+    dataObj = NULL,
+    dimInfo = NULL,
+    problemInstance = NULL,
+    partition = NULL,
+    startI = 1,
+    startJ = 1,
+    indicesDealtWith = NULL,
+    elapsedTime = NULL
   ),
-  validity=function(object) {
-    if ( g_startI(object) > g_partition(object)$nrGroups ) {
-      stop("argument 'startI' must be <=",g_partition(object)$nrGroups,"!\n")
+  validity = function(object) {
+    if (g_startI(object) > g_partition(object)$nrGroups) {
+      stop("argument 'startI' must be <=", g_partition(object)$nrGroups, "!\n")
     }
-    if ( g_startJ(object) > length(g_partition(object)$indices[[g_startI(object)]]) ) {
-      stop("argument 'startJ' must be <=",length(g_partition(object)$indices[[g_startI(object)]]),"!\n")
+    if (g_startJ(object) > length(g_partition(object)$indices[[g_startI(object)]])) {
+      v <- length(g_partition(object)$indices[[g_startI(object)]])
+      stop("argument 'startJ' must be <=", v, "!\n")
     }
-    if ( length(g_startI(object)) != 1 ) {
+    if (length(g_startI(object)) != 1) {
       stop("sdcProblem:: length of argument 'startI' must equal 1!\n")
     }
-    if ( length(g_startJ(object)) != 1 ) {
+    if (length(g_startJ(object)) != 1) {
       stop("sdcProblem:: length of argument 'startJ' must equal 1!\n")
     }
-    if ( g_startI(object) < 1 ) {
+    if (g_startI(object) < 1) {
       stop("sdcProblem:: argument 'startI' must be >= 1!\n")
     }
-    if ( g_startJ(object) < 1 ) {
+    if (g_startJ(object) < 1) {
       stop("sdcProblem:: argument 'startJ' must be >= 1!\n")
     }
-    if ( length(g_elapsedTime(object)) != 1 ) {
+    if (length(g_elapsedTime(object)) != 1) {
       stop("sdcProblem:: length of argument 'elapsedTime' must equal 1!\n")
     }
     return(TRUE)
@@ -386,29 +402,29 @@ setClass(
 #' @note objects of class \code{simpleTriplet} are input of slot \code{constraints} in class \code{\link{linProb-class}} and slot slot \code{con} in class \code{\link{cutList-class}}
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='simpleTriplet',
-  representation=representation(
-    i='numericOrNULL',
-    j='numericOrNULL',
-    v='numericOrNULL',
-    nrRows='numericOrNULL',
-    nrCols='numericOrNULL'
+  Class = "simpleTriplet",
+  representation = representation(
+    i = "numericOrNULL",
+    j = "numericOrNULL",
+    v = "numericOrNULL",
+    nrRows = "numericOrNULL",
+    nrCols = "numericOrNULL"
   ),
-  prototype=prototype(
-    i=numeric(0),
-    j=numeric(0),
-    v=numeric(0),
-    nrRows=numeric(0),
-    nrCols=numeric(0)
+  prototype = prototype(
+    i = numeric(0),
+    j = numeric(0),
+    v = numeric(0),
+    nrRows = numeric(0),
+    nrCols = numeric(0)
   ),
-  validity=function(object) {
-    if ( length(object@i) != length(object@j) ) {
+  validity = function(object) {
+    if (length(object@i) != length(object@j)) {
       stop("simpleTriplet:: length of 'i' and 'j' differ!\n")
     }
-    if ( length(object@i) != length(object@v) ) {
+    if (length(object@i) != length(object@v)) {
       stop("simpleTriplet:: length of 'i' and 'v' differ!\n")
     }
-    if ( length(object@nrRows) + length(object@nrCols) != 2 ) {
+    if (length(object@nrRows) + length(object@nrCols) != 2) {
       stop("simpleTriplet:: 'nrRows' and 'nrCols' must be a vector of length 1!\n")
     }
     return(TRUE)
@@ -452,53 +468,53 @@ setClassUnion("simpleTripletOrNULL", c("simpleTriplet", "NULL"))
 #' @note when solving the problems in the procedure, minimization of the objective is performed.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='linProb',
-  representation=representation(
-    objective='numericOrNULL',
-    constraints='simpleTripletOrNULL',
-    direction='characterOrNULL',
-    rhs='numericOrNULL',
-    boundsLower='listOrNULL',
-    boundsUpper='listOrNULL',
-    types='characterOrNULL'
+  Class = "linProb",
+  representation = representation(
+    objective = "numericOrNULL",
+    constraints = "simpleTripletOrNULL",
+    direction = "characterOrNULL",
+    rhs = "numericOrNULL",
+    boundsLower = "listOrNULL",
+    boundsUpper = "listOrNULL",
+    types = "characterOrNULL"
   ),
-  prototype=prototype(
-    objective=NULL,
-    constraints=NULL,
-    direction=NULL,
-    rhs=NULL,
-    boundsLower=NULL,
-    boundsUpper=NULL,
-    types=NULL
+  prototype = prototype(
+    objective = NULL,
+    constraints = NULL,
+    direction = NULL,
+    rhs = NULL,
+    boundsLower = NULL,
+    boundsUpper = NULL,
+    types = NULL
   ),
-  validity=function(object) {
-    if ( length(object@rhs) != length(object@direction) ) {
+  validity = function(object) {
+    if (length(object@rhs) != length(object@direction)) {
       stop("linProb:: length of 'rhs' and 'direction' differ!\n")
     }
     nrRows.constraints <- g_nr_rows(object@constraints)
-    if ( length(object@direction) != nrRows.constraints ) {
+    if (length(object@direction) != nrRows.constraints) {
       stop("linProb:: length of 'direction' and number of rows of 'constraints' differ!\n")
     }
     nrCols.constraints <- g_nr_cols(object@constraints)
-    if ( length(object@objective) != nrCols.constraints ) {
+    if (length(object@objective) != nrCols.constraints) {
       stop("linProb:: length of 'objective' and number of columns of 'constraints' differ!\n")
     }
-    if ( length(object@objective) != length(object@types) ) {
+    if (length(object@objective) != length(object@types)) {
       stop("linProb:: Length of 'objective' and 'types' differ!\n")
     }
-    if ( !all(object@boundsLower$indices %in% 1:length(object@direction)) ) {
+    if (!all(object@boundsLower$indices %in% 1:length(object@direction))) {
       stop("linProb:: wrong indices of 'boundsLower!'\n")
     }
-    if ( !all(object@boundsUpper$indices %in% 1:length(object@direction)) ) {
+    if (!all(object@boundsUpper$indices %in% 1:length(object@direction))) {
       stop("linProb:: wrong indices of 'boundsUpper!'\n")
     }
-    if ( length(object@boundsLower$indices) != length(object@boundsLower$value) ) {
+    if (length(object@boundsLower$indices) != length(object@boundsLower$value)) {
       stop("linProb:: length of indices and values in 'boundsLower' differ!\n")
     }
-    if ( length(object@boundsUpper$indices) != length(object@boundsUpper$value) ) {
+    if (length(object@boundsUpper$indices) != length(object@boundsUpper$value)) {
       stop("linProb:: length of indices and values in 'boundsUpper' differ!\n")
     }
-    if ( !all(object@direction %in% c("==","<",">",">=","<=")) ) {
+    if (!all(object@direction %in% c("==", "<", ">", ">=", "<="))) {
       stop("linProb:: illegal symbols in 'direction' differ!\n")
     }
     return(TRUE)
@@ -531,26 +547,30 @@ setClass(
 #' @note objects of class \code{cutList} are dynamically generated (and removed) during the cut and branch algorithm when solving the secondary cell suppression problem
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='cutList',
-  representation=representation(
-    con='simpleTriplet',
-    direction='character',
-    rhs='numeric'
+  Class = "cutList",
+  representation = representation(
+    con = "simpleTriplet",
+    direction = "character",
+    rhs = "numeric"
   ),
-  prototype=prototype(
-    con=new("simpleTriplet"),
-    direction=character(0),
-    rhs=numeric(0)
+  prototype = prototype(
+    con = new("simpleTriplet"),
+    direction = character(0),
+    rhs = numeric(0)
   ),
-  validity=function(object) {
-    if ( g_nr_rows(g_constraints(object)) != length(g_direction(object)) ) {
+  validity = function(object) {
+    if (g_nr_rows(g_constraints(object)) != length(g_direction(object))) {
       stop("cutList:: number of rows of 'con' and length of 'direction' differs!\n")
     }
-    if ( length(g_direction(object))!= length(g_rhs(object)) ) {
+    if (length(g_direction(object)) != length(g_rhs(object))) {
       stop("cutList:: length of 'direction' and 'rhs' differ!\n")
     }
-    if ( !all(g_direction(object) %in% c(">", ">=", "==", "<", "<=")) ) {
-      stop("cutList:: elements of 'direction' must only contain symbols '>', '>=', '==', '<' or '<='!\n")
+    if (!all(g_direction(object) %in% c(">", ">=", "==", "<", "<="))) {
+      e <- c(
+        "cutList:: elements of 'direction' must only contain symbols",
+        "'>', '>=', '==', '<' or '<='!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
     return(TRUE)
   }
@@ -594,47 +614,52 @@ setClass(
 #' @note objects of class \code{safeObj} are returned after the function \code{\link{protectTable}} has finished.
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
 setClass(
-  Class='safeObj',
-  representation=representation(
-    finalData='dataframeOrNULL',
-    dimInfo='dimInfoOrNULL',
-    nrNonDuplicatedCells='numericOrNULL',
-    nrPrimSupps='numericOrNULL',
-    nrSecondSupps='numericOrNULL',
-    nrPublishableCells='numericOrNULL',
-    suppMethod='characterOrNULL',
-    elapsedTime='numericOrNULL'
+  Class = "safeObj",
+  representation = representation(
+    finalData = "dataframeOrNULL",
+    dimInfo = "dimInfoOrNULL",
+    nrNonDuplicatedCells = "numericOrNULL",
+    nrPrimSupps = "numericOrNULL",
+    nrSecondSupps = "numericOrNULL",
+    nrPublishableCells = "numericOrNULL",
+    suppMethod = "characterOrNULL",
+    elapsedTime = "numericOrNULL"
   ),
-  prototype=prototype(
-    finalData=NULL,
-    dimInfo=NULL,
-    nrNonDuplicatedCells=NULL,
-    nrPrimSupps=NULL,
-    nrSecondSupps=NULL,
-    nrPublishableCells=NULL,
-    suppMethod=NULL,
-    elapsedTime=NULL
+  prototype = prototype(
+    finalData = NULL,
+    dimInfo = NULL,
+    nrNonDuplicatedCells = NULL,
+    nrPrimSupps = NULL,
+    nrSecondSupps = NULL,
+    nrPublishableCells = NULL,
+    suppMethod = NULL,
+    elapsedTime = NULL
   ),
-  validity=function(object) {
-    if ( length(g_nrPrimSupps(object)) != 1 ) {
+  validity = function(object) {
+    if (length(g_nrPrimSupps(object)) != 1) {
       stop("safeObj:: length of 'nrPrimSupps' must equal 1!\n")
     }
-    if ( length(g_nrNonDuplicatedCells(object)) != 1 ) {
+    if (length(g_nrNonDuplicatedCells(object)) != 1) {
       stop("safeObj:: length of 'nrNonDuplicatedCells' must equal 1!\n")
     }
-    if ( length(g_nrSecondSupps(object)) != 1 ) {
+    if (length(g_nrSecondSupps(object)) != 1) {
       stop("safeObj:: length of 'nrSecondSupps' must equal 1!\n")
     }
-    if ( length(g_nrPublishableCells(object)) != 1 ) {
+    if (length(g_nrPublishableCells(object)) != 1) {
       stop("safeObj:: length of 'nrPublishableCells' must equal 1!\n")
     }
-    if ( length(g_suppMethod(object)) != 1 ) {
+    if (length(g_suppMethod(object)) != 1) {
       stop("safeObj:: length of 'suppMethod' must equal 1!\n")
     }
-    if ( !g_suppMethod(object) %in% c('SIMPLEHEURISTIC', 'HITAS', 'OPT', 'HYPERCUBE') ) {
-      stop("safeObj:: 'suppMethod' must bei either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
+    if (!g_suppMethod(object) %in% c("SIMPLEHEURISTIC", "HITAS", "OPT", "HYPERCUBE")) {
+      e <- c(
+        "safeObj:: ", shQuote("suppMethod"), " must bei either ",
+        shQuote("SIMPLEHEURISTIC"), ", ", shQuote("HITAS"), ", ", shQuote("HYPERCUBE"),
+        "or ", shQuote("OPT")
+      )
+      stop(paste(e, collapse = ""), call. = FALSE)
     }
-    if ( length(g_elapsedTime(object)) != 1 ) {
+    if (length(g_elapsedTime(object)) != 1) {
       stop("safeObj:: length of 'elapsedTime' must equal 1!\n")
     }
     return(TRUE)
