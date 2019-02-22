@@ -3,14 +3,14 @@ Version: 0.26
 Date: 2019-01-19
 Title: Methods for Statistical Disclosure Control in Tabular Data
 Description: Methods for statistical disclosure control in
-    tabular data such as primary and secondary cell suppression as described for example 
+    tabular data such as primary and secondary cell suppression as described for example
     in Hundepol et al. (2012) <doi:10.1002/9781118348239> are covered in this package.
 Author: Bernhard Meindl
 Maintainer: Bernhard Meindl <bernhard.meindl@gmail.com>
 URL: https://github.com/sdcTools/sdcTable
 BugReports: https://github.com/sdcTools/userSupport/issues
-Depends: stringr, methods, Rcpp (>= 0.11.0), Rglpk, slam, lpSolveAPI
-Imports: data.table, knitr, data.tree, rlang
+Depends: Rcpp (>= 0.11.0), sdcHierarchies (>= 0.16)
+Imports: data.table, knitr, rlang, stringr, methods, Rglpk, slam, lpSolveAPI
 Suggests: testthat (>= 0.3), rmarkdown, webshot
 LinkingTo: Rcpp
 License: GPL (>= 2)
