@@ -311,14 +311,14 @@ create_tabdata_and_metadata <- function(obj, verbose, responsevar, digits=2, pat
   # get data
   dataObj <- get.sdcProblem(obj, "dataObj")
   pI <- get.sdcProblem(obj, "problemInstance")
-  mdat <- copy(sdcProb2df(obj, addNumVars=TRUE, dimCodes="original"))
+  mdat <- copy(sdcProb2df(obj, addNumVars=TRUE, dimCodes="original", addDups=FALSE))
   mdat[,lpl:=get.problemInstance(pI, "LPL")]
   mdat[,upl:=get.problemInstance(pI, "UPL")]
 
   vNames <- names(mdat)
 
   # convert num to integer
-  ii <- which(sapply(mdat, class)%in% c("numeric","integer"))
+  ii <- which(sapply(mdat, class) %in% c("numeric","integer"))
   if (length(ii)>0) {
     cn <- vNames[ii]
 

@@ -22,7 +22,9 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("get.cutList", function(object, type) { standardGeneric("get.cutList")})
+setGeneric("get.cutList", function(object, type) {
+  standardGeneric("get.cutList")
+})
 
 #' modify \code{cutList}-objects depending on argument \code{type}
 #'
@@ -48,7 +50,9 @@ setGeneric("get.cutList", function(object, type) { standardGeneric("get.cutList"
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("set.cutList", function(object, type, input) { standardGeneric("set.cutList")})
+setGeneric("set.cutList", function(object, type, input) {
+  standardGeneric("set.cutList")
+})
 
 #' perform calculations on \code{cutList}-objects depending on argument \code{type}
 #'
@@ -82,7 +86,9 @@ setGeneric("set.cutList", function(object, type, input) { standardGeneric("set.c
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric("calc.cutList", function(object, type, input) { standardGeneric("calc.cutList")})
+setGeneric("calc.cutList", function(object, type, input) {
+  standardGeneric("calc.cutList")
+})
 
 #' initialize \code{cutList}-objects depending on argument \code{type}
 #'
@@ -114,21 +120,39 @@ setGeneric("calc.cutList", function(object, type, input) { standardGeneric("calc
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('init.cutList', function(type, input) { standardGeneric('init.cutList')})
+setGeneric("init.cutList", function(type, input) {
+  standardGeneric("init.cutList")
+})
 
-# get-methods
-setGeneric("g_constraints", function(object) { standardGeneric("g_constraints") })
-setGeneric("g_direction", function(object) { standardGeneric("g_direction") })
-setGeneric("g_rhs", function(object) { standardGeneric("g_rhs") })
-setGeneric("g_nr_constraints", function(object) { standardGeneric("g_nr_constraints") })
+# get methods
+setGeneric("g_constraints", function(object) {
+  standardGeneric("g_constraints")
+})
+setGeneric("g_direction", function(object) {
+  standardGeneric("g_direction")
+})
+setGeneric("g_rhs", function(object) {
+  standardGeneric("g_rhs")
+})
+setGeneric("g_nr_constraints", function(object) {
+  standardGeneric("g_nr_constraints")
+})
 
-# set-methods
-setGeneric("s_add_complete_constraint<-", function(object, value) { standardGeneric("s_add_complete_constraint<-") })
-setGeneric("s_remove_complete_constraint<-", function(object, value) { standardGeneric("s_remove_complete_constraint<-") })
+# set methods
+setGeneric("s_add_complete_constraint<-", function(object, value) {
+  standardGeneric("s_add_complete_constraint<-")
+})
+setGeneric("s_remove_complete_constraint<-", function(object, value) {
+  standardGeneric("s_remove_complete_constraint<-")
+})
 
-# calc-methods
-setGeneric("c_strengthen", function(object) { standardGeneric("c_strengthen") })
-setGeneric("c_check_violation", function(object, input) { standardGeneric("c_check_violation") })
-setGeneric("c_bind_together", function(object, input) { standardGeneric("c_bind_together") })
-
-
+# calc methods
+setGeneric("c_strengthen", function(object) {
+  standardGeneric("c_strengthen")
+})
+setGeneric("c_check_violation", function(object, input) {
+  standardGeneric("c_check_violation")
+})
+setGeneric("c_bind_together", function(object, input) {
+  standardGeneric("c_bind_together")
+})

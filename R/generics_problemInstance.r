@@ -39,7 +39,9 @@
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('get.problemInstance', function(object, type) {standardGeneric('get.problemInstance')})
+setGeneric("get.problemInstance", function(object, type) {
+  standardGeneric("get.problemInstance")
+})
 
 #' modify \code{problemInstance}-objects depending on argument \code{type}
 #'
@@ -66,7 +68,9 @@ setGeneric('get.problemInstance', function(object, type) {standardGeneric('get.p
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('set.problemInstance', function(object, type, input) {standardGeneric('set.problemInstance')})
+setGeneric("set.problemInstance", function(object, type, input) {
+  standardGeneric("set.problemInstance")
+})
 
 #' perform calculations on \code{problemInstance}-objects depending on argument \code{type}
 #'
@@ -95,38 +99,90 @@ setGeneric('set.problemInstance', function(object, type, input) {standardGeneric
 #'
 #' @note internal function
 #' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
-setGeneric('calc.problemInstance', function(object, type, input) {standardGeneric('calc.problemInstance')})
+setGeneric("calc.problemInstance", function(object, type, input) {
+  standardGeneric("calc.problemInstance")
+})
 
-# get-methods
-setGeneric("g_sdcStatus", function(object) { standardGeneric("g_sdcStatus") })
-setGeneric("g_primSupps", function(object) { standardGeneric("g_primSupps") })
-setGeneric("g_secondSupps", function(object) { standardGeneric("g_secondSupps") })
-setGeneric("g_forcedCells", function(object) { standardGeneric("g_forcedCells") })
-setGeneric("g_type", function(object) { standardGeneric("g_type") })
-setGeneric("g_freq", function(object) { standardGeneric("g_freq") })
-setGeneric("g_strID", function(object) { standardGeneric("g_strID") })
-setGeneric("g_UPL", function(object) { standardGeneric("g_UPL") })
-setGeneric("g_LPL", function(object) { standardGeneric("g_LPL") })
-setGeneric("g_SPL", function(object) { standardGeneric("g_SPL") })
-setGeneric("g_nrVars", function(object) { standardGeneric("g_nrVars") })
-setGeneric("g_lb", function(object) { standardGeneric("g_lb") })
-setGeneric("g_ub", function(object) { standardGeneric("g_ub") })
-setGeneric("g_w", function(object) { standardGeneric("g_w") })
-setGeneric("g_numVars", function(object) { standardGeneric("g_numVars") })
-setGeneric("g_hasPrimSupps", function(object) { standardGeneric("g_hasPrimSupps") })
-setGeneric("g_hasSecondSupps", function(object) { standardGeneric("g_hasSecondSupps") })
-setGeneric("g_hasForcedCells", function(object) { standardGeneric("g_hasForcedCells") })
-setGeneric("g_weight", function(object) { standardGeneric("g_weight") })
-setGeneric("g_suppPattern", function(object) { standardGeneric("g_suppPattern") })
+# get methods
+setGeneric("g_sdcStatus", function(object) {
+  standardGeneric("g_sdcStatus")
+})
+setGeneric("g_primSupps", function(object) {
+  standardGeneric("g_primSupps")
+})
+setGeneric("g_secondSupps", function(object) {
+  standardGeneric("g_secondSupps")
+})
+setGeneric("g_forcedCells", function(object) {
+  standardGeneric("g_forcedCells")
+})
+setGeneric("g_type", function(object) {
+  standardGeneric("g_type")
+})
+setGeneric("g_freq", function(object) {
+  standardGeneric("g_freq")
+})
+setGeneric("g_strID", function(object) {
+  standardGeneric("g_strID")
+})
+setGeneric("g_UPL", function(object) {
+  standardGeneric("g_UPL")
+})
+setGeneric("g_LPL", function(object) {
+  standardGeneric("g_LPL")
+})
+setGeneric("g_SPL", function(object) {
+  standardGeneric("g_SPL")
+})
+setGeneric("g_nrVars", function(object) {
+  standardGeneric("g_nrVars")
+})
+setGeneric("g_lb", function(object) {
+  standardGeneric("g_lb")
+})
+setGeneric("g_ub", function(object) {
+  standardGeneric("g_ub")
+})
+setGeneric("g_w", function(object) {
+  standardGeneric("g_w")
+})
+setGeneric("g_numVars", function(object) {
+  standardGeneric("g_numVars")
+})
+setGeneric("g_hasPrimSupps", function(object) {
+  standardGeneric("g_hasPrimSupps")
+})
+setGeneric("g_hasSecondSupps", function(object) {
+  standardGeneric("g_hasSecondSupps")
+})
+setGeneric("g_hasForcedCells", function(object) {
+  standardGeneric("g_hasForcedCells")
+})
+setGeneric("g_weight", function(object) {
+  standardGeneric("g_weight")
+})
+setGeneric("g_suppPattern", function(object) {
+  standardGeneric("g_suppPattern")
+})
 
-# set-methods
-setGeneric("s_sdcStatus<-", function(object, value) standardGeneric("s_sdcStatus<-"))
-setGeneric("s_lb<-", function(object, value) standardGeneric("s_lb<-"))
-setGeneric("s_ub<-", function(object, value) standardGeneric("s_ub<-"))
-setGeneric("s_LPL<-", function(object, value) standardGeneric("s_LPL<-"))
-setGeneric("s_UPL<-", function(object, value) standardGeneric("s_UPL<-"))
-setGeneric("s_SPL<-", function(object, value) standardGeneric("s_SPL<-"))
+# set methods
+setGeneric("s_sdcStatus<-", function(object, value)
+  standardGeneric("s_sdcStatus<-"))
+setGeneric("s_lb<-", function(object, value)
+  standardGeneric("s_lb<-"))
+setGeneric("s_ub<-", function(object, value)
+  standardGeneric("s_ub<-"))
+setGeneric("s_LPL<-", function(object, value)
+  standardGeneric("s_LPL<-"))
+setGeneric("s_UPL<-", function(object, value)
+  standardGeneric("s_UPL<-"))
+setGeneric("s_SPL<-", function(object, value)
+  standardGeneric("s_SPL<-"))
 
-# calc-methods
-setGeneric("c_make_masterproblem", function(object, input) { standardGeneric("c_make_masterproblem") })
-setGeneric("c_is_protected_solution", function(object, input) { standardGeneric("c_is_protected_solution") })
+# calc methods
+setGeneric("c_make_masterproblem", function(object, input) {
+  standardGeneric("c_make_masterproblem")
+})
+setGeneric("c_is_protected_solution", function(object, input) {
+  standardGeneric("c_is_protected_solution")
+})

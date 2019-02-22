@@ -78,7 +78,7 @@
 #'
 #' freqVarInd <- weightInd <- NULL
 #'
-#' ## creating an object of class \code{\link{sdcProblem-class}}
+#' # creating an object of class \code{\link{sdcProblem-class}}
 #' obj <- makeProblem(
 #'   data=microData1,
 #'   dimList=dimList,
@@ -88,7 +88,7 @@
 #'   weightInd=weightInd,
 #'   sampWeightInd=sampWeightInd)
 #'
-#' ## creating an object of class \code{\link{sdcProblem-class}} containing "duplicated" codes
+#' # creating an object of class \code{\link{sdcProblem-class}} containing "duplicated" codes
 #' obj_dupl <- makeProblem(
 #'   data=microData1,
 #'   dimList=dimList_dupl,
@@ -120,29 +120,50 @@
 #'   primSuppRules=primSuppRules, responsevar="num1", licensefile="/path/to/my/cplexlicense")
 #' }
 
-createArgusInput <- function(obj, typ="microdata", verbose=FALSE, path=getwd(), solver="FREE", method,
-  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL, requestvar=NULL, holdingvar=NULL, ...) {
+createArgusInput <- function(
+  obj, typ="microdata", verbose=FALSE, path=getwd(), solver="FREE", method,
+  primSuppRules=NULL, responsevar=NULL, shadowvar=NULL, costvar=NULL,
+  requestvar=NULL, holdingvar=NULL, ...) {
 
-  if (class(obj)!="sdcProblem") {
+  if (class(obj) != "sdcProblem") {
     stop("argument 'obj' must be of class 'sdcProblem'.\n")
   }
-  if (!typ %in% c("microdata","tabular")) {
+  if (!typ %in% c("microdata", "tabular")) {
     stop("argument 'type' must be either 'microdata' or 'tabular'.\n")
   }
 
   args <- list(...)
-  if (solver=="CPLEX" & is.null(args$licensefile)) {
-    stop(dQuote("CPLEX")," is required but argument 'licensefile' has not been set!\n")
+  if (solver == "CPLEX" & is.null(args$licensefile)) {
+    e <- c(
+      dQuote("CPLEX"), "should be used, but",
+      shQuote("licensefile"), "was not set."
+    )
+    stop(paste(e, collapse = " "), call. = FALSE)
   }
 
-  if (typ=="microdata") {
+  if (typ == "microdata") {
     if (is.null(primSuppRules)) {
-      stop("primary suppression rules (argument 'primSuppRules') must be specified when using microdata as input!\n")
+      e <- c(
+        "primary suppression rules (argument 'primSuppRules') must be",
+        "specified when using microdata as input!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
-    batchObj <- tauBatchInput_microdata(obj=obj, verbose=verbose, path=path, solver=solver, method=method, primSuppRules=primSuppRules,
-      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, requestvar=requestvar, holdingvar=holdingvar, ...)
+    batchObj <- tauBatchInput_microdata(
+      obj = obj,
+      verbose = verbose,
+      path = path,
+      solver = solver,
+      method = method,
+      primSuppRules = primSuppRules,
+      responsevar = responsevar,
+      shadowvar = shadowvar,
+      costvar = costvar,
+      requestvar = requestvar,
+      holdingvar = holdingvar, ...
+    )
   }
-  if (typ=="tabular") {
+  if (typ == "tabular") {
     if (!is.null(primSuppRules)) {
       message("ignoring argument 'primSuppRules'!\n")
       primSuppRules <- NULL
@@ -156,18 +177,26 @@ createArgusInput <- function(obj, typ="microdata", verbose=FALSE, path=getwd(), 
       holdingvar <- NULL
     }
 
-    batchObj <- tauBatchInput_table(obj=obj, verbose=verbose, path=path, solver=solver, method=method,
-      responsevar=responsevar, shadowvar=shadowvar, costvar=costvar, ...)
+    batchObj <- tauBatchInput_table(
+      obj = obj,
+      verbose = verbose,
+      path = path,
+      solver = solver,
+      method = method,
+      responsevar = responsevar,
+      shadowvar = shadowvar,
+      costvar = costvar, ...
+    )
   }
   ## write required files
   batchF <- writeBatchFile(batchObj)
-  batchF <- normalizePath(batchF, winslash="/", mustWork=TRUE)
+  batchF <- normalizePath(batchF, winslash = "/", mustWork = TRUE)
   if (verbose) {
-    ff <- paste("The batch-file",dQuote(batchF),"has the following content:")
-    cat(paste0("\n",ff,"\n"))
-    cat(paste(rep("-", nchar(ff)), collapse=""),"\n")
-    rr <- readLines(batchF, warn=FALSE)[-c(1:3)]
-    cat(rr, sep="\n")
+    ff <- paste("The batch-file", dQuote(batchF), "has the following content:")
+    cat(paste0("\n", ff, "\n"))
+    cat(paste(rep("-", nchar(ff)), collapse = ""), "\n")
+    rr <- readLines(batchF, warn = FALSE)[-c(1:3)]
+    cat(rr, sep = "\n")
   }
   return(invisible(batchF))
 }
