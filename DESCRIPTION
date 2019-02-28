@@ -10,7 +10,6 @@ Maintainer: Bernhard Meindl <bernhard.meindl@gmail.com>
 URL: https://github.com/sdcTools/sdcTable
 BugReports: https://github.com/sdcTools/userSupport/issues
 Depends: Rcpp (>= 0.11.0), sdcHierarchies (>= 0.16)
-Remotes: github::bernhard-da/sdcHierarchies
 Imports: data.table, knitr, rlang, stringr, methods, Rglpk, slam, lpSolveAPI
 Suggests: testthat (>= 0.3), rmarkdown, webshot
 LinkingTo: Rcpp
