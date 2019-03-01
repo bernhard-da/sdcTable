@@ -5,7 +5,8 @@
 #' @keywords internal
 #' @rdname defunct-sdcTable
 create_node <- function(...) {
-  msg <- "Please use sdcHierarchies::hier_create() instead."
+  msg <- "Please use `hier_create()` instead."
+  .Defunct(new = "hier_create", package = "sdcHierarchies", msg = msg)
 }
 
 #' Add nodes to a hierarchy
@@ -15,7 +16,8 @@ create_node <- function(...) {
 #' @keywords internal
 #' @rdname defunct-sdcTable
 add_nodes <- function(...) {
-  msg <- "Please use sdcHierarchies::hier_add() instead."
+  msg <- "Please use `hier_add()` instead."
+  .Defunct(new = "hier_add", package = "sdcHierarchies", msg = msg)
 }
 
 #' Delete nodes from a hierarchy
@@ -25,7 +27,8 @@ add_nodes <- function(...) {
 #' @keywords internal
 #' @rdname defunct-sdcTable
 delete_nodes <- function(...) {
-  msg <- "Please use sdcHierarchies::hier_delete() instead."
+  msg <- "Please use `hier_delete()` instead."
+  .Defunct(new = "hier_delete", package = "sdcHierarchies", msg = msg)
 }
 
 #' Rename a node in a hierarchy
@@ -35,5 +38,6 @@ delete_nodes <- function(...) {
 #' @keywords internal
 #' @rdname defunct-sdcTable
 rename_node <- function(...) {
-  msg <- "Please use sdcHierarchies::hier_rename() instead."
+  msg <- "Please use `hier_rename()` instead."
+  .Defunct(new = "hier_rename", package = "sdcHierarchies", msg = msg)
 }
