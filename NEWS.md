@@ -1,3 +1,10 @@
+# sdcTable 0.27
+- use functionality from [`sdcHierarchies`](https://cran.r-project.org/package=sdcHierarchies) to build hierarchies. 
+    - removed `create_node()`; please use `hier_create()` instead
+    - removed `add_nodes()`; please use `hier_add()` instead
+    - removed `delete_nodes()`; please use `hier_delete()` instead
+    - removed `rename_nodes()`; please use `hier_rename()` instead
+
 # sdcTable 0.26
 * bugfix when computing indices for contributing units used in some primary suppression methods
 
