@@ -1,0 +1,89 @@
+#' query information from objects
+#'
+#' Function \code{\link{getInfo}} is used to query information from objects of class
+#' \code{\link{sdcProblem-class}}, \code{\link{problemInstance-class}} or \code{\link{safeObj-class}}
+#'
+#' @param object a \code{\link{sdcProblem-class}} object, \code{\link{problemInstance-class}} object or \code{\link{safeObj-class}} object.
+#' @param type a character vector of length 1 specifying the information which should be returned.
+#' \itemize{
+#' \item if argument \code{object} is of class \code{sdcProblem-class} or \code{\link{problemInstance-class}}, valid choices are:
+#' \itemize{
+#' \item \code{lb}: slot 'lb' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{ub}: slot 'ub' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{LPL}: slot 'LPL' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{SPL}: slot 'SPL' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{UPL}: slot 'UPL' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{sdcStatus}:  slot 'sdcStatus' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{freq}: slot 'freq' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{strID}: slot 'strID' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{numVars}: slot 'numVars' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}}
+#' \item \code{w}: slot 'w' of input \code{object} if it is of class \code{\link{problemInstance-class}} or this slot within slot 'problemInstance' if \code{object} is of class \code{\link{sdcProblem-class}} }
+#' \item if argument \code{object} is of class \code{\link{safeObj-class}}, valid choices are:
+#' \itemize{
+#' \item \code{finalData}: slot 'finalData' of input \code{object} of class \code{\link{safeObj-class}}
+#' \item \code{nrNonDuplicatedCells}: slot 'nrNonDuplicatedCells' of input \code{object} of class \code{\link{safeObj-class}}
+#' \item \code{nrPrimSupps}: slot 'nrPrimSupps' of input \code{object} of class \code{\link{safeObj-class}}
+#' \item \code{nrSecondSupps}: slot 'nrSecondSupps' of input \code{object} of class \code{\link{safeObj-class}}
+#' \item \code{nrPublishableCells}: slot 'nrPublishableCells' of input \code{object} of class \code{\link{safeObj-class}}
+#' \item \code{suppMethod}: slot 'suppMethod' of input \code{object} of class \code{\link{safeObj-class}}}
+#' }
+#'
+#' @return manipulated data dependend on arguments \code{object} and \code{type}
+#'
+#' @examples
+#' # load problem (as it was created in the example
+#' # of \code{\link{makeProblem}})
+#' sp <- searchpaths()
+#' fn <- paste(sp[grep("sdcTable", sp)], "/data/problem.RData", sep="")
+#' problem <- get(load(fn))
+#'
+#' # problem is an object of class \code{\link{sdcProblem-class}}
+#' print(class(problem))
+#'
+#' for (slot in c('lb','ub','LPL','SPL','UPL','sdcStatus',
+#'   'freq', 'strID', 'numVars', 'w')) {
+#'   cat('slot', slot,':\n')
+#'   print(getInfo(problem, type=slot))
+#' }
+#'
+#' # extracting information for objects of class \code{\link{safeObj-class}}
+#' fn <- paste(sp[grep("sdcTable", sp)], "/data/protectedData.RData", sep="")
+#' protectedData <- get(load(fn))
+#' for (slot in c('finalData', 'nrNonDuplicatedCells', 'nrPrimSupps',
+#'   'nrSecondSupps', 'nrPublishableCells', 'suppMethod')) {
+#'   cat('slot', slot,':\n')
+#'   print(getInfo(protectedData, type=slot))
+#' }
+#' @rdname getInfo
+#' @export getInfo
+#' @author Bernhard Meindl \email{bernhard.meindl@@statistik.gv.at}
+getInfo <- function(object, type) {
+  if (!class(object) %in% c("sdcProblem", "problemInstance", "safeObj")) {
+    stop("getInfo:: argument 'object' must be of class 'sdcProblem', 'problemInstance' or 'safeObj'!\n")
+  }
+  
+  if (class(object) == "safeObj") {
+    if (!type %in% c(
+      "finalData",
+      "nrNonDuplicatedCells",
+      "nrPrimSupps",
+      "nrSecondSupps",
+      "nrPublishableCells",
+      "suppMethod"
+    )) {
+      stop("getInfo:: type must be one of 'finalData', 'nrNonDuplicatedCells', 'nrPrimSupps', 'nrSecondSupps', 'nrPublishableCells' or 'suppMethod'!\n")
+    }
+    return(get.safeObj(object, type = type, input = list()))
+  }
+  else {
+    if (!type %in% c("lb", "ub", "LPL", "SPL", "UPL", "sdcStatus", "freq", "strID", "numVars", "w")) {
+      stop("getInfo:: check argument 'type'!\n")
+    }
+    if (class(object) == "sdcProblem") {
+      pI <- g_problemInstance(object)
+    } else {
+      pI <- object
+    }
+    return(get.problemInstance(pI, type = type))
+  }
+}
