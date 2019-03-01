@@ -1,3 +1,6 @@
+# sdcTable 0.27.1
+  - Call ``.Defunct` for old exported functions
+
 # sdcTable 0.27
 - use functionality from [`sdcHierarchies`](https://cran.r-project.org/package=sdcHierarchies) to build hierarchies. 
     - removed `create_node()`; please use `hier_create()` instead
