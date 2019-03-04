@@ -1,5 +1,6 @@
-# sdcTable 0.27.1
-  - Call ``.Defunct` for old exported functions
+# sdcTable 0.28
+- call `.Defunct` for old exported functions
+- make default bounds (`ub`, `lb`) depend on costs
 
 # sdcTable 0.27
 - use functionality from [`sdcHierarchies`](https://cran.r-project.org/package=sdcHierarchies) to build hierarchies. 
