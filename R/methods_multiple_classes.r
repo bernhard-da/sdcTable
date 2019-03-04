@@ -387,7 +387,7 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
 
   w <- numVarsList <- NULL
   w.ind <- g_weightvar_ind(x)
-  if ( !is.null(w.ind) ) {
+  if (!is.null(w.ind)) {
     w <- fullTabObj[[w.ind]]
   }
   n.ind <- g_numvar_ind(x)
@@ -409,29 +409,56 @@ setMethod("c_calc_full_prob", signature=c("list"), definition=function(input) {
     }
   }
   s_raw_data(x) <- list(datO)
-  problemInstance <- new("problemInstance",
-    strID=strID,
-    Freq=f,
-    w=w,
-    numVars=numVarsList,
-    lb=rep(0, nrV),
-    ub=pmax(2*f, 5),
-    LPL=rep(1, nrV),
-    UPL=rep(1, nrV),
-    SPL=rep(0, nrV),
-    sdcStatus=rep("s", nrV)
+
+  # w are the actual weights as used in the
+  # optimization procedure; comput default bounds
+  # that depend on these values
+  .default_bounds <- function(cost_var) {
+    nr_cells <- length(cost_var)
+    ll <- list()
+    ll$lb <- rep(0, nr_cells)
+    ll$ub <- rep(1.5 * max(cost_var), nr_cells)
+    ll$LPL <-  rep(1, nr_cells)
+    ll$UPL <-  rep(1, nr_cells)
+    ll$SPL <-  rep(0, nr_cells)
+    ll
+  }
+
+  if (!is.null(w)) {
+    cost_var <- w
+  } else {
+    cost_var <- f
+  }
+  bb <- .default_bounds(cost_var = cost_var)
+  problemInstance <- new(
+    "problemInstance",
+    strID = strID,
+    Freq = f,
+    w = w,
+    numVars = numVarsList,
+    lb = bb$lb,
+    ub = bb$ub,
+    LPL = bb$LPL,
+    UPL = bb$UPL,
+    SPL = bb$SPL,
+    sdcStatus = rep("s", nrV)
   )
-  problemInstance@sdcStatus[problemInstance@Freq==0] <- "z"
-  partition <- c_make_partitions(input=list(objectA=problemInstance, objectB=y))
+  problemInstance@sdcStatus[problemInstance@Freq == 0] <- "z"
+  partition <- c_make_partitions(
+    input = list(
+      objectA = problemInstance,
+      objectB = y
+    )
+  )
   sdcProblem <- new("sdcProblem",
-    dataObj=x,
-    dimInfo=y,
-    problemInstance=problemInstance,
-    partition=partition,
-    startI=1,
-    startJ=1,
-    indicesDealtWith=NULL,
-    elapsedTime=(proc.time()-time.start)[3]
+    dataObj = x,
+    dimInfo = y,
+    problemInstance = problemInstance,
+    partition = partition,
+    startI = 1,
+    startJ = 1,
+    indicesDealtWith = NULL,
+    elapsedTime = (proc.time() - time.start)[3]
   )
   return(sdcProblem)
 })

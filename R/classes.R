@@ -265,17 +265,17 @@ setClass(
         length(g_freq(object)) != length(g_w(object))) {
       stop("problemInstance:: parameter 'Freq' and 'w' differ in length!\n")
     }
-    if (any(g_lb(object) <= g_freq(object) - g_LPL(object)) == FALSE) {
-      stop("problemInstance:: parameter 'lb' <= 'Freq'-'LPL' in some cases!\n")
+    if (any(g_lb(object) <= g_weight(object) - g_LPL(object)) == FALSE) {
+      stop("problemInstance:: parameter 'lb' <= 'Costs'-'LPL' in some cases!\n")
     }
-    if (any(g_freq(object) - g_LPL(object) <= g_freq(object)) == FALSE) {
-      stop("problemInstance:: parameter 'Freq'-'LPL <= 'Freq' in some cases!\n")
+    if (any(g_weight(object) - g_LPL(object) <= g_weight(object)) == FALSE) {
+      stop("problemInstance:: parameter 'Costs'-'LPL <= 'Costs' in some cases!\n")
     }
-    if (any(g_freq(object) <= g_freq(object) + g_UPL(object)) == FALSE) {
-      stop("problemInstance:: parameter 'Freq' <= 'Freq'+'UPL in some cases!\n")
+    if (any(g_weight(object) <= g_weight(object) + g_UPL(object)) == FALSE) {
+      stop("problemInstance:: parameter 'Costs' <= 'Costs'+'UPL in some cases!\n")
     }
-    if (any(g_freq(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
-      stop("problemInstance:: parameter 'Freq'+'UPL' <= 'ub' in some cases!\n")
+    if (any(g_weight(object) + g_UPL(object) <= g_ub(object)) == FALSE) {
+      stop("problemInstance:: parameter 'Costs'+'UPL' <= 'ub' in some cases!\n")
     }
     if (any(g_ub(object) - g_lb(object) >= g_SPL(object)) == FALSE) {
       stop("problemInstance:: parameter 'ub'-'lb' >= 'SPL' in some cases!\n")

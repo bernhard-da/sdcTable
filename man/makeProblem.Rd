@@ -14,46 +14,46 @@ that contain information on cell counts, weights that should be used during
 the cut and branch algorithm, additional numeric variables or variables that
 hold information on sampling weights.}
 
-\item{dimList}{a named list where the names refer to variable names in 
-input \code{data}. Each list element can be one of: 
+\item{dimList}{a named list where the names refer to variable names in
+input \code{data}. Each list element can be one of:
 \itemize{
-\item{\code{tree}: }{generated with \code{hier_*()} functions from the 
+\item{\code{tree}: }{generated with \code{hier_*()} functions from the
 sdcHierarchies package}
-\item{\code{data.frame}: }{a two column \code{data.frame} containing 
-the complete level hierarchy of a dimensional variable using a 
+\item{\code{data.frame}: }{a two column \code{data.frame} containing
+the complete level hierarchy of a dimensional variable using a
 top-to-bottom approach. The format of the \code{data.frame} is as follows:
 \itemize{
-\item first column: a character vector specifying levels with each vector 
-element being a string only containing of '@'s from length 1 to n. 
-If a vector element consists of \code{i}-chars, the corresponding code 
-is of level \code{i}. The code '@' (one character) equals the grand 
+\item first column: a character vector specifying levels with each vector
+element being a string only containing of '@'s from length 1 to n.
+If a vector element consists of \code{i}-chars, the corresponding code
+is of level \code{i}. The code '@' (one character) equals the grand
 total (level=1), the code `@@` (two characters) is of level 2 (directly
 below the overall total).
 \item second column: a character vector specifying level codes
 }}
 \item{\code{path}: }{absolute or relative path to a \code{.csv} file that
-contains two columns seperated by semicolons (;) having the same structure 
+contains two columns seperated by semicolons (;) having the same structure
 as the \code{"@;levelname"}-structure described above}
 }}
 
-\item{dimVarInd}{numeric vector (or NULL) defining the column-indices of 
-dimensional variables (defining the table) within argument \code{data}. 
-If \code{NULL}, the names of argument \code{dimList} are used to calculate 
+\item{dimVarInd}{numeric vector (or NULL) defining the column-indices of
+dimensional variables (defining the table) within argument \code{data}.
+If \code{NULL}, the names of argument \code{dimList} are used to calculate
 the indices of the dimensional variables within \code{data} internally.}
 
-\item{freqVarInd}{numeric vector (or NULL) defining the column-indices 
+\item{freqVarInd}{numeric vector (or NULL) defining the column-indices
 of a variable holding counts within argument \code{data}}
 
-\item{numVarInd}{numeric vector (or NULL) defining the column-indices 
+\item{numVarInd}{numeric vector (or NULL) defining the column-indices
 of additional numeric variables available in argument \code{data}}
 
-\item{weightInd}{numeric vector of length 1 (or NULL) defining the 
-column-index of a variable holding weights that should be used during 
-as objective coefficients during the cut and branch algorithm to 
+\item{weightInd}{numeric vector of length 1 (or NULL) defining the
+column-index of a variable holding weights that should be used during
+as objective coefficients during the cut and branch algorithm to
 protect primary sensitive cells within argument \code{data}}
 
-\item{sampWeightInd}{numeric vector of length 1 (or NULL) defining 
-the column-index of a variable holding sampling weights within 
+\item{sampWeightInd}{numeric vector of length 1 (or NULL) defining
+the column-index of a variable holding sampling weights within
 argument \code{data}}
 }
 \value{

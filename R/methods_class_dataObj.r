@@ -70,8 +70,12 @@ setMethod(f='init.dataObj', signature=c('list'),
     weightInd <- input$weightInd
     sampWeightInd <- input$sampWeightInd
     wExists <- FALSE
-    if ( !is.null(weightInd)) {
-      wExists <- ifelse(weightInd==freqVarInd | weightInd %in% numVarInd, TRUE, FALSE)
+    if (!is.null(weightInd)) {
+      if (is.null(freqVarInd)) {
+        wExists <- ifelse(weightInd %in% numVarInd, TRUE, FALSE)
+      } else {
+        wExists <- ifelse(weightInd == freqVarInd | weightInd %in% numVarInd, TRUE, FALSE)
+      }
     }
     isMicroData <- FALSE
 
