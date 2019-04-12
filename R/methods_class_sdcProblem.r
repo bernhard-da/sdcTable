@@ -369,7 +369,7 @@ setReplaceMethod("s_elapsedTime", signature=c("sdcProblem"), definition=function
 
 setMethod("c_rule_freq", signature=c("sdcProblem", "list"), definition=function(object, input) {
   pI <- g_problemInstance(object)
-  if ( input$allowZeros == TRUE ) {
+  if (input$allowZeros == TRUE ) {
     suppInd <- which(g_freq(pI) <= input$maxN)
   } else {
     f <- g_freq(pI)
@@ -387,87 +387,35 @@ setMethod("c_rule_freq", signature=c("sdcProblem", "list"), definition=function(
   return(object)
 })
 
-setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(object, input) {
-  nkRule <- function(celltot, sumNcont, k) {
+setMethod("c_rule_nk", signature = c("sdcProblem", "list"), definition = function(object, input) {
+  nkRule <- function(celltot, sum_top_n, k) {
     # if TRUE, cell needs to be suppressed
-    (sumNcont) > (k/100*celltot)
+    (sum_top_n) > (k/100*celltot)
   }
-
-  if (!g_is_microdata(g_dataObj(object))) {
-    stop("nk-dominance rule can only be applied if micro-data are available!\n")
-  }
-  pI <- g_problemInstance(object)
-  dataObj <- g_dataObj(object)
-  strIDs <- g_strID(pI)
-  numVarInds <- g_numvar_ind(dataObj)
-
-  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if (any(na.omit(numVal) < 0)) {
-    stop("dominance rules can only be applied to numeric variables with only positive values!\n")
-  }
-
-  # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) {
-    c_contributing_indices(object, input=list(strIDs[x]))
-  })
 
   if (input$n < 1) {
-    stop("c_rule_nk:: parameter 'n' must be >= 1!\n")
-  }
-
-  # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) {
-    sum(rev(tail(sort(numVal[indices[[x]]]), input$n)))
-  })
-
-  cellTotals <- g_numVars(pI)[[input$numVarInd]]
-
-  # suppStatus: TRUE:unsafe, FALSE: safe
-  nkState <- sapply(1:g_nrVars(pI), function(x) {
-    nkRule(cellTotals[x], valueList[[x]], input$k)
-  })
-
-  suppIndex <- which(nkState==TRUE)
-  if (length(suppIndex) > 0) {
-    s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
-  }
-
-  if (input$allowZeros==FALSE) {
-    indZero <- which(cellTotals==0 & g_freq(pI)>=0)
-    if (length(indZero) > 0) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("s", length(indZero)))
-    }
-  }
-  s_problemInstance(object) <- pI
-  validObject(object)
-  return(object)
-})
-
-setMethod("c_rule_p", signature = c("sdcProblem", "list"), definition = function(object, input) {
-  pPercRule <- function(celltot, cont1, cont2, p) {
-    # if TRUE, cell needs to be suppressed
-    (celltot - sum(cont1, cont2, na.rm = TRUE)) < (p/100*cont1)
+    stop("Parameter `n` must be >= 2 for nk-dominance rule.", call. = FALSE)
   }
 
   if (!g_is_microdata(g_dataObj(object))) {
-    e <- "p-percent rule can only be applied if micro-data are available!"
+    e <- "nk-dominance rule can only be applied if micro-data are available!"
     stop(e, call. = FALSE)
   }
 
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
-
   numVarInds <- g_numvar_ind(dataObj)
   strIDs <- g_strID(pI)
-
   numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if (any(numVal < 0)) {
+
+  if (any(na.omit(numVal) < 0)) {
     e <- c(
-      "dominance rules can only be used with to numeric variables",
+      "dominance rules can only be applied to numeric variables",
       "with only positive values!"
     )
     stop(paste(e, collapse = " "), call. = FALSE)
   }
+
   # sampweights
   samp_weights <- g_sampweight_ind(dataObj)
   if (!is.null(samp_weights)) {
@@ -481,34 +429,88 @@ setMethod("c_rule_p", signature = c("sdcProblem", "list"), definition = function
     c_contributing_indices(object, input = list(strIDs[x]))
   })
 
-  # compute inputs (cell total and top two contributing) units
-  # for a given vector of cell values and weights `w`
-  # values are replicated times their weights which are randomly
-  # rounded to integers in case they are floating numbers
-  .comp_weighted_inputs <- function(vals, w) {
-    # replicate by weights: what to do with non-integerish weights?
-    # randomly round upwards and downwards?
-    if (!is_integerish(w)) {
-      dir <- sample(c(-1, 1), length(vals), replace = TRUE)
-      w[dir == -1] <- floor(w[dir == -11])
-      w[dir == 1] <- ceiling(w[dir == 1])
-    }
-    vals <- rep(vals, times = w)
-    out <- list(
-      top_contr = rev(tail(sort(vals), 2)),
-      cell_tot = sum(vals)
+  # values and totals of contributing units
+  nr_cells <- g_nrVars(pI)
+  inp <- lapply(1:nr_cells, function(x) {
+    ii <- indices[[x]]
+    .comp_weighted_inputs(vals = numVal[ii], w = samp_weights[ii], n = input$n)
+  })
+
+  # suppStatus: TRUE:unsafe, FALSE: safe
+  nkState <- sapply(1:nr_cells, function(x) {
+    nkRule(
+      celltot = inp[[x]]$cell_tot,
+      sum_top_n = sum(inp[[x]]$top_contr, na.rm = TRUE),
+      k = input$k
     )
-    if (length(out$top_contr) != 2) {
-      out$top_contr <- c(out$top_contr, NA)
-    }
-    out
+  })
+
+  suppIndex <- which(nkState == TRUE)
+  if (length(suppIndex) > 0) {
+    s_sdcStatus(pI) <- list(
+      index = suppIndex,
+      vals = rep("u", length(suppIndex))
+    )
   }
+
+  if (input$allowZeros == FALSE) {
+    cellTotals <- unlist(lapply(inp, function(x) x$celltot))
+    indZero <- which(cellTotals == 0 & g_freq(pI) >= 0)
+    if (length(indZero) > 0) {
+      s_sdcStatus(pI) <- list(
+        index = indZero,
+        vals = rep("s", length(indZero))
+      )
+    }
+  }
+  s_problemInstance(object) <- pI
+  validObject(object)
+  return(object)
+})
+
+setMethod("c_rule_p", signature = c("sdcProblem", "list"), definition = function(object, input) {
+  pPercRule <- function(celltot, cont1, cont2, p) {
+    # if TRUE, cell needs to be suppressed
+    (celltot - sum(c(cont1, cont2, na.rm = TRUE))) < (p / 100 * cont1)
+  }
+
+  if (!g_is_microdata(g_dataObj(object))) {
+    e <- "p-percent rule can only be applied if micro-data are available!"
+    stop(e, call. = FALSE)
+  }
+
+  pI <- g_problemInstance(object)
+  dataObj <- g_dataObj(object)
+  numVarInds <- g_numvar_ind(dataObj)
+  strIDs <- g_strID(pI)
+  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
+
+  if (any(numVal < 0)) {
+    e <- c(
+      "dominance rules can only be applied to numeric variables",
+      "with only positive values!"
+    )
+    stop(paste(e, collapse = " "), call. = FALSE)
+  }
+
+  # sampweights
+  samp_weights <- g_sampweight_ind(dataObj)
+  if (!is.null(samp_weights)) {
+    samp_weights <- slot(dataObj, "rawData")[[samp_weights]]
+  } else {
+    samp_weights <- rep(1, length(numVal))
+  }
+
+  # calculate contributing indices
+  indices <- lapply(1:g_nrVars(pI), function(x) {
+    c_contributing_indices(object, input = list(strIDs[x]))
+  })
 
   # values and totals of contributing units
   nr_cells <- g_nrVars(pI)
   inp <- lapply(1:nr_cells, function(x) {
     ii <- indices[[x]]
-    .comp_weighted_inputs(vals = numVal[ii], w = samp_weights[ii])
+    .comp_weighted_inputs(vals = numVal[ii], w = samp_weights[ii], n = 2)
   })
 
   # suppStatus: TRUE:unsafe, FALSE: safe
