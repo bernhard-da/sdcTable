@@ -443,51 +443,99 @@ setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(ob
   return(object)
 })
 
-setMethod("c_rule_p", signature=c("sdcProblem", "list"), definition=function(object, input) {
+setMethod("c_rule_p", signature = c("sdcProblem", "list"), definition = function(object, input) {
   pPercRule <- function(celltot, cont1, cont2, p) {
     # if TRUE, cell needs to be suppressed
-    (celltot - cont1 - cont2) < (p/100*cont1)
+    (celltot - sum(cont1, cont2, na.rm = TRUE)) < (p/100*cont1)
   }
 
-  if ( !g_is_microdata(g_dataObj(object)) ) {
-    stop("p-percent rule can only be applied if micro-data are available!\n")
+  if (!g_is_microdata(g_dataObj(object))) {
+    e <- "p-percent rule can only be applied if micro-data are available!"
+    stop(e, call. = FALSE)
   }
 
   pI <- g_problemInstance(object)
   dataObj <- g_dataObj(object)
+
   numVarInds <- g_numvar_ind(dataObj)
   strIDs <- g_strID(pI)
 
   numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if ( any(numVal < 0 ) ) {
-    stop("dominance rules can only be applied to numeric variables with only positive values!\n")
+  if (any(numVal < 0)) {
+    e <- c(
+      "dominance rules can only be used with to numeric variables",
+      "with only positive values!"
+    )
+    stop(paste(e, collapse = " "), call. = FALSE)
+  }
+  # sampweights
+  samp_weights <- g_sampweight_ind(dataObj)
+  if (!is.null(samp_weights)) {
+    samp_weights <- slot(dataObj, "rawData")[[samp_weights]]
+  } else {
+    samp_weights <- rep(1, length(numVal))
   }
 
   # calculate contributing indices
   indices <- lapply(1:g_nrVars(pI), function(x) {
-    c_contributing_indices(object, input=list(strIDs[x]))
+    c_contributing_indices(object, input = list(strIDs[x]))
   })
 
-  # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) {
-    rev(tail(sort(numVal[indices[[x]]]),2))
+  # compute inputs (cell total and top two contributing) units
+  # for a given vector of cell values and weights `w`
+  # values are replicated times their weights which are randomly
+  # rounded to integers in case they are floating numbers
+  .comp_weighted_inputs <- function(vals, w) {
+    # replicate by weights: what to do with non-integerish weights?
+    # randomly round upwards and downwards?
+    if (!is_integerish(w)) {
+      dir <- sample(c(-1, 1), length(vals), replace = TRUE)
+      w[dir == -1] <- floor(w[dir == -11])
+      w[dir == 1] <- ceiling(w[dir == 1])
+    }
+    vals <- rep(vals, times = w)
+    out <- list(
+      top_contr = rev(tail(sort(vals), 2)),
+      cell_tot = sum(vals)
+    )
+    if (length(out$top_contr) != 2) {
+      out$top_contr <- c(out$top_contr, NA)
+    }
+    out
+  }
+
+  # values and totals of contributing units
+  nr_cells <- g_nrVars(pI)
+  inp <- lapply(1:nr_cells, function(x) {
+    ii <- indices[[x]]
+    .comp_weighted_inputs(vals = numVal[ii], w = samp_weights[ii])
   })
-  cellTotals <- g_numVars(pI)[[input$numVarInd]]
 
   # suppStatus: TRUE:unsafe, FALSE: safe
-  pState <- sapply(1:g_nrVars(pI), function(x) {
-    pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p)
+  pState <- sapply(1:nr_cells, function(x) {
+    pPercRule(
+      celltot = inp[[x]]$cell_tot,
+      cont1 = inp[[x]]$top_contr[1],
+      cont2 = inp[[x]]$top_contr[2],
+      p = input$p
+    )
   })
 
-  suppIndex <- which(pState==TRUE)
+  suppIndex <- which(pState == TRUE)
   if (length(suppIndex) > 0) {
-    s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
+    s_sdcStatus(pI) <- list(
+      index = suppIndex,
+      vals = rep("u", length(suppIndex))
+    )
   }
 
   if (input$allowZeros == FALSE) {
-    indZero <- which(g_freq(pI)==0)
+    indZero <- which(g_freq(pI) == 0)
     if (length(indZero) > 0) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("u", length(indZero)))
+      s_sdcStatus(pI) <- list(
+        index = indZero,
+        vals = rep("u", length(indZero))
+      )
     }
   }
   s_problemInstance(object) <- pI
