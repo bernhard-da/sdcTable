@@ -10,5 +10,6 @@
 #' @importFrom utils combn tail read.table str write.table
 #' @import sdcHierarchies
 #' @importFrom rlang is_scalar_character is_character is_integerish
+#' @importFrom rlang is_scalar_double is_scalar_integerish
 #' @importFrom knitr knit
 NULL
