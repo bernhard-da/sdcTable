@@ -97,7 +97,6 @@ primarySuppression <- function(object, type, ...) {
   dt <- g_raw_data(data_obj)
 
   numVarsIndices <- g_numvar_ind(g_dataObj(object))
-  numVars <- colnames(dt)[numVarsIndices]
 
   paraList <- genParaObj(
     selection = "control.primary",
@@ -114,12 +113,13 @@ primarySuppression <- function(object, type, ...) {
       stop("Please specify either `numVarInd` or `numVarName`.", call. = FALSE)
     }
 
+    cn <- colnames(dt)
     if (!is.null(pp$numVarName)) {
-      if (!pp$numVarName %in% numVars) {
+      if (!pp$numVarName %in% cn) {
         e <- "Variable specified in `numVarName` does not exist in the data."
         stop(e, call. = FALSE)
       }
-      paraList$numVarInd <- match(pp$numVarName, numVars)
+      paraList$numVarInd <- match(pp$numVarName, cn)
     }
   }
 

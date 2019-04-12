@@ -40,3 +40,82 @@ problem@dataObj@rawData$val[5] <- -5
 expect_error(primarySuppression(problem, type = "nk", n = 2, k = 80, numVarInd = 1))
 expect_error(primarySuppression(problem, type = "p", p = 70, numVarInd = 1))
 expect_error(primarySuppression(problem, type = "pq", pq = c(60, 80), numVarInd = 1))
+
+
+# use weights
+rm(list = ls())
+data("microData1", package = "sdcTable")
+microData1$samp_weights <- sample(rnorm(nrow(microData1), mean = 10))
+dim_region <- hier_create(
+  root = "Total",
+  nodes = LETTERS[1:5]
+)
+dim_gender <- hier_create(
+  root = "Total",
+  nodes = c("male", "female")
+)
+dimList <- list(
+  region = dim_region,
+  gender = dim_gender
+)
+problem <- makeProblem(
+  data = microData1,
+  dimList = dimList,
+  freqVarInd = NULL,
+  numVarInd = 3,
+  sampWeightInd = 4
+)
+
+# no numVarInd or numVarName
+expect_error(
+  primarySuppression(problem, type = "nk", n = 2, k = 80)
+)
+# variable does not exist
+expect_error(
+  primarySuppression(problem, type = "nk", n = 2, k = 80, numVarName = "samp_weight")
+)
+
+# n < 2
+expect_error(
+  primarySuppression(problem, type = "nk", n = 1, k = 80, numVarName = "samp_weights")
+)
+
+res <- primarySuppression(
+  object = problem,
+  type = "nk",
+  n = 2,
+  k = 80,
+  numVarName = "samp_weights"
+)
+res <- sdcProb2df(res, addDups = FALSE)
+expect_equal(res[sdcStatus == "s", .N], 15)
+expect_equal(res[sdcStatus == "z", .N], 3)
+
+
+res <- primarySuppression(
+  object = problem,
+  type = "nk",
+  n = 2,
+  k = 80,
+  allowZeros = TRUE,
+  numVarName = "samp_weights"
+)
+res <- sdcProb2df(res, addDups = FALSE)
+
+
+expect_error(primarySuppression(
+  object = problem,
+  type = "p",
+  p = -5,
+  numVarName = "samp_weights"
+))
+
+expect_error(primarySuppression(
+  object = problem,
+  type = "p",
+  p = c(-5, 5),
+  numVarName = "samp_weights"
+))
+
+# print method
+print(res)

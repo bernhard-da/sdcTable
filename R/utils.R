@@ -48,6 +48,9 @@ domRule <- function(object, params, type) {
   # values are replicated times their weights which are randomly
   # rounded to integers in case they are floating numbers
   .comp_weighted_inputs <- function(vals, w, n) {
+    if (length(vals) == 0) {
+      return(NULL)
+    }
     # replicate by weights: what to do with non-integerish weights?
     # randomly round upwards and downwards?
     if (!is_integerish(w)) {
@@ -82,7 +85,7 @@ domRule <- function(object, params, type) {
     n <- 2
   } else {
     n <- params$n
-    if (n < 1) {
+    if (n < 2) {
       stop("Parameter `n` must be >= 2 for nk-dominance rule.", call. = FALSE)
     }
   }
@@ -127,8 +130,13 @@ domRule <- function(object, params, type) {
 
   # suppStatus: TRUE: unsafe, FALSE: safe
   supp_state <- sapply(1:nr_cells, function(x) {
-    pp <- append(params, inp[[x]])
-    fun(params = pp)
+    inp <- inp[[x]]
+    # cells with value 0!
+    if (is.null(inp)) {
+      FALSE
+    } else {
+      fun(params = append(params, inp))
+    }
   })
 
   supp_index <- which(supp_state == TRUE)
