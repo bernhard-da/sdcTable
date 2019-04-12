@@ -1,6 +1,8 @@
 # sdcTable 0.28
 - call `.Defunct` for old exported functions
 - make default bounds (`ub`, `lb`) depend on costs
+- allow to specify numVarInd also by name via `numVarName` in primarySupression() for dominance rules (`p`, `nk` and `pq`)
+- make use of sampling weights (by replicating) values for dominance rules.
 
 # sdcTable 0.27
 - use functionality from [`sdcHierarchies`](https://cran.r-project.org/package=sdcHierarchies) to build hierarchies. 
