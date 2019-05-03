@@ -32,14 +32,12 @@ dimList <- list(
   )
 )
 
-# third column containts a numeric variable ('val')
-numVarInd <- 3
 
 # creating an problem instance
 prob <- makeProblem(
   data = microData1,
   dimList = dimList,
-  numVarInd = numVarInd
+  numVarInd = "val"
 )
 
 # create inputs for jj format

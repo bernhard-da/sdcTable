@@ -6,6 +6,7 @@
 - don't export unused functionality
 - `createJJFormat()` and `writeJJFormat()` can be used to create text files with
 sdcProblems in "JJs Format"
+- allow to specify variable names too in `makeProblem`
 
 # sdcTable 0.27
 - use functionality from [`sdcHierarchies`](https://cran.r-project.org/package=sdcHierarchies) to build hierarchies. 
