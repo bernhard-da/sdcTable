@@ -20,7 +20,7 @@
 #' \item element 'upper': a list with the first element containing indices and the second element containing corrsponding upper bounds }
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname get.linProb-method
 #'
@@ -72,7 +72,7 @@ setGeneric("get.linProb", function(object, type) {
 #' \item first element: an object of class \code{cutList} defining the constraint that should be added}
 #' @return an object of class \code{linProb}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname set.linProb-method
 #'
@@ -105,7 +105,7 @@ setGeneric("set.linProb", function(object, type, input) {
 #' \item a numeric vector of indices if argument \code{type} matches 'fixVariables'
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.linProb-method
 #'

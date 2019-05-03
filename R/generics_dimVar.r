@@ -24,7 +24,7 @@
 #' \item logical vector of length 1 if argument \code{type} matches 'hasDuplicates'
 #' \item a logical vector if argument \code{type} matches 'codesMinimal'}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname get.dimVar-method
 #'
@@ -52,7 +52,7 @@ setGeneric("get.dimVar", function(object, type) {
 #' \item a logical vector of length 1 if type matches 'hasDefaultCodes' being TRUE if argument \code{input} are default codes and FALSE otherwise
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.dimVar-method
 #'
@@ -69,7 +69,7 @@ setGeneric("calc.dimVar", function(object, type, input) {
 #' \item first element: either an object of class 'matrix' or a data.frame or a link to a file. The input data need to be in a specific format (2 columns) with the first column defining the level-structure and the second column defining the level-codes.
 #' \item second element: a character vector of length 1 specifying a variable name
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname init.dimVar-method
 #'

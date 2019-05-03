@@ -21,7 +21,7 @@
 #' \item character vector if argument \code{type} matches 'numVarNames', 'freqVarName' or 'varName'
 #' \item logical vector of length 1 if argument \code{type} matches 'isMicroData'}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname get.dataObj-method
 #'
@@ -43,7 +43,7 @@ setGeneric("get.dataObj", function(object, type) {
 #'
 #' @return an object of class \code{dataObj}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname set.dataObj-method
 #'
@@ -68,7 +68,7 @@ setGeneric("set.dataObj", function(object, type, input) {
 #'
 #' @return an object of class \code{dataObj}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname init.dataObj-method
 #'

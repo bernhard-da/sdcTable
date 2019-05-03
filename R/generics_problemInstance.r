@@ -93,7 +93,7 @@ setGeneric("set.problemInstance", function(object, type, input) {
 #' \item an object of class \code{linProb} if argument \code{type} matches 'makeMasterProblem'
 #' \item logical vector of length 1 if argument \code{type} matches 'isProtectedSolution' with TRUE if all primary suppressed cells are adequately protected, FALSE otherwise }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.problemInstance-method
 #'

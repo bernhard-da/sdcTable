@@ -28,7 +28,7 @@
 #' \item an object of class \code{simpleTriplet} if type matches 'transpose', 'getRow' or 'getCol'
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname get.simpleTriplet-method
 #'
@@ -90,7 +90,7 @@ setGeneric("get.simpleTriplet", function(object, type, input) {
 #'
 #' @return an object of class \code{simpleTriplet}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.simpleTriplet-method
 #'
@@ -121,7 +121,7 @@ setGeneric("calc.simpleTriplet", function(object, type, input) {
 #' \item second element: logical vector of length 1 being TRUE if a positive and FALSE if a negative identity matrix should be returned }
 #' @return an object of class \code{simpleTriplet}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname init.simpleTriplet-method
 #'

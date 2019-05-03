@@ -16,7 +16,7 @@
 #' \item character vector if argument \code{type} matches 'direction'
 #' \item numeric vector if argument \code{type} matches 'objective' or 'rhs'}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname get.cutList-method
 #'
@@ -44,7 +44,7 @@ setGeneric("get.cutList", function(object, type) {
 #'
 #' @return an object of class \code{cutList}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname set.cutList-method
 #'
@@ -80,7 +80,7 @@ setGeneric("set.cutList", function(object, type, input) {
 #' \item a logical vector of length 1 if argument \code{type} matches 'checkViolation' with TRUE if at least one constraint is violated by the given solution
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.cutList-method
 #'
@@ -114,7 +114,7 @@ setGeneric("calc.cutList", function(object, type, input) {
 #'
 #' @return an object of class \code{cutList}
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname init.cutList-method
 #'
