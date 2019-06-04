@@ -44,21 +44,20 @@ dimList <- list(
   )
 )
 
-
-# creating an problem instance
+# create a problem instance
 prob <- makeProblem(
   data = microData1,
   dimList = dimList,
   numVarInd = "val"
 )
 
-# create inputs for jj format
+# create suitable input for `writeJJFormat`
 inp <- createJJFormat(prob); inp
 
 # write files to disk
 # frequency table by default
-writeJJFormat(inp, path = "prob_freqs.jj")
+writeJJFormat(inp, path = "prob_freqs.jj", overwrite = TRUE)
 
 # or using the numeric variable `val` previously specified
-writeJJFormat(inp, tabvar = "val", path = "prob_val.jj")
+writeJJFormat(inp, tabvar = "val", path = "prob_val.jj", overwrite = TRUE)
 }

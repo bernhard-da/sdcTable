@@ -1,11 +1,13 @@
 #' Create input for jj_format
 #'
-#' This function allows to transform a `sdcProblem` into a list that can
-#' be used to  following code is made to create JJ table
-#' format.
+#' This function transforms a [sdcProblem-class] object into a list that can
+#' be used as input for [writeJJFormat()] to write a problem in `"JJ-format"` to
+#' disk.
 #'
 #' @param x a [sdcProblem-class] object
-#' @return a input suitable for [writeJJFormat()]
+#' @return an input suitable for [writeJJFormat()]
+#' @author Bernhard Meindl (bernhard.meindl@@statistik.gv.at) and
+#' Sapphire Yu Han (y.han@@cbs.nl)
 #' @export
 #' @md
 #' @inherit writeJJFormat examples
@@ -70,7 +72,6 @@ createJJFormat <- function(x) {
   )
   setkey(dt, i)
   con <- dt[, paste(j, "(", v, ")", collapse = " ") , by = key(dt)]
-  browser()
 
   mm$v4 <- con[["V1"]]
   jj[[5]] <- mm

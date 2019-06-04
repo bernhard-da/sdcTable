@@ -20,27 +20,17 @@ prob <- makeProblem(
   numVarInd = "val"
 )
 
+# check errors
+expect_error(createJJFormat(x = 5))
+
 # create inputs for jj format
 inp <- createJJFormat(prob)
+expect_identical(digest::digest(inp), "8d0372b82939b2c571195d488fa70f85")
 
-expect_is(inp, "jjformat")
-expect_identical(length(inp), 5L)
-expect_identical(inp[[1]], 0)
-expect_identical(inp[[2]], 15L)
-
-expect_is(inp[[3]], "data.table")
-expect_identical(nrow(inp[[3]]), 15L)
-expect_identical(ncol(inp[[3]]), 10L)
-
-expect_identical(inp[[3]]$ind, as.numeric(0:14))
-expect_identical(inp[[3]]$freqs[1], 100)
-expect_identical(inp[[3]]$costs[1], 100)
-expect_identical(inp[[3]]$val[1], 1284)
-expect_identical(inp[[3]]$ubi[1], 150)
-
-expect_identical(inp[[4]], 8)
-
-expect_is(inp[[5]], "data.table")
-expect_identical(nrow(inp[[5]]), 8L)
-expect_identical(ncol(inp[[5]]), 4L)
-expect_identical(inp[[5]]$v4[1], "0 ( -1 ) 3 ( 1 ) 6 ( 1 ) 9 ( 1 ) 12 ( 1 )")
+# no numvar
+prob <- makeProblem(
+  data = microData1,
+  dimList = dimList
+)
+inp <- createJJFormat(prob)
+expect_identical(digest::digest(inp), "4ac42d469bf1d2f8321906af1bf617a1")

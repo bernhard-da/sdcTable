@@ -10,12 +10,12 @@ createJJFormat(x)
 \item{x}{a \linkS4class{sdcProblem} object}
 }
 \value{
-a input suitable for \code{\link[=writeJJFormat]{writeJJFormat()}}
+an input suitable for \code{\link[=writeJJFormat]{writeJJFormat()}}
 }
 \description{
-This function allows to transform a \code{sdcProblem} into a list that can
-be used to  following code is made to create JJ table
-format.
+This function transforms a \linkS4class{sdcProblem} object into a list that can
+be used as input for \code{\link[=writeJJFormat]{writeJJFormat()}} to write a problem in \code{"JJ-format"} to
+disk.
 }
 \examples{
 data("microData1", package = "sdcTable")
@@ -32,21 +32,24 @@ dimList <- list(
   )
 )
 
-
-# creating an problem instance
+# create a problem instance
 prob <- makeProblem(
   data = microData1,
   dimList = dimList,
   numVarInd = "val"
 )
 
-# create inputs for jj format
+# create suitable input for `writeJJFormat`
 inp <- createJJFormat(prob); inp
 
 # write files to disk
 # frequency table by default
-writeJJFormat(inp, path = "prob_freqs.jj")
+writeJJFormat(inp, path = "prob_freqs.jj", overwrite = TRUE)
 
 # or using the numeric variable `val` previously specified
-writeJJFormat(inp, tabvar = "val", path = "prob_val.jj")
+writeJJFormat(inp, tabvar = "val", path = "prob_val.jj", overwrite = TRUE)
+}
+\author{
+Bernhard Meindl (bernhard.meindl@statistik.gv.at) and
+Sapphire Yu Han (y.han@cbs.nl)
 }
