@@ -220,49 +220,54 @@ genParaObj <- function(selection, ...) {
     newPara <- list(...)
 
     indexNumVarIndices <- which(names(newPara) == "numVarIndices")
-    if ( length(indexNumVarIndices) == 0 ) {
+    if (length(indexNumVarIndices) == 0) {
       stop("genPara (type=='control.primary'): parameter 'numVarIndices' must be specified\n")
     } else {
       numVarIndices <- newPara[[indexNumVarIndices]]
     }
 
-    for ( i in seq_along(newPara) ) {
+    for (i in seq_along(newPara)) {
       m <- match(names(newPara)[i], names(paraObj))
-      if ( !is.na(m) ) {
+      if (!is.na(m)) {
         paraObj[[m]] <- newPara[[i]]
       }
     }
 
-    #if ( any(sapply(paraObj, length)!=1) ) {
-    # stop("genPara (type=='control.primary'): arguments for primary suppression are not valid!\n")
-    #}
-    if ( !is.logical(paraObj$allowZeros) ) {
+    if (!is.logical(paraObj$allowZeros)) {
       stop("genPara (type=='control.primary'): argument 'allowZeros' must be logical!\n")
     }
-    if ( !all(c(is.numeric(paraObj$maxN), is.numeric(paraObj$p), is.numeric(paraObj$n), is.numeric(paraObj$k))) ) {
-      stop("genPara (type=='control.primary'): arguments 'maxN', 'p', 'n' and 'k' must be numeric!\n")
+    if (!all(c(
+      is_scalar_integerish(paraObj$maxN),
+      is_scalar_integerish(paraObj$p),
+      is_scalar_integerish(paraObj$n),
+      is_scalar_integerish(paraObj$k)
+    ))) {
+      stop("arguments `maxN`, `p`, `n` and `k` must be integerish numbers.", call. = FALSE)
     }
-    if ( length(paraObj$pq) != 2 ) {
-      stop("genPara (type=='control.primary'): length of argument 'pq' must equal 2!\n")
+    if (length(paraObj$pq) != 2) {
+      stop("length of argument 'pq' must equal 2!", call. = FALSE)
     }
-    if ( paraObj$k < 1 | paraObj$k >= 100) {
-      stop("genPara (type=='control.primary'): argument 'k' must be >= 1 and < 100!\n")
+
+    if (paraObj$k < 1 | paraObj$k >= 100) {
+      stop("argument `k` must be >= 1 and < 100!", call. = FALSE)
     }
-    if ( paraObj$p < 1 | paraObj$p >= 100) {
-      stop("genPara (type=='control.primary'): argument p must be >= 1 and < 100!\n")
+
+    if (paraObj$p < 1 | paraObj$p >= 100) {
+      stop("argument `p` must be >= 1 and < 100!", call. = FALSE)
     }
-    if ( paraObj$pq[1] < 1 | paraObj$pq[1] >= 100) {
-      stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be >= 1 and < 100!\n")
+    if (paraObj$pq[1] < 1 | paraObj$pq[1] >= 100) {
+      stop("argument `p` of `pq` must be >= 1 and < 100!", call. = FALSE)
     }
-    if ( paraObj$pq[2] < 1 | paraObj$pq[2] >= 100) {
-      stop("genPara (type=='control.primary'): argument 'q' of 'pq' must be >= 1 and < 100!\n")
+    if (paraObj$pq[2] < 1 | paraObj$pq[2] >= 100) {
+      stop("argument `q` of `pq` must be >= 1 and < 100!", call. = FALSE)
     }
-    if ( paraObj$pq[1] >= paraObj$pq[2] ) {
-      stop("genPara (type=='control.primary'): argument 'p' of 'pq' must be < argument 'q' of 'pq'\n")
+    if (paraObj$pq[1] >= paraObj$pq[2]) {
+      stop("argument `p` of `pq` must be < argument `q` of `pq`", call. = FALSE)
     }
-    if ( !is.na(paraObj$numVarInd) ) {
-      if ( !paraObj$numVarInd %in% 1:length(numVarIndices) ) {
-        stop("genPara (type=='control.primary'): argument 'numVarInd' must be >= 1 and <=",length(numVarIndices),"!\n")
+    if (!is.na(paraObj$numVarInd)) {
+      if (!paraObj$numVarInd %in% 1:length(numVarIndices)) {
+        l <- length(numVarIndices)
+        stop("argument `numVarInd` must be >= 1 and <= ", l, call. = FALSE)
       }
     }
     return(paraObj)
@@ -300,46 +305,62 @@ genParaObj <- function(selection, ...) {
     paraObj$maxIter <- 5
 
     newPara <- list(...)
-    for ( i in seq_along(newPara) ) {
+    for (i in seq_along(newPara)) {
       m <- match(names(newPara)[i], names(paraObj))
-      if ( !is.na(m) ) {
+      if (!is.na(m)) {
         paraObj[[m]] <- newPara[[i]]
       }
     }
 
     ### checks
-    if ( any(sapply(paraObj, length)!=1) ) {
-      stop("genPara (type=='control.secondary'): arguments controlObj for sdc-procedure are not valid!\n")
+    if (any(sapply(paraObj, length) != 1)) {
+      stop("arguments controlObj for sdc-procedure are not valid!", call. = FALSE)
     }
-    if ( !all(c(is.numeric(paraObj$maxIter), is.numeric(paraObj$approxPerc), is.numeric(paraObj$protectionLevel), is.numeric(paraObj$maxIter))) ) {
-      stop("genPara (type=='control.secondary'): arguments 'maxIter', 'maxIter', 'protectionLevel' and 'maxIter' must be numeric!\n")
+    if (!all(c(
+      is.numeric(paraObj$maxIter),
+      is.numeric(paraObj$approxPerc),
+      is.numeric(paraObj$protectionLevel),
+      is.numeric(paraObj$maxIter)
+    ))) {
+      e <- "arguments 'maxIter', 'maxIter', 'protectionLevel' and 'maxIter' must be numeric!"
+      stop(e, call. = FALSE)
     }
-    if ( !all(c(is.logical(paraObj$verbose), is.logical(paraObj$save), is.logical(paraObj$fastSolution), is.logical(paraObj$fixVariables), is.logical(paraObj$suppAdditionalQuader))) ) {
-      stop("genPara (type=='control.secondary'): arguments 'verbose', 'save', 'fastSolution' 'fixVariables' and 'suppAdditionalQuader' must be numeric!\n")
+    if (!all(c(
+      is.logical(paraObj$verbose),
+      is.logical(paraObj$save),
+      is.logical(paraObj$fastSolution),
+      is.logical(paraObj$fixVariables),
+      is.logical(paraObj$suppAdditionalQuader)
+    ))) {
+      e <- c(
+        "arguments `verbose`, `save`, `fastSolution` `fixVariables` and",
+        "`suppAdditionalQuader` must be numeric!"
+      )
+      stop(paste(e, collapse = " "), call. = FALSE)
     }
     if ( !is.null(paraObj$timeLimit) && !paraObj$timeLimit %in% 1:3000 ) {
-      stop("genPara (type=='control.secondary'): argument 'timeLimit' must be >= 1 and <= 3000 minutes!\n")
+      stop("argument `timeLimit` must be >= 1 and <= 3000 minutes!", call. = FALSE)
     }
     if ( !length(paraObj$approxPerc) & !paraObj$approxPerc %in% 1:100 ) {
-      stop("genPara (type=='control.secondary'): argument 'approxPerc' must be >= 1 and <= 100!\n")
+      stop("argument `approxPerc` must be >= 1 and <= 100!\n", call. = FALSE)
     }
-    if ( !paraObj$method %in% c('SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE', 'OPT') ) {
-      stop("genPara (type=='control.secondary'): 'method' must be either 'SIMPLEHEURISTIC', 'HITAS', 'HYPERCUBE' or 'OPT'!\n")
+    if (!paraObj$method %in% c("SIMPLEHEURISTIC", "HITAS", "HYPERCUBE", "OPT")) {
+      stop("`method` must be either `SIMPLEHEURISTIC`, `HITAS`, `HYPERCUBE` or `OPT`!", call. = FALSE)
     }
-    if ( !paraObj$suppMethod %in% c('minSupps', 'minSum', 'minSumLogs') ) {
-      stop("genPara (type=='control.secondary'): 'suppMethod' must be either 'minSupps', 'minSum' or 'minSumLogs'!\n")
+    if (!paraObj$suppMethod %in% c('minSupps', 'minSum', 'minSumLogs')) {
+      stop("`suppMethod` must be either `minSupps`, `minSum` or `minSumLogs`", call. = FALSE)
     }
     return(paraObj)
   }
 
-  if ( !selection %in% c('control.primary', 'control.secondary') ) {
-    stop("genPara:: argument 'selection' must be either 'control.primary' or 'control.secondary'!\n")
+  if (!selection %in% c("control.primary", "control.secondary")) {
+    stop("wrong input in argument `selection`.", call. = FALSE)
   }
 
-  if ( selection == 'control.primary' ) {
+  if (selection == "control.primary") {
     paraObj <- controlPrimary(...)
   }
-  if ( selection == 'control.secondary' ) {
+  if (selection == "control.secondary") {
     paraObj <- controlSecondary(...)
   }
   return(paraObj)

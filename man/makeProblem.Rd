@@ -2,7 +2,7 @@
 % Please edit documentation in R/makeProblem.R
 \name{makeProblem}
 \alias{makeProblem}
-\title{create \code{\link{sdcProblem-class}}-objects}
+\title{Create a problem instance}
 \usage{
 makeProblem(data, dimList, dimVarInd = NULL, freqVarInd = NULL,
   numVarInd = NULL, weightInd = NULL, sampWeightInd = NULL)
@@ -14,61 +14,61 @@ that contain information on cell counts, weights that should be used during
 the cut and branch algorithm, additional numeric variables or variables that
 hold information on sampling weights.}
 
-\item{dimList}{a named list where the names refer to variable names in 
-input \code{data}. Each list element can be one of: 
+\item{dimList}{a (named) list where the names refer to variable names in
+input \code{data}. If the list is not named, it is required to specify argument
+\code{dimVarInd}. Each list element can be one of:
 \itemize{
-\item{\code{tree}: }{generated with \code{hier_*()} functions from the 
-sdcHierarchies package}
-\item{\code{data.frame}: }{a two column \code{data.frame} containing 
-the complete level hierarchy of a dimensional variable using a 
-top-to-bottom approach. The format of the \code{data.frame} is as follows:
+\item \code{tree}: generated with \code{hier_*()} functions from package \code{sdcHierarchies}
+\item \code{data.frame}: a two column \code{data.frame} containing the full hierarchy of
+a dimensional variable using a top-to-bottom approach. The format of this
+\code{data.frame} is as follows:
 \itemize{
-\item first column: a character vector specifying levels with each vector 
-element being a string only containing of '@'s from length 1 to n. 
-If a vector element consists of \code{i}-chars, the corresponding code 
-is of level \code{i}. The code '@' (one character) equals the grand 
-total (level=1), the code `@@` (two characters) is of level 2 (directly
+\item \strong{first column:} a character vector specifying levels with each vector
+element being a string only containing of \code{@}s from length 1 to n.
+If a vector element consists of \code{i}-chars, the corresponding code
+is of level \code{i}. The code \code{@} (one character) equals the grand
+total (level=1), the code \code{@@} (two characters) is of level 2 (directly
 below the overall total).
-\item second column: a character vector specifying level codes
+\item \strong{second column:} a character vector specifying level codes
+}
+\item \code{path}: absolute or relative path to a \code{.csv} file that
+contains two columns seperated by semicolons (\code{;}) having the same structure
+as the \code{"@;levelname"}-structure described above
 }}
-\item{\code{path}: }{absolute or relative path to a \code{.csv} file that
-contains two columns seperated by semicolons (;) having the same structure 
-as the \code{"@;levelname"}-structure described above}
-}}
 
-\item{dimVarInd}{numeric vector (or NULL) defining the column-indices of 
-dimensional variables (defining the table) within argument \code{data}. 
-If \code{NULL}, the names of argument \code{dimList} are used to calculate 
-the indices of the dimensional variables within \code{data} internally.}
+\item{dimVarInd}{if \code{dimList} is a named list, this argument is
+ignored (\code{NULL}). Else either a numeric or character vector
+defining the column indices or names of dimensional variables
+(specifying the table) within argument \code{data} are expected.}
 
-\item{freqVarInd}{numeric vector (or NULL) defining the column-indices 
-of a variable holding counts within argument \code{data}}
+\item{freqVarInd}{if not \code{NULL}, a scalar numeric or character vector
+defining the column index or variable name of a variable holding counts
+in \code{data}}
 
-\item{numVarInd}{numeric vector (or NULL) defining the column-indices 
-of additional numeric variables available in argument \code{data}}
+\item{numVarInd}{if not \code{NULL}, a numeric or character vector
+defining the column indices or variable names of additional numeric
+variables with respect to \code{data}}
 
-\item{weightInd}{numeric vector of length 1 (or NULL) defining the 
-column-index of a variable holding weights that should be used during 
-as objective coefficients during the cut and branch algorithm to 
-protect primary sensitive cells within argument \code{data}}
+\item{weightInd}{if not \code{NULL}, a scalar numeric or character vector
+defining the column index or variable name holding costs within \code{data}
+that should be used as objective coefficients when solving the secondary
+cell suppression problem.}
 
-\item{sampWeightInd}{numeric vector of length 1 (or NULL) defining 
-the column-index of a variable holding sampling weights within 
-argument \code{data}}
+\item{sampWeightInd}{if not \code{NULL}, a scalar numeric or character vector
+defining the column index or variable name of a variable holding sampling
+weights within \code{data}}
 }
 \value{
-a \code{\link{sdcProblem-class}}-object
+a \linkS4class{sdcProblem} object
 }
 \description{
-Function \code{\link{makeProblem}} is used to create
-\code{\link{sdcProblem-class}}-objects.
+Function \code{\link[=makeProblem]{makeProblem()}} is used to create \linkS4class{sdcProblem} objects.
 }
 \examples{
 # loading micro data
 data("microData1", package="sdcTable")
-microData <- microData1; rm(microData1)
 # having a look at the data structure
-str(microData)
+str(microData1)
 
 # we can observe that we have a micro data set consisting
 # of two spanning variables ('region' and 'gender') and one
@@ -89,31 +89,39 @@ hier_display(dim.gender)
 # create a named list with each element being a data-frame
 # containing information on one dimensional variable and
 # the names referring to variables in the input data
-dimList <- list(region=dim.region, gender=dim.gender)
+dimList <- list(region = dim.region, gender = dim.gender)
 
 # third column containts a numeric variable
 numVarInd <- 3
 
 # no variables holding counts, numeric values, weights or sampling
 # weights are available in the input data
-freqVarInd <- weightInd <- sampWeightInd <- NULL
+# creating an problem instance using numeric indices
+p1 <- makeProblem(
+  data = microData1,
+  dimList = dimList,
+  numVarInd = 3 # third variable in `data`
+)
 
-# creating an object of class \\code{\\link{sdcProblem-class}}
-problem <- makeProblem(
- data=microData,
- dimList=dimList,
- freqVarInd=freqVarInd,
- numVarInd=numVarInd,
- weightInd=weightInd,
- sampWeightInd=sampWeightInd)
+# using variable names is also possible
+p2 <- makeProblem(
+  data = microData1,
+  dimList = dimList,
+  numVarInd = "val"
+)
 
 # what do we have?
-print(class(problem))
+print(class(p1))
 
 # have a look at the data
-sdcProb2df(problem, addDups=TRUE,
-  addNumVars=TRUE, dimCodes="original")
+df1 <- sdcProb2df(p1, addDups = TRUE,
+  addNumVars = TRUE, dimCodes = "original")
+df2 <- sdcProb2df(p2, addDups=TRUE,
+  addNumVars = TRUE, dimCodes = "original")
+print(df1)
+
+identical(df1, df2)
 }
 \author{
-Bernhard Meindl \email{bernhard.meindl@statistik.gv.at}
+Bernhard Meindl
 }

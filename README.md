@@ -8,7 +8,7 @@ This is the git-repo for sdcTable development.
 
 On github, development of the R-package `sdcTable` takes place. A version is provided on CRAN, too.
 
-Please feel free to report bugs, issues and suggestions to enhance the package on the [**issue-tracker**](https://github.com/bernhard-da/sdcTable/issues).
+Please feel free to report bugs, issues and suggestions to enhance the package on the [**issue-tracker**](https://github.com/sdcTools/userSupport/issues).
 
 ### Installation
 
@@ -16,9 +16,14 @@ Please feel free to report bugs, issues and suggestions to enhance the package o
 
     install.packages("sdcTable")
 
-#### latest-development version
+#### Github
 
-    install_github("bernhard-da/sdcTable", build_vignette=TRUE, dependencies=TRUE)
+    install.packages("remotes")
+    remotes::install_github(
+      repo = "sdcTools/sdcTable",
+      dependencies = TRUE,
+      build_opts = c("--no-resave-data", "--no-manual")
+    )
 
 ### Usage
 

@@ -25,7 +25,7 @@
 #' \item object of class \code{sdcProblem} if argument \code{type} matches 'calcFullProblem'
 #' }
 #'
-#' @export
+#' @keywords internal
 #' @docType methods
 #' @rdname calc.multiple-method
 #'

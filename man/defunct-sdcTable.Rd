@@ -16,12 +16,12 @@ delete_nodes(...)
 rename_node(...)
 }
 \description{
-create_node() is defunct, please use sdcHierarchies::hier_create() instead
+create_node() is defunct, please use sdcHierarchies::hier_create()
 
-add_nodes() is defunct, please use sdcHierarchies::hier_add() instead
+add_nodes() is defunct, please use sdcHierarchies::hier_add()
 
-delete_nodes() is defunct, please use sdcHierarchies::hier_delete() instead
+delete_nodes() is defunct, please use sdcHierarchies::hier_delete()
 
-rename_node() is defunct, please use sdcHierarchies::hier_rename() instead
+rename_node() is defunct, please use sdcHierarchies::hier_rename()
 }
 \keyword{internal}

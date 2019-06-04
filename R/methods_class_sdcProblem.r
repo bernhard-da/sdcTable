@@ -369,7 +369,7 @@ setReplaceMethod("s_elapsedTime", signature=c("sdcProblem"), definition=function
 
 setMethod("c_rule_freq", signature=c("sdcProblem", "list"), definition=function(object, input) {
   pI <- g_problemInstance(object)
-  if ( input$allowZeros == TRUE ) {
+  if (input$allowZeros == TRUE ) {
     suppInd <- which(g_freq(pI) <= input$maxN)
   } else {
     f <- g_freq(pI)
@@ -387,163 +387,16 @@ setMethod("c_rule_freq", signature=c("sdcProblem", "list"), definition=function(
   return(object)
 })
 
-setMethod("c_rule_nk", signature=c("sdcProblem", "list"), definition=function(object, input) {
-  nkRule <- function(celltot, sumNcont, k) {
-    # if TRUE, cell needs to be suppressed
-    (sumNcont) > (k/100*celltot)
-  }
-
-  if (!g_is_microdata(g_dataObj(object))) {
-    stop("nk-dominance rule can only be applied if micro-data are available!\n")
-  }
-  pI <- g_problemInstance(object)
-  dataObj <- g_dataObj(object)
-  strIDs <- g_strID(pI)
-  numVarInds <- g_numvar_ind(dataObj)
-
-  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if (any(na.omit(numVal) < 0)) {
-    stop("dominance rules can only be applied to numeric variables with only positive values!\n")
-  }
-
-  # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) {
-    c_contributing_indices(object, input=list(strIDs[x]))
-  })
-
-  if (input$n < 1) {
-    stop("c_rule_nk:: parameter 'n' must be >= 1!\n")
-  }
-
-  # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) {
-    sum(rev(tail(sort(numVal[indices[[x]]]), input$n)))
-  })
-
-  cellTotals <- g_numVars(pI)[[input$numVarInd]]
-
-  # suppStatus: TRUE:unsafe, FALSE: safe
-  nkState <- sapply(1:g_nrVars(pI), function(x) {
-    nkRule(cellTotals[x], valueList[[x]], input$k)
-  })
-
-  suppIndex <- which(nkState==TRUE)
-  if (length(suppIndex) > 0) {
-    s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
-  }
-
-  if (input$allowZeros==FALSE) {
-    indZero <- which(cellTotals==0 & g_freq(pI)>=0)
-    if (length(indZero) > 0) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("s", length(indZero)))
-    }
-  }
-  s_problemInstance(object) <- pI
-  validObject(object)
-  return(object)
+setMethod("c_rule_nk", signature = c("sdcProblem", "list"), definition = function(object, input) {
+  domRule(object = object, params = input, type = "nk")
 })
 
-setMethod("c_rule_p", signature=c("sdcProblem", "list"), definition=function(object, input) {
-  pPercRule <- function(celltot, cont1, cont2, p) {
-    # if TRUE, cell needs to be suppressed
-    (celltot - cont1 - cont2) < (p/100*cont1)
-  }
-
-  if ( !g_is_microdata(g_dataObj(object)) ) {
-    stop("p-percent rule can only be applied if micro-data are available!\n")
-  }
-
-  pI <- g_problemInstance(object)
-  dataObj <- g_dataObj(object)
-  numVarInds <- g_numvar_ind(dataObj)
-  strIDs <- g_strID(pI)
-
-  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if ( any(numVal < 0 ) ) {
-    stop("dominance rules can only be applied to numeric variables with only positive values!\n")
-  }
-
-  # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) {
-    c_contributing_indices(object, input=list(strIDs[x]))
-  })
-
-  # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) {
-    rev(tail(sort(numVal[indices[[x]]]),2))
-  })
-  cellTotals <- g_numVars(pI)[[input$numVarInd]]
-
-  # suppStatus: TRUE:unsafe, FALSE: safe
-  pState <- sapply(1:g_nrVars(pI), function(x) {
-    pPercRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$p)
-  })
-
-  suppIndex <- which(pState==TRUE)
-  if (length(suppIndex) > 0) {
-    s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
-  }
-
-  if (input$allowZeros == FALSE) {
-    indZero <- which(g_freq(pI)==0)
-    if (length(indZero) > 0) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("u", length(indZero)))
-    }
-  }
-  s_problemInstance(object) <- pI
-  validObject(object)
-  return(object)
+setMethod("c_rule_p", signature = c("sdcProblem", "list"), definition = function(object, input) {
+  domRule(object = object, params = input, type = "p")
 })
 
-setMethod("c_rule_pq", signature=c("sdcProblem", "list"), definition=function(object, input) {
-  pqRule <- function(celltot, cont1, cont2, p, q) {
-    # if TRUE, cell needs to be suppressed
-    (celltot - cont1 - cont2) < (p/q)*cont1
-  }
-  if ( !g_is_microdata(g_dataObj(object)) ) {
-    stop("p-percent rule can only be applied if micro-data are available!\n")
-  }
-
-  pI <- g_problemInstance(object)
-  dataObj <- g_dataObj(object)
-  numVarInds <- g_numvar_ind(dataObj)
-  strIDs <- g_strID(pI)
-
-  numVal <- g_raw_data(dataObj)[[numVarInds[input$numVarInd]]]
-  if ( any(numVal < 0 ) ) {
-    stop("dominance rules can only be applied to numeric variables with only positive values!\n")
-  }
-
-  # calculate contributing indices
-  indices <- lapply(1:g_nrVars(pI), function(x) {
-    c_contributing_indices(object, input=list(strIDs[x]))
-  })
-
-  # values of contributing units
-  valueList <- lapply(1:g_nrVars(pI), function(x) {
-    rev(tail(sort(numVal[indices[[x]]]),2))
-  })
-  cellTotals <- g_numVars(pI)[[input$numVarInd]]
-
-  # suppStatus: TRUE:unsafe, FALSE: safe
-  pState <- sapply(1:g_nrVars(pI), function(x) {
-    pqRule(cellTotals[x], valueList[[x]][1], valueList[[x]][2], input$pq[1], input$pq[2])
-  })
-
-  suppIndex <- which(pState==TRUE)
-  if ( length(suppIndex) > 0 ) {
-    s_sdcStatus(pI) <- list(index=suppIndex, vals=rep("u", length(suppIndex)))
-  }
-
-  if ( input$allowZeros == FALSE ) {
-    indZero <- which(g_freq(pI)==0)
-    if ( length(indZero) > 0 ) {
-      s_sdcStatus(pI) <- list(index=indZero, vals=rep("u", length(indZero)))
-    }
-  }
-  s_problemInstance(object) <- pI
-  validObject(object)
-  return(object)
+setMethod("c_rule_pq", signature = c("sdcProblem", "list"), definition = function(object, input) {
+  domRule(object = object, params = input, type = "pq")
 })
 
 setMethod("c_heuristic_solution", signature=c("sdcProblem", "list"), definition=function(object, input) {
